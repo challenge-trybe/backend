@@ -1,4 +1,4 @@
-package com.trybe.modulecore.entity;
+package com.trybe.modulecore.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
