@@ -30,8 +30,8 @@ public class ChallengeResponse {
                     challenge.getStatus(),
                     challenge.getCapacity(),
                     challenge.getCategory(),
-                    challenge.getProof_way(),
-                    challenge.getProof_count()
+                    challenge.getProofWay(),
+                    challenge.getProofCount()
             );
         }
     }
