@@ -1,7 +1,7 @@
 package com.trybe.modulecore.challenge.enums;
 
 public enum ChallengeCategory {
-    SPORTS("문동"),
+    SPORTS("운동"),
     HOBBY("취미"),
     DIET("식단"),
     SAVING("저축"),
