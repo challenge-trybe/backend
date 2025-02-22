@@ -1,0 +1,39 @@
+### 1. 로그인 API
+POST http://localhost:8080/api/v1/login
+Content-Type: application/json
+
+{
+  "userId": "jiwon27",
+  "password": "testpwd123"
+}
+> {%
+  client.global.set("accessToken", "Bearer " + response.body.accessToken);
+  client.global.set("refreshToken", "Bearer " + response.body.refreshToken);
+%}
+
+### 1-1 로그인 API (아이디/패스워드 실패)
+POST http://localhost:8080/api/v1/login
+Content-Type: application/json
+
+{
+  "userId": "jiwon28",
+  "password": "testpwd123!"
+}
+
+### 2. 로그아웃 API
+POST http://localhost:8080/api/v1/logout
+Authorization: {{accessToken}}
+
+
+### 2-1 로그아웃 API (인증 객체 없음)
+POST http://localhost:8080/api/v1/logout
+Authorization: {{accessToken}}
+
+
+### 3. 토큰 재발급
+POST http://localhost:8080/api/v1/token/reissue
+Content-Type: application/json
+
+{
+   "refreshToken": "{{refreshToken}}"
+}
