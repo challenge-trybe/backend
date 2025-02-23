@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
-
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -25,6 +24,9 @@ public class UserService {
 
     @Transactional
     public UserResponse save(UserRequest.Create userRequest){
+        checkDuplicatedUserId(userRequest.userId());
+        checkDuplicatedEmail(userRequest.email());
+
         User user = userRequest.toEntity();
 
         String bcryptPassword = passwordEncoder.encode(userRequest.password());
@@ -64,14 +66,14 @@ public class UserService {
     @Transactional
     public void checkDuplicatedUserId(String userId) {
         userRepository.findByUserId(userId).ifPresent((user) -> {
-            throw new DuplicatedUserException("중복된 유저 아이디입니다. userId = " + user.getUserId());
+            throw new DuplicatedUserException("이미 존재하는 아이디입니다.");
         });
     }
 
     @Transactional
     public void checkDuplicatedEmail(String email) {
         userRepository.findByEmail(email).ifPresent((user) -> {
-            throw new DuplicatedUserException("중복된 이메일입니다. email = " + user.getEmail());
+            throw new DuplicatedUserException("이미 존재하는 이메일입니다.");
         });
     }
 
