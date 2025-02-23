@@ -15,8 +15,9 @@ import java.util.Map;
 @RestControllerAdvice
 public class ApiExceptionHandler {
     @ExceptionHandler
-    public ApiErrorResponse handleBusinessException(BusinessException ex) {
-        return new ApiErrorResponse(ex.getStatus(), ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleBusinessException(BusinessException ex) {
+        ApiErrorResponse response = new ApiErrorResponse(ex.getStatus(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.valueOf(ex.getStatus())).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
