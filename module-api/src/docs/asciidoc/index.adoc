@@ -1,0 +1,5 @@
+= TRYBE API 문서
+:date: 2025-XX-XX
+
+
+include::{snippets}/회원가입 API/http-request.adoc[]
