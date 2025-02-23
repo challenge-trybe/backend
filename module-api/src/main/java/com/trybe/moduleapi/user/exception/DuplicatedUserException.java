@@ -1,7 +1,10 @@
 package com.trybe.moduleapi.user.exception;
 
-public class DuplicatedUserException extends RuntimeException{
+import com.trybe.moduleapi.common.api.exception.BusinessException;
+import org.springframework.http.HttpStatus;
+
+public class DuplicatedUserException extends BusinessException {
     public DuplicatedUserException(String message) {
-        super(message);
+        super(message, HttpStatus.CONFLICT.value());
     }
 }
