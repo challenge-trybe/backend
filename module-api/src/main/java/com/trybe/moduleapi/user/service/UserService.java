@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.user.service;
 
+import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.user.dto.request.UserRequest;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
 import com.trybe.moduleapi.user.exception.DuplicatedUserException;
@@ -40,27 +41,22 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse findByUserId(String userId){
-        User user = getUserByUserId(userId);
-        return UserResponse.from(user);
-    }
-
-    @Transactional
-    public void delete(Long id){
+    public void delete(CustomUserDetails userDetails){
+        Long id = userDetails.getUser().getId();
         userRepository.deleteById(id);
     }
 
     @Transactional
-    public UserResponse update(Long id, UserRequest.Update userRequest){
-        User user = getUserById(id);
-        user.update(userRequest.nickname(), userRequest.email(), userRequest.gender(), userRequest.birth());
+    public UserResponse updateProfile(CustomUserDetails userDetails, UserRequest.Update userRequest){
+        User user = userDetails.getUser();
+        user.updateProfile(userRequest.nickname(), userRequest.email(), userRequest.gender(), userRequest.birth());
         return UserResponse.from(user);
     }
 
     @Transactional
-    public UserResponse updatePassword(Long id, UserRequest.UpdatePassword updatePassword){
-        checkedUpdatePassword(id, updatePassword);
-        User user = getUserById(id);
+    public UserResponse updatePassword(CustomUserDetails userDetails, UserRequest.UpdatePassword updatePassword){
+        User user = userDetails.getUser();
+        checkUpdatePassword(user, updatePassword);
         user.updatePassword(updatePassword.newPassword());
         return UserResponse.from(user);
     }
@@ -79,8 +75,7 @@ public class UserService {
         });
     }
 
-    private void checkedUpdatePassword(Long id, UserRequest.UpdatePassword updatePassword) {
-        User user = getUserById(id);
+    private void checkUpdatePassword(User user, UserRequest.UpdatePassword updatePassword) {
 
         if  (updatePassword.oldPassword().equals(updatePassword.newPassword())) {
             throw new UpdatePasswordFailException("현재 비밀번호와 새로운 비밀번호가 동일합니다.");
@@ -100,7 +95,4 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(NotFoundUserException::new);
     }
 
-    private User getUserByUserId(String userId) {
-        return userRepository.findByUserId(userId).orElseThrow(NotFoundUserException::new);
-    }
 }
