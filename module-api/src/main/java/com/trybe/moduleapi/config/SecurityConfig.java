@@ -35,6 +35,7 @@ public class SecurityConfig {
         http.formLogin(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(new AntPathRequestMatcher("/docs/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/users")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/login")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/token/reissue")).permitAll()
