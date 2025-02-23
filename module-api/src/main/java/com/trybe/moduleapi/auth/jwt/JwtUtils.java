@@ -1,8 +1,7 @@
 package com.trybe.moduleapi.auth.jwt;
 
-import com.trybe.modulecore.token.repository.TokenRepository;
+import com.trybe.modulecore.token.repository.RefreshTokenRepository;
 import com.trybe.modulecore.token.entity.RefreshToken;
-import com.trybe.modulecore.user.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -23,18 +22,18 @@ public class JwtUtils {
     private static final long accessTokenExpiredTime = 3600000; // 1시간
     private static final long refreshTokenExpiredTime = 604_800_000; // 7일
 
-    private final TokenRepository tokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public JwtUtils(@Value("${jwt.secret-key}") String secretKey, TokenRepository tokenRepository) {
+    public JwtUtils(@Value("${jwt.secret-key}") String secretKey, RefreshTokenRepository refreshTokenRepository) {
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-        this.tokenRepository = tokenRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public Map<String, String> generateToken(String userId, String role){
         String accessToken = createToken(userId, role, accessTokenExpiredTime);
         String refreshToken = createToken(userId, role, refreshTokenExpiredTime);
 
-        Optional<RefreshToken> existRefreshToken = tokenRepository.findByUserId(userId);
+        Optional<RefreshToken> existRefreshToken = refreshTokenRepository.findByUserId(userId);
         if (existRefreshToken.isPresent()) {
             existRefreshToken.get().updateRefreshToken(refreshToken);
         } else {
@@ -42,7 +41,7 @@ public class JwtUtils {
                                                           .userId(userId)
                                                           .refreshToken(refreshToken)
                                                           .build();
-            tokenRepository.save(refreshTokenEntity);
+            refreshTokenRepository.save(refreshTokenEntity);
         }
         return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
     }
@@ -64,7 +63,7 @@ public class JwtUtils {
     }
 
     public void deleteRefreshToken(String userId){
-        tokenRepository.deleteByUserId(userId);
+        refreshTokenRepository.deleteByUserId(userId);
     }
 
 
