@@ -41,7 +41,7 @@ public class AuthenticationService {
 
     @Transactional
     public TokenResponse tokenReissue(RefreshTokenRequest refreshTokenRequest){
-        String refreshToken = refreshTokenRequest.getRefreshToken().split(" ")[1];
+        String refreshToken = refreshTokenRequest.getRefreshToken();
         String userId = jwtUtils.getUserId(refreshToken);
         return createTokenResponse(userId);
     }
