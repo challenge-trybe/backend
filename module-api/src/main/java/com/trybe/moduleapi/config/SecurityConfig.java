@@ -36,8 +36,10 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/users")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/v1/login")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/v1/token/reissue")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/login")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/token/reissue")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/v1/users/check-user-id")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/v1/users/check-email")).permitAll()
                 .anyRequest()
                 .authenticated());
 
