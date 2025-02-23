@@ -1,0 +1,87 @@
+### 1. 챌린지 생성
+POST http://localhost:8080/api/v1/challenges
+Content-Type: application/json
+
+{
+  "title": "클린코드 도서 읽기",
+  "description": "클린코드 책을 일주일에 한 챕터씩 읽은 후 리뷰하기",
+  "startDate": "2025-02-24",
+  "endDate": "2025-06-19",
+  "capacity": 5,
+  "category": "STUDY",
+  "proofWay": "읽은 내용을 정리해서 공유",
+  "proofCount": 17
+}
+
+### 1-1. 챌린지 생성 (유효성 검증 실패)
+POST http://localhost:8080/api/v1/challenges
+Content-Type: application/json
+
+{
+  "title": "새로운 도전의 기회! 이번 챌린지는 당신의 한계를 넘고, 목표를 달성하여 특별한 보상을 받을 수 있는 기회를 제공합니다. 지금 바로 참여하세요! 지금 바로 참여하세요! 지금 바로 참여하세요!",
+  "startDate": "2024-02-21",
+  "endDate": "2024-02-10",
+  "capacity": 30,
+  "category": "STUDY",
+  "proofCount": 0
+}
+
+### 2. 챌린지 단일 조회
+GET http://localhost:8080/api/v1/challenges/1
+
+### 3. 챌린지 검색 조회
+POST http://localhost:8080/api/v1/challenges/search
+Content-Type: application/json
+
+{
+  "statuses": ["PENDING","ONGOING"],
+  "categories": ["STUDY"]
+}
+
+### 4. 챌린지 내용 수정
+PUT http://localhost:8080/api/v1/challenges/1/content
+Content-Type: application/json
+
+{
+  "title": "클린코드 도서 읽기",
+  "description": "클린코드 책을 일주일에 한 챕터씩 읽은 후 리뷰하기",
+  "startDate": "2025-02-24",
+  "endDate": "2025-06-19",
+  "capacity": 10,
+  "category": "STUDY"
+}
+
+
+### 4-1. 챌린지 내용 수정 (유효성 검증 실패)
+PUT http://localhost:8080/api/v1/challenges/1/content
+Content-Type: application/json
+
+{
+  "title": "클린코드 도서 읽기",
+  "description": "클린코드 책을 일주일에 한 챕터씩 읽은 후 리뷰하기",
+  "startDate": "2025-02-24",
+  "endDate": "2025-06-19",
+  "capacity": 0,
+  "category": "STUDY"
+}
+
+### 5. 챌린지 인증 내용 수정
+PUT http://localhost:8080/api/v1/challenges/1/proof
+Content-Type: application/json
+
+{
+  "proofWay": "읽은 내용을 정리해서 공유",
+  "proofCount": 15
+}
+
+### 5-1. 챌린지 인증 내용 수정 (유효성 검증 실패)
+PUT http://localhost:8080/api/v1/challenges/1/proof
+Content-Type: application/json
+
+{
+  "proofWay": " ",
+  "proofCount": 0
+}
+
+### 6. 챌린지 삭제
+DELETE http://localhost:8080/api/v1/challenges/1
