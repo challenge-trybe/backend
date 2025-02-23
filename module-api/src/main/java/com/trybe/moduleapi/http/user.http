@@ -35,7 +35,7 @@ Authorization: {{accessToken}}
 ### 3. 회원정보 수정 API
 PUT http://localhost:8080/api/v1/users/1
 Content-Type: application/json
-Authorization: {{authorizationToken}}
+Authorization: {{accessToken}}
 
 {
   "email": "test@google.com",
@@ -80,22 +80,26 @@ Authorization: {{accessToken}}
 
 ### 5.유저 아이디 중복 체크 API
 GET http://localhost:8080/api/v1/users/check-user-id?userId=jiwon28
-Authorization: {{accessToken}}
 
 
 ### 5.1 유저 아이디 중복 체크 API (중복)
 GET http://localhost:8080/api/v1/users/check-user-id?userId=jiwon27
-Authorization: {{accessToken}}
 
 
 ### 6. 이메일 중복 체크 API
 GET http://localhost:8080/api/v1/users/check-email?email=test2@google.com
-Authorization: {{accessToken}}
 
 
 ### 6.1 이메일 중복 체크 API (중복)
 GET http://localhost:8080/api/v1/users/check-email?email=test@google.com
+
+### 7.1 회원탈퇴 API
+DELETE http://localhost:8080/api/v1/users/1
 Authorization: {{accessToken}}
+
+### 7.1 회원탈퇴 API (인증 실패)
+DELETE http://localhost:8080/api/v1/users/1
+
 
 
 

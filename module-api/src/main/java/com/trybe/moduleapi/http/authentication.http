@@ -1,5 +1,5 @@
 ### 1. 로그인 API
-POST http://localhost:8080/api/v1/login
+POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -8,11 +8,11 @@ Content-Type: application/json
 }
 > {%
   client.global.set("accessToken", "Bearer " + response.body.accessToken);
-  client.global.set("refreshToken", "Bearer " + response.body.refreshToken);
+  client.global.set("refreshToken", response.body.refreshToken);
 %}
 
 ### 1-1 로그인 API (아이디/패스워드 실패)
-POST http://localhost:8080/api/v1/login
+POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -21,17 +21,17 @@ Content-Type: application/json
 }
 
 ### 2. 로그아웃 API
-POST http://localhost:8080/api/v1/logout
+POST http://localhost:8080/api/v1/auth/logout
 Authorization: {{accessToken}}
 
 
 ### 2-1 로그아웃 API (인증 객체 없음)
-POST http://localhost:8080/api/v1/logout
+POST http://localhost:8080/api/v1/auth/logout
 Authorization: {{accessToken}}
 
 
 ### 3. 토큰 재발급
-POST http://localhost:8080/api/v1/token/reissue
+POST http://localhost:8080/api/v1/auth/token/reissue
 Content-Type: application/json
 
 {
