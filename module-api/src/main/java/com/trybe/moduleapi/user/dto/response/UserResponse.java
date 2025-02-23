@@ -7,12 +7,13 @@ import java.time.LocalDate;
 
 public record UserResponse(
         Long id,
+        String nickname,
         String userId,
         String email,
         Gender gender,
         LocalDate birth
 ){
     public static UserResponse from(User user){
-        return new UserResponse(user.getId(), user.getUserId(), user.getEmail(), user.getGender(), user.getBirth());
+        return new UserResponse(user.getId(), user.getNickname(), user.getUserId(), user.getEmail(), user.getGender(), user.getBirth());
     }
 }
