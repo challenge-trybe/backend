@@ -1,5 +1,7 @@
-package com.trybe.moduleapi.common.exception;
+package com.trybe.moduleapi.common.api.exception;
 
+import com.trybe.moduleapi.common.api.ApiErrorResponse;
+import com.trybe.moduleapi.user.exception.DuplicatedUserException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -12,15 +14,21 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler
+    public ApiErrorResponse handleBusinessException(BusinessException ex) {
+        return new ApiErrorResponse(ex.getStatus(), ex.getMessage());
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ApiErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
+
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String message = error.getDefaultMessage();
             errors.put(fieldName, message);
         });
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+
+        return new ApiErrorResponse(errors);
     }
 }
