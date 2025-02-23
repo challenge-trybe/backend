@@ -1,9 +1,11 @@
 package com.trybe.moduleapi.user.controller;
 
+import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.user.dto.request.UserRequest;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
 import com.trybe.moduleapi.user.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,16 +30,21 @@ public class UserController {
 
     @PutMapping("/{id}")
     public UserResponse update(
-            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserRequest.Update userRequest) {
-        return userService.update(id, userRequest);
+        return userService.updateProfile(userDetails, userRequest);
     }
 
     @PutMapping("/{id}/change-password")
     public UserResponse updatePassword(
-            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserRequest.UpdatePassword userRequest) {
-        return userService.updatePassword(id, userRequest);
+        return userService.updatePassword(userDetails, userRequest);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        userService.delete(userDetails);
     }
 
     @GetMapping("/check-user-id")
