@@ -1,0 +1,107 @@
+### 1. 회원가입 API
+POST http://localhost:8080/api/v1/users
+Content-Type: application/json
+
+{
+  "userId": "jiwon27",
+  "email": "test@google.com",
+  "nickname": "test",
+  "password": "testpwd123",
+  "gender": "FEMALE",
+  "birth": "2001-05-12"
+}
+
+### 1-1. 회원가입 API (유효성 검증 실패)
+POST http://localhost:8080/api/v1/users
+Content-Type: application/json
+
+{
+  "userId": "",
+  "email": "email#google.com",
+  "nickname": "",
+  "password": "1",
+  "gender": "MALE",
+  "birth": ""
+}
+
+### 2. 단건 회원 조회 API
+GET http://localhost:8080/api/v1/users/1
+Authorization: {{accessToken}}
+
+### 2-1 단건 회원 조회 API (존재하지 않는 회원 조회)
+GET http://localhost:8080/api/v1/users/1000
+Authorization: {{accessToken}}
+
+### 3. 회원정보 수정 API
+PUT http://localhost:8080/api/v1/users/1
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "email": "test@google.com",
+  "nickname": "change",
+  "gender": "MALE",
+  "birth": "2001-05-13"
+}
+
+### 3.1 회원정보 수정 API (유효성 검증 실패)
+PUT http://localhost:8080/api/v1/users/1
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "email": "test^google.com",
+  "nickname": "2",
+  "gender": "MALE",
+  "birth": "2001-05-13"
+}
+
+### 4. 비밀번호 수정 API
+PUT http://localhost:8080/api/v1/users/1/change-password
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "oldPassword" : "testpwd123",
+  "newPassword" : "update",
+  "confirmPassword": "update"
+}
+
+### 4-1 비밀번호 수정 API (유효성 검증 실패)
+PUT http://localhost:8080/api/v1/users/1/change-password
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "oldPassword" : "1",
+  "newPassword" : "1",
+  "confirmPassword": "1"
+}
+
+### 5.유저 아이디 중복 체크 API
+GET http://localhost:8080/api/v1/users/check-user-id?userId=jiwon28
+
+
+### 5.1 유저 아이디 중복 체크 API (중복)
+GET http://localhost:8080/api/v1/users/check-user-id?userId=jiwon27
+
+
+### 6. 이메일 중복 체크 API
+GET http://localhost:8080/api/v1/users/check-email?email=test2@google.com
+
+
+### 6.1 이메일 중복 체크 API (중복)
+GET http://localhost:8080/api/v1/users/check-email?email=test@google.com
+
+### 7.1 회원탈퇴 API
+DELETE http://localhost:8080/api/v1/users/1
+Authorization: {{accessToken}}
+
+### 7.1 회원탈퇴 API (인증 실패)
+DELETE http://localhost:8080/api/v1/users/1
+
+
+
+
+
+
