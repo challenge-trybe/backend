@@ -63,7 +63,7 @@ public class User extends BaseEntity {
         this.birth = birth;
     }
 
-    public void update(String nickname, String email, Gender gender, LocalDate birth) {
+    public void updateProfile(String nickname, String email, Gender gender, LocalDate birth) {
         this.nickname = nickname;
         this.email = email;
         this.gender = gender;
