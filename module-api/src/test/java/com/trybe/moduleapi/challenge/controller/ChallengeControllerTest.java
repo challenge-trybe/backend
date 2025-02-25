@@ -25,6 +25,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -78,7 +80,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -130,7 +132,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -169,7 +171,7 @@ class ChallengeControllerTest {
                         fieldWithPath("data.proofCount").description("챌린지 인증 횟수 에러 메시지")
                 )));
     }
-    
+
     @Test
     @DisplayName("정상적인 챌린지 단일 조회 요청 시 응답코드 200을 반환한다.")
     void 정상적인_챌린지_단일_조회_요청_시_응답코드_200을_반환한다 () throws Exception {
@@ -253,7 +255,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/search")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -288,7 +290,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/search")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -323,7 +325,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/content")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -374,7 +376,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/content")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -420,7 +422,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/content")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -452,7 +454,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/proof")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -499,7 +501,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/proof")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
@@ -537,7 +539,7 @@ class ChallengeControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/proof")
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
