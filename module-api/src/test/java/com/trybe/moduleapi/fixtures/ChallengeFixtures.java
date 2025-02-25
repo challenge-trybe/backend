@@ -21,13 +21,13 @@ public class ChallengeFixtures {
     public static final String 잘못된_챌린지_설명 = " ";
     public static final String 수정된_챌린지_설명 = "도파민에 절여진 여러분들을 위한 챌린지입니다. 14일동안 매일 도파민에서 해방된 삶을 즐겨봐요!";
 
-    public static final LocalDate 챌린지_시작_날짜 = LocalDate.of(2025, 3, 1);
+    public static final LocalDate 챌린지_시작_날짜 = LocalDate.of(2025, 4, 7);
     public static final LocalDate 잘못된_챌린지_시작_날짜 = LocalDate.of(2001, 5, 12);
-    public static final LocalDate 수정된_챌린지_시작_날짜 = LocalDate.of(2025, 3, 2);
+    public static final LocalDate 수정된_챌린지_시작_날짜 = LocalDate.of(2025, 4, 8);
 
-    public static final LocalDate 챌린지_종료_날짜 = LocalDate.of(2025, 3, 7);
+    public static final LocalDate 챌린지_종료_날짜 = LocalDate.of(2025, 4, 13);
     public static final LocalDate 잘못된_챌린지_종료_날짜 = LocalDate.of(2001, 11, 14);
-    public static final LocalDate 수정된_챌린지_종료_날짜 = LocalDate.of(2025, 3, 15);
+    public static final LocalDate 수정된_챌린지_종료_날짜 = LocalDate.of(2025, 4, 14);
 
     public static final int 챌린지_인원 = 6;
     public static final int 잘못된_챌린지_인원 = 30;
