@@ -21,7 +21,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ApiErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult().getAllErrors().forEach((error) -> {
@@ -30,6 +30,7 @@ public class ApiExceptionHandler {
             errors.put(fieldName, message);
         });
 
-        return new ApiErrorResponse(errors);
+        ApiErrorResponse response = new ApiErrorResponse(errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }
