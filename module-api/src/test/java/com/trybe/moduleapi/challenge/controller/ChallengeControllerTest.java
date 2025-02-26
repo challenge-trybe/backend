@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.http.MediaType;
@@ -27,8 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -569,6 +569,7 @@ class ChallengeControllerTest {
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/" + challengeId));
 
         result.andExpect(status().isOk());
+        verify(challengeService, atLeastOnce()).delete(challengeId, TMP_USER_ID);
 
         result.andDo(document(docsPath + "delete",
                 preprocessRequest(prettyPrint()),
