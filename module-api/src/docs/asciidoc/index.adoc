@@ -2,4 +2,148 @@
 :date: 2025-XX-XX
 
 
-include::{snippets}/회원가입 API/http-request.adoc[]
+== 회원 API
+
+=== 회원가입
+TRYBE 서비스 이용을 위한 회원가입
+
+==== 정상 요청
+include::{snippets}/user-controller-test/save/http-request.adoc[]
+include::{snippets}/user-controller-test/save/request-fields.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/save/http-response.adoc[]
+include::{snippets}/user-controller-test/save/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/save/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/save/invalid/bad-request/http-response.adoc[]
+include::{snippets}/user-controller-test/save/invalid/bad-request/response-fields.adoc[]
+
+=== 회원조회
+==== 정상 요청
+include::{snippets}/user-controller-test/findById/http-request.adoc[]
+include::{snippets}/user-controller-test/findById/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/findById/http-response.adoc[]
+include::{snippets}/user-controller-test/findById/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/findById/invalid/not-found/http-request.adoc[]
+include::{snippets}/user-controller-test/findById/invalid/not-found/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/findById/invalid/not-found/http-response.adoc[]
+include::{snippets}/user-controller-test/findById/invalid/not-found/response-fields.adoc[]
+
+=== 회원정보 수정
+==== 정상 요청
+include::{snippets}/user-controller-test/user-update-profile/http-request.adoc[]
+include::{snippets}/user-controller-test/user-update-profile/request-fields.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-update-profile/http-response.adoc[]
+include::{snippets}/user-controller-test/user-update-profile/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/user-update-profile/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-update-profile/invalid/bad-request/http-response.adoc[]
+include::{snippets}/user-controller-test/user-update-profile/invalid/bad-request/response-fields.adoc[]
+
+=== 비밀번호 수정
+==== 정상 요청
+include::{snippets}/user-controller-test/user-update-password/http-request.adoc[]
+include::{snippets}/user-controller-test/user-update-password/request-fields.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-update-password/http-response.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/http-response.adoc[]
+include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/response-fields.adoc[]
+
+=== 회원탈퇴
+==== 정상 요청
+include::{snippets}/user-controller-test/user-delete/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-delete/http-response.adoc[]
+
+=== 아이디 중복 검증
+==== 정상 요청
+include::{snippets}/user-controller-test/user-validate-userId/http-request.adoc[]
+include::{snippets}/user-controller-test/user-validate-userId/query-parameters.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-validate-userId/http-response.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/user-validate-userId/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-validate-userId/invalid/bad-request/http-response.adoc[]
+include::{snippets}/user-controller-test/user-validate-userId/invalid/bad-request/response-fields.adoc[]
+
+=== 이메일 중복 검증
+==== 정상 요청
+include::{snippets}/user-controller-test/user-validate-email/http-request.adoc[]
+include::{snippets}/user-controller-test/user-validate-email/query-parameters.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-validate-email/http-response.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/user-validate-email/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/user-validate-email/invalid/bad-request/http-response.adoc[]
+include::{snippets}/user-controller-test/user-validate-email/invalid/bad-request/response-fields.adoc[]
+
+---
+
+== 인증 API
+
+=== 로그인
+TRYBE 서비스 이용을 위한 로그인 및 인증
+
+==== 정상 요청
+include::{snippets}/auth-controller-test/login/http-request.adoc[]
+include::{snippets}/auth-controller-test/login/request-fields.adoc[]
+
+- 응답
+include::{snippets}/auth-controller-test/login/http-response.adoc[]
+include::{snippets}/auth-controller-test/login/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/auth-controller-test/login/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/auth-controller-test/login/invalid/bad-request/http-response.adoc[]
+include::{snippets}/auth-controller-test/login/invalid/bad-request/response-fields.adoc[]
+
+=== 토큰 재발급
+
+==== 정상 요청
+include::{snippets}/auth-controller-test/token-reissue/http-request.adoc[]
+include::{snippets}/auth-controller-test/token-reissue/request-fields.adoc[]
+
+- 응답
+include::{snippets}/auth-controller-test/token-reissue/http-response.adoc[]
+
+---
+
