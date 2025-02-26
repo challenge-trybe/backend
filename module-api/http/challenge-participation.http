@@ -1,0 +1,19 @@
+### 1. 챌린지 참여 요청 생성
+POST http://localhost:8080/api/v1/challenges/participations/1
+Authorization: {{accessToken}}
+
+### 2. 내가 참여한 챌린지 목록 조회
+GET http://localhost:8080/api/v1/challenges/participations/my?status=PENDING&page=0&size=10
+Authorization: {{accessToken}}
+
+### 3. 챌린지 참여 요청 목록 조회
+GET http://localhost:8080/api/v1/challenges/participations/1?status=PENDING&page=0&size=10
+Authorization: {{accessToken}}
+
+### 4. 챌린지 참여 요청 처리
+PUT http://localhost:8080/api/v1/challenges/participations/confirm/1?status=ACCEPTED
+Authorization: {{accessToken}}
+
+### 5. 챌린지 나가기
+PUT http://localhost:8080/api/v1/challenges/participations/leave/1
+Authorization: {{accessToken}}
