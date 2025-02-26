@@ -56,11 +56,12 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updatePassword(CustomUserDetails userDetails, UserRequest.UpdatePassword updatePassword){
+    public void updatePassword(CustomUserDetails userDetails, UserRequest.UpdatePassword updatePassword){
         User user = userDetails.getUser();
         checkUpdatePassword(user, updatePassword);
-        user.updatePassword(updatePassword.newPassword());
-        return UserResponse.from(user);
+
+        String bcryptPassword = passwordEncoder.encode(updatePassword.newPassword());
+        user.updatePassword(bcryptPassword);
     }
 
     @Transactional
