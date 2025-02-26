@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.user.service;
 
+import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.auth.jwt.JwtUtils;
 import com.trybe.moduleapi.token.request.RefreshTokenRequest;
 import com.trybe.moduleapi.token.response.TokenResponse;
@@ -35,7 +36,8 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void logout(User user){
+    public void logout(CustomUserDetails customUserDetails){
+        User user = customUserDetails.getUser();
         jwtUtils.deleteRefreshToken(user.getUserId());
     }
 
