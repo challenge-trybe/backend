@@ -46,7 +46,7 @@ class UserServiceTest {
         /* given */
         UserRequest.Create request = UserFixtures.회원가입_요청;
         User user = request.toEntity();
-        Mockito.when(userRepository.findByUserId(request.userId())).thenReturn(Optional.empty());
+        Mockito.when(userRepository.existsByUserId(request.userId())).thenReturn(false);
         Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
         Mockito.when(passwordEncoder.encode(UserFixtures.회원_비밀번호)).thenReturn(UserFixtures.회원_암호화된_비밀번호);
 
@@ -66,7 +66,7 @@ class UserServiceTest {
     void 회원가입_중복_아이디_가입_시_에러를_반환한다() {
         /* given */
         UserRequest.Create request = UserFixtures.회원가입_요청;
-        Mockito.when(userRepository.findByUserId(request.userId())).thenReturn(Optional.of(UserFixtures.회원));
+        Mockito.when(userRepository.existsByUserId(any(String.class))).thenReturn(true);
 
         /* when, then */
         assertThrows(DuplicatedUserException.class, () -> {
@@ -79,7 +79,7 @@ class UserServiceTest {
     void 회원가입_중복_이메일_가입_시_에러를_반환한다() {
         /* given */
         UserRequest.Create request = UserFixtures.회원가입_요청;
-        Mockito.when(userRepository.findByUserId(request.userId())).thenReturn(Optional.of(UserFixtures.회원));
+        Mockito.when(userRepository.existsByUserId(any(String.class))).thenReturn(true);
 
         /* when, then */
         assertThrows(DuplicatedUserException.class, () -> {
@@ -117,8 +117,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원가입 수정 성공하면 수정값을 반환한다")
-    void 회원가입_수정_성공하면_수정값을_반환한다() {
+    @DisplayName("회원정보 수정 시 성공하면 수정된 회원 정보를 반환한다")
+    void 회원정보_수정_시_성공하면_수정된_회원_정보를_반환한다() {
         /* given */
         UserRequest.Update request = UserFixtures.회원정보_수정_요청;
         Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
@@ -135,6 +135,24 @@ class UserServiceTest {
         assertEquals(response.email(), UserFixtures.수정된_회원_이메일);
         assertEquals(response.gender(), UserFixtures.수정된_회원_성별);
         assertEquals(response.birth(), UserFixtures.수정된_회원_생년월일);
+    }
+
+    @Test
+    @DisplayName("회원정보 수정 시 이메일이 중복이면 에러를 반환한다")
+    void 회원정보_수정_시_이메일이_중복이면_에러를_반환한다() {
+        /* given */
+        UserRequest.Update request = UserFixtures.회원정보_수정_요청;
+        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
+        Mockito.when(userRepository.existsByEmail(any(String.class))).thenReturn(true);
+        UserFixtures.회원.updateProfile(UserFixtures.수정된_회원_닉네임,
+                                      UserFixtures.회원_이메일,
+                                      UserFixtures.수정된_회원_성별,
+                                      UserFixtures.수정된_회원_생년월일);
+
+        /* when , then */
+        assertThrows(DuplicatedUserException.class, () -> {
+            userService.updateProfile(customUserDetails, request);
+        }, "이미 존재하는 이메일입니다.");
     }
     
     @Test
@@ -154,8 +172,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("현재 비밀번호와 새로운 비밀번호가 동일하면 에러를 반환한다")
-    void 현재_비밀번호와_새로운_비밀번호가_동일하면_에러를_반환한다() {
+    @DisplayName("비밀번호 변경 시 현재 비밀번호와 새로운 비밀번호가 동일하면 에러를 반환한다")
+    void 비밀번호_변경_시_현재_비밀번호와_새로운_비밀번호가_동일하면_에러를_반환한다() {
         /* given */
         Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
 
@@ -167,8 +185,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("현재 비밀번호를 잘못 입력하면 에러를 반환한다")
-    void 현재_비밀번호를_잘못_입력하면_에러를_반환한다() {
+    @DisplayName("비밀번호 변경 시 현재 비밀번호를 잘못 입력하면 에러를 반환한다")
+    void 비밀번호_변경_시_현재_비밀번호를_잘못_입력하면_에러를_반환한다() {
         /* given */
         Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
 
@@ -179,8 +197,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("새 비빌번호와 확인 비밀번호가 일치하지 않으면 에러를 반환한다")
-    void 새_비빌번호와_확인_비밀번호가_일치하지_않으면_에러를_반환한다() {
+    @DisplayName("비밀번호 변경 시 새 비빌번호와 확인 비밀번호가 일치하지 않으면 에러를 반환한다")
+    void 비밀번호_변경_시_새_비빌번호와_확인_비밀번호가_일치하지_않으면_에러를_반환한다() {
         /* given */
         Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
 
@@ -192,8 +210,8 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원탈퇴 성공시 200을 반환한다.")
-    void 회원탈퇴_성공_시_200을_반환한다() {
+    @DisplayName("회원탈퇴 성공시 DB에서 유저를 삭제한다.")
+    void 회원탈퇴_성공_시_DB에서_유저를_삭제한다() {
         /* given */
         Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
 
