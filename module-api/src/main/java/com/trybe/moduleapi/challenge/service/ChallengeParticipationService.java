@@ -90,7 +90,7 @@ public class ChallengeParticipationService {
             throw new InvalidChallengeRoleActionException("리더는 챌린지를 탈퇴할 수 없습니다.");
         }
 
-        participation.updateStatus(ParticipationStatus.WITHDRAWN);
+        participation.updateStatus(ParticipationStatus.DISABLED);
     }
 
     private Challenge getChallenge(Long id) {
