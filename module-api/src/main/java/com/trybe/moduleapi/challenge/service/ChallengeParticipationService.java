@@ -49,12 +49,14 @@ public class ChallengeParticipationService {
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
 
+    @Transactional(readOnly = true)
     public Page<ChallengeParticipationResponse.Detail> getMyParticipations(User user, ParticipationStatus status, Pageable pageable) {
         Page<ChallengeParticipation> participations = challengeParticipationRepository.findAllByUserIdAndStatusOrderByCreatedAtDesc(user.getId(), status, pageable);
 
         return participations.map(ChallengeParticipationResponse.Detail::from);
     }
 
+    @Transactional(readOnly = true)
     public Page<ChallengeParticipationResponse.Summary> getParticipants(User user, Long challengeId, ParticipationStatus status, Pageable pageable) {
         Challenge challenge = getChallenge(challengeId);
         checkLeader(user.getId(), challenge.getId());
