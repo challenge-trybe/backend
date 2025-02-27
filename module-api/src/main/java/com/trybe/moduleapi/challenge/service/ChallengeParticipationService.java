@@ -29,25 +29,18 @@ public class ChallengeParticipationService {
 
     @Transactional
     public ChallengeParticipationResponse.Detail join(User user, Long challengeId) {
-        if (challengeParticipationRepository.existsByUserIdAndChallengeId(user.getId(), challengeId)) {
-            throw new DuplicatedChallengeParticipationException();
-        }
+        validateDuplicatedParticipation(user.getId(), challengeId);
 
         Challenge challenge = getChallenge(challengeId);
 
-        if (MAX_PENDING_PARTICIPATIONS <= challengeParticipationRepository.countByChallengeIdAndStatus(challengeId, ParticipationStatus.PENDING)) {
-            throw new ChallengeParticipationFullException("참여 신청이 꽉 찼습니다.");
-        }
-
-        if (challenge.getCapacity() <= challengeParticipationRepository.countByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED)) {
-            throw new ChallengeFullException();
-        }
+        validateCapacity(challenge);
 
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
 
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
+
 
     @Transactional(readOnly = true)
     public Page<ChallengeParticipationResponse.Detail> getMyParticipations(User user, ParticipationStatus status, Pageable pageable) {
@@ -59,7 +52,9 @@ public class ChallengeParticipationService {
     @Transactional(readOnly = true)
     public Page<ChallengeParticipationResponse.Summary> getParticipants(User user, Long challengeId, ParticipationStatus status, Pageable pageable) {
         Challenge challenge = getChallenge(challengeId);
-        checkLeader(user.getId(), challenge.getId());
+
+        ChallengeParticipation participation = getParticipation(user.getId(), challengeId);
+        checkRole(participation, ChallengeRole.LEADER, "리더만 참여자 목록을 조회할 수 있습니다.");
 
         Page<ChallengeParticipation> participations = challengeParticipationRepository.findAllByChallengeIdAndStatusOrderByCreatedAtAsc(challengeId, status, pageable);
         return participations.map(ChallengeParticipationResponse.Summary::from);
@@ -69,59 +64,68 @@ public class ChallengeParticipationService {
     public ChallengeParticipationResponse.Detail confirm(User user, Long participationId, ParticipationStatus status) {
         ChallengeParticipation participation = getParticipation(participationId);
 
-        checkLeader(user.getId(), participation.getChallenge().getId());
+        checkRole(participation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
+        validateStatus(participation, status);
 
-        if (participation.getStatus() != ParticipationStatus.PENDING) {
-            throw new InvalidParticipationStatusException("참여 상태가 대기 중인 참여자만 처리할 수 있습니다.");
-        }
-
-        if (status == ParticipationStatus.ACCEPTED || status == ParticipationStatus.REJECTED) {
-            participation.updateStatus(status);
-        } else {
-            throw new InvalidParticipationStatusException("참여 수락 또는 거절만 가능합니다.");
-        }
+        participation.updateStatus(status);
 
         return ChallengeParticipationResponse.Detail.from(participation);
     }
+
 
     @Transactional
     public void leave(User user, Long challengeId) {
         ChallengeParticipation participation = getParticipation(user.getId(), challengeId);
 
-        if (participation.getRole() == ChallengeRole.LEADER) {
-            throw new InvalidChallengeRoleActionException("리더는 챌린지를 탈퇴할 수 없습니다.");
-        }
+        checkRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
 
         participation.updateStatus(ParticipationStatus.DISABLED);
     }
 
     private Challenge getChallenge(Long id) {
-        Challenge challenge = challengeRepository.findById(id)
+        return challengeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundChallengeException());
-
-        return challenge;
     }
 
     private ChallengeParticipation getParticipation(Long id) {
-        ChallengeParticipation participation = challengeParticipationRepository.findById(id)
+        return challengeParticipationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundChallengeParticipationException());
-
-        return participation;
     }
 
     private ChallengeParticipation getParticipation(Long userId, Long challengeId) {
-        ChallengeParticipation participation = challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
+        return challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
                 .orElseThrow(() -> new NotFoundChallengeParticipationException());
-
-        return participation;
     }
 
-    private void checkLeader(Long userId, Long challengeId) {
-        ChallengeParticipation participation = challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
-                .orElseThrow(() -> new NotFoundChallengeParticipationException());
+    private void checkRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
+        if (participation.getRole() != requiredRole) {
+            throw new InvalidChallengeRoleActionException(message);
+        }
+    }
 
-        if (participation.getRole() != ChallengeRole.LEADER) {
-            throw new InvalidChallengeRoleActionException("챌린지 리더의 권한입니다.");
+    private void validateDuplicatedParticipation(Long userId, Long challengeId) {
+        if (challengeParticipationRepository.existsByUserIdAndChallengeId(userId, challengeId)) {
+            throw new DuplicatedChallengeParticipationException();
+        }
+    }
+
+    private void validateCapacity(Challenge challenge) {
+        if (MAX_PENDING_PARTICIPATIONS <= challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.PENDING)) {
+            throw new ChallengeParticipationFullException("참여 신청이 꽉 찼습니다.");
+        }
+
+        if (challenge.getCapacity() <= challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED)) {
+            throw new ChallengeFullException();
+        }
+    }
+
+    private void validateStatus(ChallengeParticipation participation, ParticipationStatus status) {
+        if (participation.getStatus() != ParticipationStatus.PENDING) {
+            throw new InvalidParticipationStatusException("참여 상태가 대기 중인 참여자만 처리할 수 있습니다.");
+        }
+
+        if (status != ParticipationStatus.ACCEPTED && status != ParticipationStatus.REJECTED) {
+            throw new InvalidParticipationStatusException("참여 수락 또는 거절만 가능합니다.");
         }
     }
 }
