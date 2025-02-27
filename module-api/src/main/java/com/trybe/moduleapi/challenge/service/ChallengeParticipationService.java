@@ -41,7 +41,6 @@ public class ChallengeParticipationService {
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
 
-
     @Transactional(readOnly = true)
     public Page<ChallengeParticipationResponse.Detail> getMyParticipations(User user, ParticipationStatus status, Pageable pageable) {
         Page<ChallengeParticipation> participations = challengeParticipationRepository.findAllByUserIdAndStatusOrderByCreatedAtDesc(user.getId(), status, pageable);
@@ -71,7 +70,6 @@ public class ChallengeParticipationService {
 
         return ChallengeParticipationResponse.Detail.from(participation);
     }
-
 
     @Transactional
     public void leave(User user, Long challengeId) {
