@@ -51,6 +51,8 @@ class UserControllerTest {
     private String docsPath = "user-controller-test/";
     private final String invalidBadRequestPath = "invalid/bad-request/";
     private final String invalidNotFoundPath = "invalid/not-found/";
+    private final String invalidDuplicatedUserIdPath = "invalid/duplicated-userId/";
+    private final String invalidDuplicatedEmailPath = "invalid/duplicated-email/";
 
     @Autowired
     private MockMvc mockMvc;
@@ -66,8 +68,6 @@ class UserControllerTest {
 
     @MockitoBean
     private CustomAccessDeniedHandler customAccessDeniedHandler;
-
-
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -154,6 +154,72 @@ class UserControllerTest {
                                        fieldWithPath("data.userId").type(JsonFieldType.STRING).description("회원가입 아이디 검증 에러 메시지"),
                                        fieldWithPath("data.birth").type(JsonFieldType.STRING).description("회원가입 생년월일 검증 에러 메시지"),
                                        fieldWithPath("data.email").type(JsonFieldType.STRING).description("회원가입 이메일 검증 에러 메시지")
+                               )
+               ));
+    }
+
+    @Test
+    @DisplayName("중복 아이디로 회원가입 요청 시 409을 반환한다.")
+    void 중복_아이디로_회원가입_요청_시_409을_반환한다() throws Exception {
+        UserRequest.Create 중복된_아이디_회원가입_요청 = UserFixtures.회원가입_요청;
+        doThrow(new DuplicatedUserException("이미 존재하는 아이디입니다.")).when(userService).save(중복된_아이디_회원가입_요청);
+        mockMvc.perform(post("/api/v1/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(중복된_아이디_회원가입_요청)))
+               .andExpect(status().isConflict())
+               .andExpectAll(
+                       jsonPath("$.status").value(409),
+                       jsonPath("$.message").exists(),
+                       jsonPath("$.data.password").doesNotExist()
+               )
+               .andDo(document(docsPath + "save/" + invalidDuplicatedUserIdPath,
+                               preprocessRequest(prettyPrint()),
+                               preprocessResponse(prettyPrint()),
+                               requestFields(
+                                       fieldWithPath("userId").description("아이디"),
+                                       fieldWithPath("email").description("이메일"),
+                                       fieldWithPath("nickname").description("닉네임"),
+                                       fieldWithPath("password").description("비밀번호"),
+                                       fieldWithPath("gender").description("성별"),
+                                       fieldWithPath("birth").description("생년월일")
+                               ),
+                               responseFields(
+                                       fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
+                                       fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                                       fieldWithPath("data").type(JsonFieldType.OBJECT).description("추가 메시지").optional()
+                               )
+               ));
+    }
+
+    @Test
+    @DisplayName("중복 이메일로 회원가입 요청 시 409을 반환한다.")
+    void 중복_이메일로_회원가입_요청_시_409을_반환한다() throws Exception {
+        UserRequest.Create 중복된_이메일_회원가입_요청 = UserFixtures.회원가입_요청;
+        doThrow(new DuplicatedUserException("이미 존재하는 이메일입니다.")).when(userService).save(중복된_이메일_회원가입_요청);
+        mockMvc.perform(post("/api/v1/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(중복된_이메일_회원가입_요청)))
+               .andExpect(status().isConflict())
+               .andExpectAll(
+                       jsonPath("$.status").value(409),
+                       jsonPath("$.message").exists(),
+                       jsonPath("$.data.password").doesNotExist()
+               )
+               .andDo(document(docsPath + "save/" + invalidDuplicatedEmailPath,
+                               preprocessRequest(prettyPrint()),
+                               preprocessResponse(prettyPrint()),
+                               requestFields(
+                                       fieldWithPath("userId").description("아이디"),
+                                       fieldWithPath("email").description("이메일"),
+                                       fieldWithPath("nickname").description("닉네임"),
+                                       fieldWithPath("password").description("비밀번호"),
+                                       fieldWithPath("gender").description("성별"),
+                                       fieldWithPath("birth").description("생년월일")
+                               ),
+                               responseFields(
+                                       fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
+                                       fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                                       fieldWithPath("data").type(JsonFieldType.OBJECT).description("추가 메시지").optional()
                                )
                ));
     }
@@ -306,6 +372,48 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("회원정보 수정 시 이미 존재하는 이메일로 회원정보 요청하면 409을 반환한다.")
+    void 회원정보_수정_시_이미_존재하는_이메일로_회원정보_요청하면_409을_반환한다() throws Exception {
+        UserRequest.Update 잘못된_회원가입_요청 = UserFixtures.잘못된_회원정보_수정_요청;
+        CustomUserDetails principalDetails = new CustomUserDetails(UserFixtures.회원);
+
+        mockMvc.perform(put("/api/v1/users")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(잘못된_회원가입_요청))
+                                .header("Authorization", "Bearer "+AuthenticationFixtures.accessToken)
+                                .with(SecurityMockMvcRequestPostProcessors.user(principalDetails)))
+               .andExpect(status().isBadRequest())
+               .andExpectAll(
+                       jsonPath("$.status").value(400),
+                       jsonPath("$.message").doesNotExist(),
+                       jsonPath("$.data.nickname").exists(),
+                       jsonPath("$.data.birth").exists(),
+                       jsonPath("$.data.email").exists(),
+                       jsonPath("$.data.gender").exists()
+               )
+               .andDo(document(docsPath + "user-update-profile/" + invalidBadRequestPath,
+                               preprocessRequest(prettyPrint()),
+                               preprocessResponse(prettyPrint()),
+                               requestFields(
+                                       fieldWithPath("email").description("이메일"),
+                                       fieldWithPath("nickname").description("닉네임"),
+                                       fieldWithPath("gender").description("성별"),
+                                       fieldWithPath("birth").description("생년월일 (형식: YYYY-MM-DD)")
+                               ),
+                               responseFields(
+                                       fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
+                                       fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지").optional(),
+                                       fieldWithPath("data").type(JsonFieldType.OBJECT).description("회원정보 유효성 검증 실패 에러 메시지"),
+                                       fieldWithPath("data.nickname").type(JsonFieldType.STRING).description("회원정보 닉네임 검증 에러 메시지"),
+                                       fieldWithPath("data.gender").type(JsonFieldType.STRING).description("회원정보 성별 검증 에러 메시지"),
+                                       fieldWithPath("data.email").type(JsonFieldType.STRING).description("회원정보 이메일 검증 에러 메시지"),
+                                       fieldWithPath("data.birth").type(JsonFieldType.STRING).description("회원정보 생년월일 검증 에러 메시지")
+                               )
+               ));
+    }
+
+
+    @Test
     @DisplayName("정상적인 회원 비밀번호 수정 시 200을 반환한다.")
     void 정상적인_회원_비밀번호_수정_시_200을_반환한다() throws Exception {
         UserRequest.UpdatePassword 비밀번호_변경_요청 = UserFixtures.비밀번호_변경_요청;
@@ -384,7 +492,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("존재하지 않는 회원 아이디 중복 검증 시 200을 반환한다")
-    void 정상적인_회원_아이디_중복_검증_시_200을_반환한다() throws Exception {
+    void 존재하지_않는_회원_아이디_중복_검증_시_200을_반환한다() throws Exception {
         doNothing().when(userService).checkDuplicatedUserId(any(String.class));
 
         mockMvc.perform(get("/api/v1/users/check-user-id")
