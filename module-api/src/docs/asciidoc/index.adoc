@@ -1,7 +1,6 @@
 = TRYBE API 문서
 :date: 2025-XX-XX
 
-
 == 회원 API
 
 === 회원가입
@@ -23,7 +22,25 @@ include::{snippets}/user-controller-test/save/invalid/bad-request/http-request.a
 include::{snippets}/user-controller-test/save/invalid/bad-request/http-response.adoc[]
 include::{snippets}/user-controller-test/save/invalid/bad-request/response-fields.adoc[]
 
+==== 이미 존재하는 아이디로 회원가입 요청
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/save/invalid/duplicated-userId/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/save/invalid/duplicated-userId/http-response.adoc[]
+include::{snippets}/user-controller-test/save/invalid/duplicated-userId/response-fields.adoc[]
+
+==== 이미 존재하는 이메로 회원가입 요청
+요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+include::{snippets}/user-controller-test/save/invalid/duplicated-email/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/save/invalid/duplicated-email/http-response.adoc[]
+include::{snippets}/user-controller-test/save/invalid/duplicated-email/response-fields.adoc[]
+
 === 회원조회
+회원을 조회하는 기능
+
 ==== 정상 요청
 include::{snippets}/user-controller-test/findById/http-request.adoc[]
 include::{snippets}/user-controller-test/findById/path-parameters.adoc[]
@@ -33,7 +50,8 @@ include::{snippets}/user-controller-test/findById/http-response.adoc[]
 include::{snippets}/user-controller-test/findById/response-fields.adoc[]
 
 ==== 비정상 요청 (잘못된 요청)
-요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+존재하지 않는 회원 ID로 조회했을 시
+
 include::{snippets}/user-controller-test/findById/invalid/not-found/http-request.adoc[]
 include::{snippets}/user-controller-test/findById/invalid/not-found/path-parameters.adoc[]
 
@@ -42,6 +60,8 @@ include::{snippets}/user-controller-test/findById/invalid/not-found/http-respons
 include::{snippets}/user-controller-test/findById/invalid/not-found/response-fields.adoc[]
 
 === 회원정보 수정
+회원 정보 수정
+
 ==== 정상 요청
 include::{snippets}/user-controller-test/user-update-profile/http-request.adoc[]
 include::{snippets}/user-controller-test/user-update-profile/request-fields.adoc[]
@@ -59,6 +79,8 @@ include::{snippets}/user-controller-test/user-update-profile/invalid/bad-request
 include::{snippets}/user-controller-test/user-update-profile/invalid/bad-request/response-fields.adoc[]
 
 === 비밀번호 수정
+비밀번호 수정
+
 ==== 정상 요청
 include::{snippets}/user-controller-test/user-update-password/http-request.adoc[]
 include::{snippets}/user-controller-test/user-update-password/request-fields.adoc[]
@@ -75,6 +97,8 @@ include::{snippets}/user-controller-test/user-update-password/invalid/bad-reques
 include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/response-fields.adoc[]
 
 === 회원탈퇴
+회원탈퇴 기능
+
 ==== 정상 요청
 include::{snippets}/user-controller-test/user-delete/http-request.adoc[]
 
@@ -82,6 +106,8 @@ include::{snippets}/user-controller-test/user-delete/http-request.adoc[]
 include::{snippets}/user-controller-test/user-delete/http-response.adoc[]
 
 === 아이디 중복 검증
+회원가입 시 아이디 중복 검증
+
 ==== 정상 요청
 include::{snippets}/user-controller-test/user-validate-userId/http-request.adoc[]
 include::{snippets}/user-controller-test/user-validate-userId/query-parameters.adoc[]
@@ -89,8 +115,8 @@ include::{snippets}/user-controller-test/user-validate-userId/query-parameters.a
 - 응답
 include::{snippets}/user-controller-test/user-validate-userId/http-response.adoc[]
 
-==== 비정상 요청 (잘못된 요청)
-요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+==== 처리할 수 없는 요청
+이미 사용중이 아이디로 회원 가입 요청 시
 include::{snippets}/user-controller-test/user-validate-userId/invalid/bad-request/http-request.adoc[]
 
 - 응답
@@ -98,6 +124,8 @@ include::{snippets}/user-controller-test/user-validate-userId/invalid/bad-reques
 include::{snippets}/user-controller-test/user-validate-userId/invalid/bad-request/response-fields.adoc[]
 
 === 이메일 중복 검증
+회원가입 시 이메일 중복 검증
+
 ==== 정상 요청
 include::{snippets}/user-controller-test/user-validate-email/http-request.adoc[]
 include::{snippets}/user-controller-test/user-validate-email/query-parameters.adoc[]
@@ -105,8 +133,8 @@ include::{snippets}/user-controller-test/user-validate-email/query-parameters.ad
 - 응답
 include::{snippets}/user-controller-test/user-validate-email/http-response.adoc[]
 
-==== 비정상 요청 (잘못된 요청)
-요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
+==== 처리할 수 없는 요청
+이미 사용중이 이메일로 회원 가입 요청 시
 include::{snippets}/user-controller-test/user-validate-email/invalid/bad-request/http-request.adoc[]
 
 - 응답
@@ -136,7 +164,18 @@ include::{snippets}/auth-controller-test/login/invalid/bad-request/http-request.
 include::{snippets}/auth-controller-test/login/invalid/bad-request/http-response.adoc[]
 include::{snippets}/auth-controller-test/login/invalid/bad-request/response-fields.adoc[]
 
+=== 로그아웃
+로그아웃
+
+==== 정상 요청
+include::{snippets}/auth-controller-test/logout/http-request.adoc[]
+
+- 응답
+include::{snippets}/auth-controller-test/logout/http-response.adoc[]
+
+
 === 토큰 재발급
+accessToken 만료 시 refreshToken을 통한 토큰 재발급
 
 ==== 정상 요청
 include::{snippets}/auth-controller-test/token-reissue/http-request.adoc[]
