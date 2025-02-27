@@ -5,6 +5,7 @@ import com.trybe.moduleapi.auth.jwt.exception.CustomAuthenticationEntryPoint;
 import com.trybe.moduleapi.auth.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -36,7 +37,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/docs/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/v1/users")).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/login")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/token/reissue")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/users/check-user-id")).permitAll()
