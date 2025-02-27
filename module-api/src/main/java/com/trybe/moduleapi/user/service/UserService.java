@@ -51,6 +51,9 @@ public class UserService {
     @Transactional
     public UserResponse updateProfile(CustomUserDetails userDetails, UserRequest.Update userRequest){
         User user = userDetails.getUser();
+        if (user.getEmail() != userRequest.email()) {
+            checkDuplicatedEmail(userRequest.email());
+        }
         user.updateProfile(userRequest.nickname(), userRequest.email(), userRequest.gender(), userRequest.birth());
         return UserResponse.from(user);
     }
@@ -66,16 +69,18 @@ public class UserService {
 
     @Transactional
     public void checkDuplicatedUserId(String userId) {
-        userRepository.findByUserId(userId).ifPresent((user) -> {
+        boolean exists = userRepository.existsByUserId(userId);
+        if (exists) {
             throw new DuplicatedUserException("이미 존재하는 아이디입니다.");
-        });
+        }
     }
 
     @Transactional
     public void checkDuplicatedEmail(String email) {
-        userRepository.findByEmail(email).ifPresent((user) -> {
+        boolean exists = userRepository.existsByEmail(email);
+        if (exists) {
             throw new DuplicatedUserException("이미 존재하는 이메일입니다.");
-        });
+        }
     }
 
     private void checkUpdatePassword(User user, UserRequest.UpdatePassword updatePassword) {
