@@ -26,7 +26,7 @@ public class AuthenticationController {
 
     @PostMapping("/logout")
     public void logout(@AuthenticationPrincipal CustomUserDetails userDetails){
-        authenticationService.logout(userDetails.getUser());
+        authenticationService.logout(userDetails);
     }
 
     @PostMapping("/token/reissue")

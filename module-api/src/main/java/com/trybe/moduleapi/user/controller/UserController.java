@@ -28,21 +28,21 @@ public class UserController {
         return userService.save(userRequest);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping
     public UserResponse update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserRequest.Update userRequest) {
         return userService.updateProfile(userDetails, userRequest);
     }
 
-    @PutMapping("/{id}/change-password")
-    public UserResponse updatePassword(
+    @PutMapping("/change-password")
+    public void updatePassword(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserRequest.UpdatePassword userRequest) {
-        return userService.updatePassword(userDetails, userRequest);
+        userService.updatePassword(userDetails, userRequest);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping
     public void delete(@AuthenticationPrincipal CustomUserDetails userDetails) {
         userService.delete(userDetails);
     }

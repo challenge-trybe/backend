@@ -33,7 +33,7 @@ GET http://localhost:8080/api/v1/users/1000
 Authorization: {{accessToken}}
 
 ### 3. 회원정보 수정 API
-PUT http://localhost:8080/api/v1/users/1
+PUT http://localhost:8080/api/v1/users
 Content-Type: application/json
 Authorization: {{accessToken}}
 
@@ -45,19 +45,19 @@ Authorization: {{accessToken}}
 }
 
 ### 3.1 회원정보 수정 API (유효성 검증 실패)
-PUT http://localhost:8080/api/v1/users/1
+PUT http://localhost:8080/api/v1/users
 Content-Type: application/json
 Authorization: {{accessToken}}
 
 {
   "email": "test^google.com",
   "nickname": "2",
-  "gender": "MALE",
-  "birth": "2001-05-13"
+  "gender": null,
+  "birth": null
 }
 
 ### 4. 비밀번호 수정 API
-PUT http://localhost:8080/api/v1/users/1/change-password
+PUT http://localhost:8080/api/v1/users/change-password
 Content-Type: application/json
 Authorization: {{accessToken}}
 
@@ -68,7 +68,7 @@ Authorization: {{accessToken}}
 }
 
 ### 4-1 비밀번호 수정 API (유효성 검증 실패)
-PUT http://localhost:8080/api/v1/users/1/change-password
+PUT http://localhost:8080/api/v1/users/change-password
 Content-Type: application/json
 Authorization: {{accessToken}}
 
