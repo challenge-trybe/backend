@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.challenge.dto;
 
+import com.trybe.moduleapi.annotation.NotEmptyList;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
@@ -39,6 +40,9 @@ public class ChallengeRequest {
     private static final String PROOF_COUNT_MIN_MESSAGE = "인증 횟수는 최소 1회 이상이어야 합니다.";
     private static final int PROOF_COUNT_MAX = 30;
     private static final String PROOF_COUNT_MAX_MESSAGE = "인증 횟수는 최대 30회까지 가능합니다.";
+
+    private static final String CATEGORIES_NOT_EMPTY_MESSAGE = "챌린지 카테고리를 선택해주세요.";
+    private static final String STATUSES_NOT_EMPTY_MESSAGE = "챌린지 상태를 선택해주세요.";
 
     public record Create(
             @NotBlank(message = TITLE_NOT_BLANK_MESSAGE)
@@ -98,7 +102,10 @@ public class ChallengeRequest {
 
     public record Read(
             // TODO: Filter
+            @NotEmptyList(message = STATUSES_NOT_EMPTY_MESSAGE)
             List<ChallengeStatus> statuses,
+
+            @NotEmptyList(message = CATEGORIES_NOT_EMPTY_MESSAGE)
             List<ChallengeCategory> categories
     ) { }
 
