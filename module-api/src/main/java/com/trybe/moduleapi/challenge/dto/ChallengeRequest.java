@@ -152,7 +152,7 @@ public class ChallengeRequest {
 
         @AssertTrue(message = DURATION_LIMIT_MESSAGE)
         private boolean isDurationLimit() {
-            long durationInDays = ChronoUnit.DAYS.between(startDate, endDate);
+            long durationInDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
             return durationInDays >= 7 && durationInDays <= 56;
         }
     }
