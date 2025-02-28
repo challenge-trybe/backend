@@ -2,6 +2,7 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.modulecore.challenge.entity.Challenge;
@@ -112,7 +113,7 @@ public class ChallengeService {
 
     private void validateChallengeStatus(Challenge challenge, boolean shouldBe, ChallengeStatus status, String message) {
         if ((shouldBe && challenge.getStatus() != status) || (!shouldBe && challenge.getStatus() == status)) {
-            throw new InvalidChallengeRoleActionException(message);
+            throw new InvalidChallengeStatusException(message);
         }
     }
 }
