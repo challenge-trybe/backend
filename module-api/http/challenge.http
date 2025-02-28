@@ -1,5 +1,6 @@
 ### 1. 챌린지 생성
 POST http://localhost:8080/api/v1/challenges
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -15,6 +16,7 @@ Content-Type: application/json
 
 ### 1-1. 챌린지 생성 (유효성 검증 실패)
 POST http://localhost:8080/api/v1/challenges
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -40,6 +42,7 @@ Content-Type: application/json
 
 ### 4. 챌린지 내용 수정
 PUT http://localhost:8080/api/v1/challenges/1/content
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -54,6 +57,7 @@ Content-Type: application/json
 
 ### 4-1. 챌린지 내용 수정 (유효성 검증 실패)
 PUT http://localhost:8080/api/v1/challenges/1/content
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -67,6 +71,7 @@ Content-Type: application/json
 
 ### 5. 챌린지 인증 내용 수정
 PUT http://localhost:8080/api/v1/challenges/1/proof
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -76,6 +81,7 @@ Content-Type: application/json
 
 ### 5-1. 챌린지 인증 내용 수정 (유효성 검증 실패)
 PUT http://localhost:8080/api/v1/challenges/1/proof
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -85,3 +91,4 @@ Content-Type: application/json
 
 ### 6. 챌린지 삭제
 DELETE http://localhost:8080/api/v1/challenges/1
+Authorization: {{accessToken}}
