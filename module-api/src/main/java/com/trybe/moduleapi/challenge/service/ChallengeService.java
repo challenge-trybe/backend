@@ -40,6 +40,7 @@ public class ChallengeService {
         return ChallengeResponse.Detail.from(savedChallenge);
     }
 
+    @Transactional(readOnly = true)
     public ChallengeResponse.Detail find(Long id) {
         // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
         Challenge challenge = getChallenge(id);
@@ -47,6 +48,7 @@ public class ChallengeService {
         return ChallengeResponse.Detail.from(challenge);
     }
 
+    @Transactional(readOnly = true)
     public Page<ChallengeResponse.Summary> findAll(ChallengeRequest.Read request, Pageable pageable) {
         // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
         Page<Challenge> challenges = challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories(), pageable);
