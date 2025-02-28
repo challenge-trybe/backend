@@ -1,4 +1,4 @@
-package com.trybe.moduleapi.fixtures;
+package com.trybe.moduleapi.challenge.fixtures;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
