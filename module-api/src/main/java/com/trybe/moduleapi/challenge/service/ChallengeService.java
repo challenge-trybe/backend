@@ -32,10 +32,10 @@ public class ChallengeService {
     @Transactional
     public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
         Challenge challenge = request.toEntity();
-        ChallengeParticipation participation = new ChallengeParticipation(user, challenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
-
-        challengeParticipationRepository.save(participation);
         Challenge savedChallenge = challengeRepository.save(challenge);
+
+        ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
+        challengeParticipationRepository.save(participation);
 
         return ChallengeResponse.Detail.from(savedChallenge);
     }
