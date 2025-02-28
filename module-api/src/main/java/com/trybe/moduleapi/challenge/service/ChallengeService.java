@@ -63,7 +63,7 @@ public class ChallengeService {
         ChallengeParticipation participation = getParticipation(user.getId(), id);
 
         validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
-        validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 인증 정보를 수정할 수 있습니다.");
+        validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 정보를 수정할 수 있습니다.");
 
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
