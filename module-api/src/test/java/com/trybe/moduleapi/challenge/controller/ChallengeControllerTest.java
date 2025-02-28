@@ -36,6 +36,8 @@ class ChallengeControllerTest extends ControllerTest {
     private String docsPath = "challenge-controller-test/";
     private final String invalidBadRequestPath = "invalid/bad-request/";
     private final String invalidNotFoundPath = "invalid/not-found/";
+    private final String invalidForbiddenPath = "invalid/forbidden/";
+    private final String invalidConflictPath = "invalid/conflict/";
 
     @Test
     @WithCustomMockUser
@@ -423,7 +425,7 @@ class ChallengeControllerTest extends ControllerTest {
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
-        doThrow(new InvalidChallengeRoleActionException("리더만 챌린지 정봅를 수정할 수 있습니다."))
+        doThrow(new InvalidChallengeRoleActionException("리더만 챌린지 정보를 수정할 수 있습니다."))
                 .when(challengeService).updateContent(any(User.class), eq(challengeId), eq(request));
 
         /* when */
@@ -439,7 +441,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.data").doesNotExist()
         );
 
-        result.andDo(document(docsPath + "update-content/" + invalidBadRequestPath + "role-exception",
+        result.andDo(document(docsPath + "update-content/" + invalidForbiddenPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 responseFields(
@@ -473,7 +475,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.data").doesNotExist()
         );
 
-        result.andDo(document(docsPath + "update-content/" + invalidBadRequestPath + "status-exception",
+        result.andDo(document(docsPath + "update-content/" + invalidConflictPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 responseFields(
@@ -628,7 +630,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.data").doesNotExist()
         );
 
-        result.andDo(document(docsPath + "update-proof/" + invalidBadRequestPath + "role-exception",
+        result.andDo(document(docsPath + "update-proof/" + invalidForbiddenPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 responseFields(
@@ -662,7 +664,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.data").doesNotExist()
         );
 
-        result.andDo(document(docsPath + "update-proof/" + invalidBadRequestPath + "status-exception",
+        result.andDo(document(docsPath + "update-proof/" + invalidConflictPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 responseFields(
@@ -745,7 +747,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.data").doesNotExist()
         );
 
-        result.andDo(document(docsPath + "delete/" + invalidBadRequestPath + "role-exception",
+        result.andDo(document(docsPath + "delete/" + invalidForbiddenPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 responseFields(
@@ -776,7 +778,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.data").doesNotExist()
         );
 
-        result.andDo(document(docsPath + "delete/" + invalidBadRequestPath + "status-exception",
+        result.andDo(document(docsPath + "delete/" + invalidConflictPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 responseFields(
