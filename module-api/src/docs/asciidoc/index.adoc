@@ -216,6 +216,7 @@ include::{snippets}/challenge-controller-test/create/invalid/bad-request/respons
 
 ==== 정상 요청
 include::{snippets}/challenge-controller-test/find/http-request.adoc[]
+include::{snippets}/challenge-controller-test/find/path-parameters.adoc[]
 
 - 응답
 include::{snippets}/challenge-controller-test/find/http-response.adoc[]
@@ -233,6 +234,7 @@ include::{snippets}/challenge-controller-test/find/invalid/not-found/response-fi
 
 ==== 정상 요청
 include::{snippets}/challenge-controller-test/search/http-request.adoc[]
+include::{snippets}/challenge-controller-test/search/query-parameters.adoc[]
 include::{snippets}/challenge-controller-test/search/request-fields.adoc[]
 
 - 응답
@@ -254,6 +256,7 @@ include::{snippets}/challenge-controller-test/search/invalid/bad-request/respons
 
 ==== 정상 요청
 include::{snippets}/challenge-controller-test/update-content/http-request.adoc[]
+include::{snippets}/challenge-controller-test/update-content/path-parameters.adoc[]
 include::{snippets}/challenge-controller-test/update-content/request-fields.adoc[]
 
 - 응답
@@ -279,6 +282,7 @@ include::{snippets}/challenge-controller-test/update-content/invalid/not-found/r
 
 ==== 정상 요청
 include::{snippets}/challenge-controller-test/update-proof/http-request.adoc[]
+include::{snippets}/challenge-controller-test/update-proof/path-parameters.adoc[]
 include::{snippets}/challenge-controller-test/update-proof/request-fields.adoc[]
 
 - 응답
@@ -304,6 +308,7 @@ include::{snippets}/challenge-controller-test/update-proof/invalid/not-found/res
 
 ==== 정상 요청
 include::{snippets}/challenge-controller-test/delete/http-request.adoc[]
+include::{snippets}/challenge-controller-test/delete/path-parameters.adoc[]
 
 - 응답
 include::{snippets}/challenge-controller-test/delete/http-response.adoc[]
