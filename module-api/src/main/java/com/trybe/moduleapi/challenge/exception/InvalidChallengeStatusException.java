@@ -5,6 +5,6 @@ import org.springframework.http.HttpStatus;
 
 public class InvalidChallengeStatusException extends BusinessException {
     public InvalidChallengeStatusException(String message) {
-        super(message, HttpStatus.BAD_REQUEST.value());
+        super(message, HttpStatus.CONFLICT.value());
     }
 }
