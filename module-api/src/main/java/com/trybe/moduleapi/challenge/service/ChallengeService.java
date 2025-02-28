@@ -90,6 +90,7 @@ public class ChallengeService {
         validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지를 삭제할 수 있습니다.");
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
+        challengeParticipationRepository.deleteAllByChallengeId(id);
         challengeRepository.delete(challenge);
     }
 
