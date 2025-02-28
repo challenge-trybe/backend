@@ -7,6 +7,7 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRol
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
+import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
@@ -57,7 +58,8 @@ public class ChallengeService {
         Challenge challenge = getChallenge(id);
         ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        checkRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
+        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
+        validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 인증 정보를 수정할 수 있습니다.");
 
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
@@ -69,7 +71,8 @@ public class ChallengeService {
         Challenge challenge = getChallenge(id);
         ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        checkRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
+        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지 인증 정보를 수정할 수 있습니다.");
+        validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 인증 정보를 수정할 수 있습니다.");
 
         challenge.updateProof(request.proofWay(), request.proofCount());
 
@@ -81,7 +84,8 @@ public class ChallengeService {
         Challenge challenge = getChallenge(id);
         ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        checkRole(participation, ChallengeRole.LEADER, "리더만 챌린지를 삭제할 수 있습니다.");
+        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지를 삭제할 수 있습니다.");
+        validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
         challengeRepository.delete(challenge);
     }
@@ -96,8 +100,14 @@ public class ChallengeService {
                 .orElseThrow(() -> new NotFoundChallengeException());
     }
 
-    private void checkRole(ChallengeParticipation participation, ChallengeRole role, String message) {
+    private void validateRole(ChallengeParticipation participation, ChallengeRole role, String message) {
         if (participation.getRole() != role) {
+            throw new InvalidChallengeRoleActionException(message);
+        }
+    }
+
+    private void validateChallengeStatus(Challenge challenge, boolean shouldBe, ChallengeStatus status, String message) {
+        if ((shouldBe && challenge.getStatus() != status) || (!shouldBe && challenge.getStatus() == status)) {
             throw new InvalidChallengeRoleActionException(message);
         }
     }
