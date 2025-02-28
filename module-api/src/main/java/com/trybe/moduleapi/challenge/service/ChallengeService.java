@@ -12,10 +12,11 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,11 +47,11 @@ public class ChallengeService {
         return ChallengeResponse.Detail.from(challenge);
     }
 
-    public List<ChallengeResponse.Summary> findAll(ChallengeRequest.Read request) {
+    public Page<ChallengeResponse.Summary> findAll(ChallengeRequest.Read request, Pageable pageable) {
         // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
-        List<Challenge> challenges = challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories());
+        Page<Challenge> challenges = challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories(), pageable);
 
-        return challenges.stream().map(ChallengeResponse.Summary::from).collect(Collectors.toList());
+        return challenges.map(ChallengeResponse.Summary::from);
     }
 
     @Transactional
