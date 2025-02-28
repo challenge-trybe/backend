@@ -2,7 +2,9 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
+import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeParticipationFixtures;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
@@ -121,6 +123,40 @@ class ChallengeServiceTest {
     }
 
     @Test
+    @DisplayName("챌린지 정보 수정 시 리더가 아닌 경우 예외를 던진다.")
+    void 챌린지_정보_수정_시_리더가_아닌_경우_예외를_던진다 () {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
+
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.of(ChallengeFixtures.챌린지()));
+        when(challengeParticipationRepository.findByUserIdAndChallengeId(UserFixtures.회원.getId(), challengeId))
+                .thenReturn(Optional.of(ChallengeParticipationFixtures.챌린지_멤버_참여()));
+
+        /* when */
+        /* then */
+        assertThrows(InvalidChallengeRoleActionException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+    }
+
+    @Test
+    @DisplayName("챌린지 정보 수정 시 진행 예정 챌린지가 아닌 경우 예외를 던진다.")
+    void 챌린지_정보_수정_시_진행_예정_챌린지가_아닌_경우_예외를_던진다 () {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
+
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.of(ChallengeFixtures.진행중인_챌린지));
+        when(challengeParticipationRepository.findByUserIdAndChallengeId(UserFixtures.회원.getId(), challengeId))
+                .thenReturn(Optional.of(ChallengeParticipationFixtures.챌린지_리더_참여()));
+
+        /* when */
+        /* then */
+        assertThrows(InvalidChallengeStatusException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+    }
+
+    @Test
     @DisplayName("챌린지 정보 수정 시 존재하지 않는 챌린지 ID가 주어지면 예외를 던진다.")
     void 챌린지_정보_수정_시_존재하지_않는_챌린지_ID가_주어지면_예외를_던진다 () {
         /* given */
@@ -152,6 +188,40 @@ class ChallengeServiceTest {
 
         /* then */
         verifyChallengeResponse(ChallengeFixtures.인증_내용_수정된_챌린지, response);
+    }
+
+    @Test
+    @DisplayName("챌린지 인증 정보 수정 시 리더가 아닌 경우 예외를 던진다.")
+    void 챌린지_인증_정보_수정_시_리더가_아닌_경우_예외를_던진다 () {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
+
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.of(ChallengeFixtures.챌린지()));
+        when(challengeParticipationRepository.findByUserIdAndChallengeId(UserFixtures.회원.getId(), challengeId))
+                .thenReturn(Optional.of(ChallengeParticipationFixtures.챌린지_멤버_참여()));
+
+        /* when */
+        /* then */
+        assertThrows(InvalidChallengeRoleActionException.class, () -> challengeService.updateProof(UserFixtures.회원, challengeId, request));
+    }
+
+    @Test
+    @DisplayName("챌린지 인증 정보 수정 시 진행 예정 챌린지가 아닌 경우 예외를 던진다")
+    void 챌린지_인증_정보_수정_시_진행_예정_챌린지가_아닌_경우_예외를_던진다 () {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
+
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.of(ChallengeFixtures.진행중인_챌린지));
+        when(challengeParticipationRepository.findByUserIdAndChallengeId(UserFixtures.회원.getId(), challengeId))
+                .thenReturn(Optional.of(ChallengeParticipationFixtures.챌린지_리더_참여()));
+
+        /* when */
+        /* then */
+        assertThrows(InvalidChallengeStatusException.class, () -> challengeService.updateProof(UserFixtures.회원, challengeId, request));
     }
 
     @Test
@@ -189,6 +259,38 @@ class ChallengeServiceTest {
 
         verify(challengeRepository, atLeastOnce()).delete(any(Challenge.class));
         verify(challengeParticipationRepository, atLeastOnce()).deleteAllByChallengeId(challengeId);
+    }
+
+    @Test
+    @DisplayName("챌린지 삭제 시 리더가 아닌 경우 예외를 던진다.")
+    void 챌린지_삭제_시_리더가_아닌_경우_예외를_던진다 () {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.of(ChallengeFixtures.챌린지()));
+        when(challengeParticipationRepository.findByUserIdAndChallengeId(UserFixtures.회원.getId(), challengeId))
+                .thenReturn(Optional.of(ChallengeParticipationFixtures.챌린지_멤버_참여()));
+
+        /* when */
+        /* then */
+        assertThrows(InvalidChallengeRoleActionException.class, () -> challengeService.delete(UserFixtures.회원, challengeId));
+    }
+
+    @Test
+    @DisplayName("챌린지 삭제 시 진행 중인 챌린지인 경우 예외를 던진다.")
+    void 챌린지_삭제_시_진행_중인_챌린지인_경우_예외를_던진다 () {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.of(ChallengeFixtures.진행중인_챌린지));
+        when(challengeParticipationRepository.findByUserIdAndChallengeId(UserFixtures.회원.getId(), challengeId))
+                .thenReturn(Optional.of(ChallengeParticipationFixtures.챌린지_리더_참여()));
+
+        /* when */
+        /* then */
+        assertThrows(InvalidChallengeStatusException.class, () -> challengeService.delete(UserFixtures.회원, challengeId));
     }
 
     @Test

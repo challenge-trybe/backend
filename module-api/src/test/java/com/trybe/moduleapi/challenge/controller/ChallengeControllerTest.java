@@ -2,7 +2,9 @@ package com.trybe.moduleapi.challenge.controller;
 
 import com.trybe.moduleapi.annotation.WithCustomMockUser;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
+import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
+import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.challenge.service.ChallengeService;
 import com.trybe.moduleapi.common.ControllerTest;
@@ -415,6 +417,74 @@ class ChallengeControllerTest extends ControllerTest {
 
     @Test
     @WithCustomMockUser
+    @DisplayName("리더가 아닌 사용자가 챌린지 내용 수정 요청 시 응답코드 403을 반환한다.")
+    void 리더가_아닌_사용자가_챌린지_내용_수정_요청_시_응답코드_403을_반환한다 () throws Exception {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
+
+        doThrow(new InvalidChallengeRoleActionException("리더만 챌린지 정봅를 수정할 수 있습니다."))
+                .when(challengeService).updateContent(any(User.class), eq(challengeId), eq(request));
+
+        /* when */
+        /* then */
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsString(request)));
+
+        result.andExpectAll(
+                status().isForbidden(),
+                jsonPath("$.status").value(403),
+                jsonPath("$.message").exists(),
+                jsonPath("$.data").doesNotExist()
+        );
+
+        result.andDo(document(docsPath + "update-content/" + invalidBadRequestPath + "role-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("status").description("응답 상태 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").description("추가 데이터")
+                )));
+    }
+    
+    @Test
+    @WithCustomMockUser
+    @DisplayName("진행 예정이 아닌 챌린지 내용 수정 요청 시 응답코드 409을 반환한다.")
+    void 진행_예정이_아닌_챌린지_내용_수정_요청_시_응답코드_409을_반환한다 () throws Exception {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
+
+        doThrow(new InvalidChallengeStatusException("진행 예정인 챌린지만 수정할 수 있습니다."))
+                .when(challengeService).updateContent(any(User.class), eq(challengeId), eq(request));
+
+        /* when */
+        /* then */
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsString(request)));
+
+        result.andExpectAll(
+                status().isConflict(),
+                jsonPath("$.status").value(409),
+                jsonPath("$.message").exists(),
+                jsonPath("$.data").doesNotExist()
+        );
+
+        result.andDo(document(docsPath + "update-content/" + invalidBadRequestPath + "status-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("status").description("응답 상태 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").description("추가 데이터")
+                )));
+    }
+
+    @Test
+    @WithCustomMockUser
     @DisplayName("존재하지 않는 챌린지 내용 수정 요청 시 응답코드 404을 반환한다.")
     void 존재하지_않는_챌린지_내용_수정_요청_시_응답코드_404을_반환한다 () throws Exception {
         /* given */
@@ -536,6 +606,74 @@ class ChallengeControllerTest extends ControllerTest {
 
     @Test
     @WithCustomMockUser
+    @DisplayName("리더가 아닌 사용자가 챌린지 인증 내용 수정 요청 시 응답코드 403을 반환한다.")
+    void 리더가_아닌_사용자가_챌린지_인증_내용_수정_요청_시_응답코드_403을_반환한다 () throws Exception {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
+
+        doThrow(new InvalidChallengeRoleActionException("리더만 챌린지 인증 내용을 수정할 수 있습니다."))
+                .when(challengeService).updateProof(any(User.class), eq(challengeId), eq(request));
+
+        /* when */
+        /* then */
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/proof", challengeId)
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsString(request)));
+
+        result.andExpectAll(
+                status().isForbidden(),
+                jsonPath("$.status").value(403),
+                jsonPath("$.message").exists(),
+                jsonPath("$.data").doesNotExist()
+        );
+
+        result.andDo(document(docsPath + "update-proof/" + invalidBadRequestPath + "role-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("status").description("응답 상태 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").description("추가 데이터")
+                )));
+    }
+
+    @Test
+    @WithCustomMockUser
+    @DisplayName("진행 예정이 아닌 챌린지 인증 내용 수정 요청 시 응답코드 409을 반환한다.")
+    void 진행_예정이_아닌_챌린지_인증_내용_수정_요청_시_응답코드_409을_반환한다 () throws Exception {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
+
+        doThrow(new InvalidChallengeStatusException("진행 예정인 챌린지만 인증 내용을 수정할 수 있습니다."))
+                .when(challengeService).updateProof(any(User.class), eq(challengeId), eq(request));
+
+        /* when */
+        /* then */
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/proof", challengeId)
+                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
+                .content(objectMapper.writeValueAsString(request)));
+
+        result.andExpectAll(
+                status().isConflict(),
+                jsonPath("$.status").value(409),
+                jsonPath("$.message").exists(),
+                jsonPath("$.data").doesNotExist()
+        );
+
+        result.andDo(document(docsPath + "update-proof/" + invalidBadRequestPath + "status-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("status").description("응답 상태 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").description("추가 데이터")
+                )));
+    }
+
+    @Test
+    @WithCustomMockUser
     @DisplayName("존재하지 않는 챌린지 인증 내용 수정 요청 시 응답코드 404을 반환한다.")
     void 존재하지_않는_챌린지_인증_내용_수정_요청_시_응답코드_404를_반환한다 () throws Exception {
         /* given */
@@ -584,6 +722,68 @@ class ChallengeControllerTest extends ControllerTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 pathParameters(parameterWithName("id").description("삭제할 챌린지 ID"))));
+    }
+
+    @Test
+    @WithCustomMockUser
+    @DisplayName("리더가 아닌 사용자가 챌린지 삭제 요청 시 응답코드 403을 반환한다.")
+    void 리더가_아닌_사용자가_챌린지_삭제_요청_시_응답코드_403을_반환한다 () throws Exception {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+
+        doThrow(new InvalidChallengeRoleActionException("리더만 챌린지를 삭제할 수 있습니다."))
+                .when(challengeService).delete(any(User.class), eq(challengeId));
+
+        /* when */
+        /* then */
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/{id}", challengeId));
+
+        result.andExpectAll(
+                status().isForbidden(),
+                jsonPath("$.status").value(403),
+                jsonPath("$.message").exists(),
+                jsonPath("$.data").doesNotExist()
+        );
+
+        result.andDo(document(docsPath + "delete/" + invalidBadRequestPath + "role-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("status").description("응답 상태 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").description("추가 데이터")
+                )));
+    }
+
+    @Test
+    @WithCustomMockUser
+    @DisplayName("진행 중인 챌린지 삭제 요청 시 응답코드 409을 반환한다.")
+    void 진행_중인_챌린지_삭제_요청_시_응답코드_409을_반환한다 () throws Exception {
+        /* given */
+        Long challengeId = ChallengeFixtures.챌린지_ID;
+
+        doThrow(new InvalidChallengeStatusException("진행 중인 챌린지는 삭제할 수 없습니다."))
+                .when(challengeService).delete(any(User.class), eq(challengeId));
+
+        /* when */
+        /* then */
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/{id}", challengeId));
+
+        result.andExpectAll(
+                status().isConflict(),
+                jsonPath("$.status").value(409),
+                jsonPath("$.message").exists(),
+                jsonPath("$.data").doesNotExist()
+        );
+
+        result.andDo(document(docsPath + "delete/" + invalidBadRequestPath + "status-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("status").description("응답 상태 코드"),
+                        fieldWithPath("message").description("응답 메시지"),
+                        fieldWithPath("data").description("추가 데이터")
+                )));
     }
 
     @Test
