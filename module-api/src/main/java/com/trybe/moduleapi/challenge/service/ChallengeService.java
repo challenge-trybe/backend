@@ -4,6 +4,10 @@ import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.modulecore.challenge.entity.Challenge;
+import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
+import com.trybe.modulecore.challenge.enums.ChallengeRole;
+import com.trybe.modulecore.challenge.enums.ParticipationStatus;
+import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.stereotype.Service;
@@ -15,16 +19,21 @@ import java.util.stream.Collectors;
 @Service
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
+    private final ChallengeParticipationRepository challengeParticipationRepository;
 
-    public ChallengeService(ChallengeRepository challengeRepository) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository) {
         this.challengeRepository = challengeRepository;
+        this.challengeParticipationRepository = challengeParticipationRepository;
     }
 
     @Transactional
     public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
-        // TODO: Challenge participation 에 대한 로직 추가
+        Challenge challenge = request.toEntity();
+        ChallengeParticipation participation = new ChallengeParticipation(user, challenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
 
-        Challenge savedChallenge = challengeRepository.save(request.toEntity());
+        challengeParticipationRepository.save(participation);
+        Challenge savedChallenge = challengeRepository.save(challenge);
+
         return ChallengeResponse.Detail.from(savedChallenge);
     }
 
