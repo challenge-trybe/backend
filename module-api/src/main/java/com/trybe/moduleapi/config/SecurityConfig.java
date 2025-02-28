@@ -41,7 +41,8 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/login")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/auth/token/reissue")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/users/check-user-id")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/api/v1/users/check-email")).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/challenges/{id}").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/challenges/search").permitAll()
                 .anyRequest()
                 .authenticated());
 
