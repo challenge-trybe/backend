@@ -1,70 +1,37 @@
 package com.trybe.moduleapi.challenge.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.challenge.service.ChallengeService;
-import com.trybe.moduleapi.common.api.exception.ApiExceptionHandler;
+import com.trybe.moduleapi.common.ControllerTest;
 import com.trybe.modulecore.user.entity.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.nio.charset.StandardCharsets;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith({MockitoExtension.class, RestDocumentationExtension.class})
-@AutoConfigureRestDocs(outputDir = "build/generated-snippets")
-class ChallengeControllerTest {
-    @InjectMocks
-    private ChallengeController challengeController;
-
-    @Mock
+@WebMvcTest(ChallengeController.class)
+class ChallengeControllerTest extends ControllerTest {
+    @MockitoBean
     private ChallengeService challengeService;
-
-    @Mock
-    private MockMvc mockMvc;
-    private ObjectMapper objectMapper;
 
     private String endpoint = "/api/v1/challenges";
 
     private String docsPath = "challenge-controller-test/";
     private final String invalidBadRequestPath = "invalid/bad-request/";
     private final String invalidNotFoundPath = "invalid/not-found/";
-
-    @BeforeEach
-    public void init(RestDocumentationContextProvider restDocumentation) {
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        mockMvc = MockMvcBuilders.standaloneSetup(challengeController)
-                .setControllerAdvice(new ApiExceptionHandler())
-                .setMessageConverters(new MappingJackson2HttpMessageConverter(objectMapper))
-                .apply(documentationConfiguration(restDocumentation))
-                .build();
-    }
 
     @Test
     @DisplayName("정상적인 챌린지 생성 요청 시 응답코드 200을 반환한다.")
