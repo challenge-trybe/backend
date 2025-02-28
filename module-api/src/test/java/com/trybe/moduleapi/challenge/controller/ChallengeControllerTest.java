@@ -5,16 +5,16 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
+import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.challenge.service.ChallengeService;
 import com.trybe.moduleapi.common.api.exception.ApiExceptionHandler;
-import com.trybe.moduleapi.fixtures.ChallengeFixtures;
+import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.http.MediaType;
@@ -54,8 +54,6 @@ class ChallengeControllerTest {
     private final String invalidBadRequestPath = "invalid/bad-request/";
     private final String invalidNotFoundPath = "invalid/not-found/";
 
-    private final Long TMP_USER_ID = 1L;
-
     @BeforeEach
     public void init(RestDocumentationContextProvider restDocumentation) {
         objectMapper = new ObjectMapper();
@@ -74,7 +72,7 @@ class ChallengeControllerTest {
         /* given */
         ChallengeRequest.Create request = ChallengeFixtures.챌린지_생성_요청;
 
-        when(challengeService.save(request, TMP_USER_ID))
+        when(challengeService.save(any(User.class), eq(request)))
                 .thenReturn(ChallengeFixtures.챌린지_상세_응답);
 
         /* when */
@@ -249,8 +247,8 @@ class ChallengeControllerTest {
         /* given */
         ChallengeRequest.Read request = ChallengeFixtures.챌린지_조회_요청;
 
-        when(challengeService.findAll(request))
-                .thenReturn(ChallengeFixtures.챌린지_목록_응답);
+        when(challengeService.findAll(request, ChallengeFixtures.페이지_요청))
+                .thenReturn(ChallengeFixtures.챌린지_페이지_응답);
 
         /* when */
         /* then */
@@ -260,7 +258,7 @@ class ChallengeControllerTest {
 
         result.andExpectAll(
                 status().isOk(),
-                jsonPath("$.size()").value(ChallengeFixtures.챌린지_목록_응답.size())
+                jsonPath("$.length()").value(ChallengeFixtures.챌린지_페이지_응답.getTotalElements())
         );
 
         result.andDo(document(docsPath + "search",
@@ -319,7 +317,7 @@ class ChallengeControllerTest {
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
-        when(challengeService.updateContent(challengeId, request, TMP_USER_ID))
+        when(challengeService.updateContent(any(User.class), challengeId, request))
                 .thenReturn(ChallengeFixtures.내용_수정된_챌린지_상세_응답);
 
         /* when */
@@ -417,7 +415,7 @@ class ChallengeControllerTest {
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).updateContent(challengeId, request, TMP_USER_ID);
+        doThrow(new NotFoundChallengeException()).when(challengeService).updateContent(any(User.class), challengeId, request);
 
         /* when */
         /* then */
@@ -448,7 +446,7 @@ class ChallengeControllerTest {
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
 
-        when(challengeService.updateProof(challengeId, request, TMP_USER_ID))
+        when(challengeService.updateProof(any(User.class), challengeId, request))
                 .thenReturn(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답);
 
         /* when */
@@ -534,7 +532,7 @@ class ChallengeControllerTest {
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
         ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).updateProof(challengeId, request, TMP_USER_ID);
+        doThrow(new NotFoundChallengeException()).when(challengeService).updateProof(any(User.class), challengeId, request);
 
         /* when */
         /* then */
@@ -569,7 +567,7 @@ class ChallengeControllerTest {
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/" + challengeId));
 
         result.andExpect(status().isOk());
-        verify(challengeService, atLeastOnce()).delete(challengeId, TMP_USER_ID);
+        verify(challengeService, atLeastOnce()).delete(any(User.class), challengeId);
 
         result.andDo(document(docsPath + "delete",
                 preprocessRequest(prettyPrint()),
@@ -582,7 +580,7 @@ class ChallengeControllerTest {
         /* given */
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).delete(challengeId, TMP_USER_ID);
+        doThrow(new NotFoundChallengeException()).when(challengeService).delete(any(User.class), challengeId);
 
         /* when */
         /* then */
