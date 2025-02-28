@@ -21,7 +21,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ChallengeServiceTest {
@@ -176,6 +176,8 @@ class ChallengeServiceTest {
         /* when */
         /* then */
         challengeService.delete(challengeId, TMP_USER_ID);
+
+        verify(challengeRepository, atLeastOnce()).deleteById(challengeId);
     }
 
     @Test
