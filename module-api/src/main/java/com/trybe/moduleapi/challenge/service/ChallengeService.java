@@ -3,6 +3,7 @@ package com.trybe.moduleapi.challenge.service;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
+import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
@@ -53,8 +54,10 @@ public class ChallengeService {
 
     @Transactional
     public ChallengeResponse.Detail updateContent(User user, Long id, ChallengeRequest.UpdateContent request) {
-        // TODO: Challenge 의 수정 권한 확인
         Challenge challenge = getChallenge(id);
+        ChallengeParticipation participation = getParticipation(user.getId(), id);
+
+        checkRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
 
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
@@ -63,8 +66,10 @@ public class ChallengeService {
 
     @Transactional
     public ChallengeResponse.Detail updateProof(User user, Long id, ChallengeRequest.UpdateProof request) {
-        // TODO: Challenge 의 수정 권한 확인
         Challenge challenge = getChallenge(id);
+        ChallengeParticipation participation = getParticipation(user.getId(), id);
+
+        checkRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
 
         challenge.updateProof(request.proofWay(), request.proofCount());
 
@@ -73,8 +78,10 @@ public class ChallengeService {
 
     @Transactional
     public void delete(User user, Long id) {
-        // TODO: Challenge 의 삭제 권한 확인
         Challenge challenge = getChallenge(id);
+        ChallengeParticipation participation = getParticipation(user.getId(), id);
+
+        checkRole(participation, ChallengeRole.LEADER, "리더만 챌린지를 삭제할 수 있습니다.");
 
         challengeRepository.delete(challenge);
     }
@@ -82,5 +89,16 @@ public class ChallengeService {
     private Challenge getChallenge(Long id) {
         return challengeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundChallengeException());
+    }
+
+    private ChallengeParticipation getParticipation(Long userId, Long challengeId) {
+        return challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
+                .orElseThrow(() -> new NotFoundChallengeException());
+    }
+
+    private void checkRole(ChallengeParticipation participation, ChallengeRole role, String message) {
+        if (participation.getRole() != role) {
+            throw new InvalidChallengeRoleActionException(message);
+        }
     }
 }
