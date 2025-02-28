@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.challenge.controller;
 
+import com.trybe.moduleapi.annotation.WithCustomMockUser;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ChallengeController.class)
@@ -34,6 +36,7 @@ class ChallengeControllerTest extends ControllerTest {
     private final String invalidNotFoundPath = "invalid/not-found/";
 
     @Test
+    @WithCustomMockUser
     @DisplayName("정상적인 챌린지 생성 요청 시 응답코드 200을 반환한다.")
     void 정상적인_챌린지_생성_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
@@ -89,6 +92,7 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("비정상적인 챌린지 생성 요청 시 응답코드 400을 반환한다.")
     void 비정상적인_챌린지_생성_요청_시_응답코드_400을_반환한다 () throws Exception {
         /* given */
@@ -131,6 +135,7 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("data.title").description("챌린지 제목 에러 메시지"),
                         fieldWithPath("data.description").description("챌린지 설명 에러 메시지"),
                         fieldWithPath("data.datesAfterToday").description("날짜 에러 메시지"),
+                        fieldWithPath("data.durationLimit").description("챌린지 기간 에러 메시지"),
                         fieldWithPath("data.capacity").description("챌린지 인원 에러 메시지"),
                         fieldWithPath("data.proofWay").description("챌린지 인증 방법 에러 메시지"),
                         fieldWithPath("data.proofCount").description("챌린지 인증 횟수 에러 메시지")
@@ -148,7 +153,7 @@ class ChallengeControllerTest extends ControllerTest {
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(endpoint + "/" + challengeId));
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(endpoint + "/{id}", challengeId));
 
         result.andExpectAll(
                 status().isOk(),
@@ -166,6 +171,7 @@ class ChallengeControllerTest extends ControllerTest {
         result.andDo(document(docsPath + "find",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                pathParameters(parameterWithName("id").description("조회할 챌린지 ID")),
                 responseFields(
                         fieldWithPath("id").description("챌린지 ID"),
                         fieldWithPath("title").description("챌린지 제목"),
@@ -190,7 +196,7 @@ class ChallengeControllerTest extends ControllerTest {
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(endpoint + "/" + challengeId));
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(endpoint + "/{id}", challengeId));
 
         result.andExpectAll(
                 status().isNotFound(),
@@ -220,29 +226,56 @@ class ChallengeControllerTest extends ControllerTest {
         /* when */
         /* then */
         ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/search")
+                .param("page", "0").param("size", "10")
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
         result.andExpectAll(
                 status().isOk(),
-                jsonPath("$.length()").value(ChallengeFixtures.챌린지_페이지_응답.getTotalElements())
+                jsonPath("$.content.length()").value(ChallengeFixtures.챌린지_페이지_응답.getContent().size())
         );
 
         result.andDo(document(docsPath + "search",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                queryParameters(
+                        parameterWithName("page").description("페이지 번호"),
+                        parameterWithName("size").description("페이지 크기")
+                ),
                 requestFields(
                         fieldWithPath("statuses").description("챌린지 상태"),
                         fieldWithPath("categories").description("챌린지 카테고리")
                 ),
                 responseFields(
-                        fieldWithPath("[]").description("챌린지 목록"),
-                        fieldWithPath("[].id").description("챌린지 ID"),
-                        fieldWithPath("[].title").description("챌린지 제목"),
-                        fieldWithPath("[].description").description("챌린지 설명"),
-                        fieldWithPath("[].status").description("챌린지 상태"),
-                        fieldWithPath("[].capacity").description("챌린지 인원"),
-                        fieldWithPath("[].category").description("챌린지 카테고리")
+                        fieldWithPath("pageable").description("페이지 정보"),
+                        fieldWithPath("pageable.pageNumber").description("페이지 번호"),
+                        fieldWithPath("pageable.pageSize").description("페이지 크기"),
+                        fieldWithPath("pageable.sort").description("정렬 정보"),
+                        fieldWithPath("pageable.sort.empty").description("정렬이 비어있는지 여부"),
+                        fieldWithPath("pageable.sort.sorted").description("정렬된 상태인지 여부"),
+                        fieldWithPath("pageable.sort.unsorted").description("정렬되지 않은 상태인지 여부"),
+                        fieldWithPath("pageable.offset").description("페이지 오프셋"),
+                        fieldWithPath("pageable.unpaged").description("페이지가 비어 있는지 여부"),
+                        fieldWithPath("pageable.paged").description("페이징 여부"),
+                        fieldWithPath("last").description("마지막 페이지 여부"),
+                        fieldWithPath("totalPages").description("전체 페이지 수"),
+                        fieldWithPath("totalElements").description("전체 요소 수"),
+                        fieldWithPath("first").description("첫번째 페이지 여부"),
+                        fieldWithPath("size").description("페이지 크기"),
+                        fieldWithPath("number").description("현재 페이지 번호"),
+                        fieldWithPath("numberOfElements").description("현재 페이지 요소 수"),
+                        fieldWithPath("empty").description("비어있는지 여부"),
+                        fieldWithPath("sort").description("전체 정렬 정보"),
+                        fieldWithPath("sort.empty").description("정렬이 비어있는지 여부"),
+                        fieldWithPath("sort.sorted").description("정렬된 상태인지 여부"),
+                        fieldWithPath("sort.unsorted").description("정렬되지 않은 상태인지 여부"),
+                        fieldWithPath("content").description("챌린지 목록"),
+                        fieldWithPath("content[].id").description("챌린지 ID"),
+                        fieldWithPath("content[].title").description("챌린지 제목"),
+                        fieldWithPath("content[].description").description("챌린지 설명"),
+                        fieldWithPath("content[].status").description("챌린지 상태"),
+                        fieldWithPath("content[].capacity").description("챌린지 인원"),
+                        fieldWithPath("content[].category").description("챌린지 카테고리")
                 )));
     }
 
@@ -278,18 +311,19 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("정상적인 챌린지 내용 수정 요청 시 응답코드 200을 반환한다.")
     void 정상적인_챌린지_내용_수정_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
-        when(challengeService.updateContent(any(User.class), challengeId, request))
+        when(challengeService.updateContent(any(User.class), eq(challengeId), eq(request)))
                 .thenReturn(ChallengeFixtures.내용_수정된_챌린지_상세_응답);
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/content")
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -309,6 +343,7 @@ class ChallengeControllerTest extends ControllerTest {
         result.andDo(document(docsPath + "update-content",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                pathParameters(parameterWithName("id").description("수정할 챌린지 ID")),
                 requestFields(
                         fieldWithPath("title").description("챌린지 제목 (최대 100자)"),
                         fieldWithPath("description").description("챌린지 설명 (최대 1,000자)"),
@@ -332,6 +367,7 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("비정상적인 챌린지 내용 수정 요청 시 응답코드 400을 반환한다.")
     void 비정상적인_챌린지_내용_수정_요청_시_응답코드_400을_반환한다 () throws Exception {
         /* given */
@@ -340,7 +376,7 @@ class ChallengeControllerTest extends ControllerTest {
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/content")
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -351,6 +387,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.data.title").exists(),
                 jsonPath("$.data.description").exists(),
                 jsonPath("$.data.datesAfterToday").exists(),
+                jsonPath("$.data.durationLimit").exists(),
                 jsonPath("$.data.capacity").exists()
         );
 
@@ -371,22 +408,24 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("data.title").description("챌린지 제목 에러 메시지"),
                         fieldWithPath("data.description").description("챌린지 설명 에러 메시지"),
                         fieldWithPath("data.datesAfterToday").description("날짜 에러 메시지"),
+                        fieldWithPath("data.durationLimit").description("챌린지 기간 에러 메시지"),
                         fieldWithPath("data.capacity").description("챌린지 인원 에러 메시지")
                 )));
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("존재하지 않는 챌린지 내용 수정 요청 시 응답코드 404을 반환한다.")
     void 존재하지_않는_챌린지_내용_수정_요청_시_응답코드_404을_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).updateContent(any(User.class), challengeId, request);
+        doThrow(new NotFoundChallengeException()).when(challengeService).updateContent(any(User.class), eq(challengeId), eq(request));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/content")
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -407,18 +446,19 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("정상적인 챌린지 인증 내용 수정 요청 시 응답코드 200을 반환한다.")
     void 정상적인_챌린지_인증_내용_수정_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
 
-        when(challengeService.updateProof(any(User.class), challengeId, request))
+        when(challengeService.updateProof(any(User.class), eq(challengeId), eq(request)))
                 .thenReturn(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답);
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/proof")
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/proof", challengeId)
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -438,6 +478,7 @@ class ChallengeControllerTest extends ControllerTest {
         result.andDo(document(docsPath + "update-proof",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                pathParameters(parameterWithName("id").description("수정할 챌린지 ID")),
                 requestFields(
                         fieldWithPath("proofWay").description("챌린지 인증 방법 (최대 500자)"),
                         fieldWithPath("proofCount").description("챌린지 인증 횟수 (1 ~ 30회)")
@@ -457,6 +498,7 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("비정상적인 챌린지 인증 내용 수정 요청 시 응답코드 400을 반환한다.")
     void 비정상적인_챌린지_인증_내용_수정_요청_시_응답코드_400을_반환한다 () throws Exception {
         /* given */
@@ -465,7 +507,7 @@ class ChallengeControllerTest extends ControllerTest {
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/proof")
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/proof", challengeId)
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -493,17 +535,18 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("존재하지 않는 챌린지 인증 내용 수정 요청 시 응답코드 404을 반환한다.")
     void 존재하지_않는_챌린지_인증_내용_수정_요청_시_응답코드_404를_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
         ChallengeRequest.UpdateProof request = ChallengeFixtures.챌린지_인증_내용_수정_요청;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).updateProof(any(User.class), challengeId, request);
+        doThrow(new NotFoundChallengeException()).when(challengeService).updateProof(any(User.class), eq(challengeId), eq(request));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/" + challengeId + "/proof")
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/proof", challengeId)
                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                 .content(objectMapper.writeValueAsString(request)));
 
@@ -524,6 +567,7 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("챌린지 삭제 요청 시 응답코드 200을 반환한다.")
     void 정상적인_챌린지_삭제_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
@@ -531,27 +575,29 @@ class ChallengeControllerTest extends ControllerTest {
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/" + challengeId));
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/{id}", challengeId));
 
         result.andExpect(status().isOk());
-        verify(challengeService, atLeastOnce()).delete(any(User.class), challengeId);
+        verify(challengeService, atLeastOnce()).delete(any(User.class), eq(challengeId));
 
         result.andDo(document(docsPath + "delete",
                 preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint())));
+                preprocessResponse(prettyPrint()),
+                pathParameters(parameterWithName("id").description("삭제할 챌린지 ID"))));
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("존재하지 않는 챌린지 삭제 요청 시 응답코드 404을 반환한다.")
     void 존재하지_않는_챌린지_삭제_요청_시_응답코드_404을_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).delete(any(User.class), challengeId);
+        doThrow(new NotFoundChallengeException()).when(challengeService).delete(any(User.class), eq(challengeId));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/" + challengeId));
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.delete(endpoint + "/{id}", challengeId));
 
         result.andExpectAll(
                 status().isNotFound(),
