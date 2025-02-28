@@ -270,6 +270,16 @@ include::{snippets}/challenge-controller-test/update-content/invalid/bad-request
 include::{snippets}/challenge-controller-test/update-content/invalid/bad-request/http-response.adoc[]
 include::{snippets}/challenge-controller-test/update-content/invalid/bad-request/response-fields.adoc[]
 
+==== 비정상 요청 (리더가 아닌 사용자)
+리더가 아닌 사용자가 챌린지 내용을 수정했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-controller-test/update-content/invalid/forbidden/http-response.adoc[]
+include::{snippets}/challenge-controller-test/update-content/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (진행 예정이 아닌 챌린지)
+진행 예정 외의 상태인 챌린지를 수정했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-controller-test/update-content/invalid/conflict/http-response.adoc[]
+include::{snippets}/challenge-controller-test/update-content/invalid/conflict/response-fields.adoc[]
+
 ==== 비정상 요청 (존재하지 않는 챌린지)
 존재하지 않는 챌린지 ID로 수정했을 때, 다음과 같은 응답이 반환됩니다.
 include::{snippets}/challenge-controller-test/update-content/invalid/not-found/http-response.adoc[]
@@ -296,6 +306,16 @@ include::{snippets}/challenge-controller-test/update-proof/invalid/bad-request/h
 include::{snippets}/challenge-controller-test/update-proof/invalid/bad-request/http-response.adoc[]
 include::{snippets}/challenge-controller-test/update-proof/invalid/bad-request/response-fields.adoc[]
 
+==== 비정상 요청 (리더가 아닌 사용자)
+리더가 아닌 사용자가 챌린지 인증 내용을 수정했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-controller-test/update-proof/invalid/forbidden/http-response.adoc[]
+include::{snippets}/challenge-controller-test/update-proof/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (진행 예정이 아닌 챌린지)
+진행 예정 외의 상태인 챌린지를 수정했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-controller-test/update-proof/invalid/conflict/http-response.adoc[]
+include::{snippets}/challenge-controller-test/update-proof/invalid/conflict/response-fields.adoc[]
+
 ==== 비정상 요청 (존재하지 않는 챌린지)
 존재하지 않는 챌린지 ID로 수정했을 때, 다음과 같은 응답이 반환됩니다.
 include::{snippets}/challenge-controller-test/update-proof/invalid/not-found/http-response.adoc[]
@@ -312,6 +332,16 @@ include::{snippets}/challenge-controller-test/delete/path-parameters.adoc[]
 
 - 응답
 include::{snippets}/challenge-controller-test/delete/http-response.adoc[]
+
+==== 비정상 요청 (리더가 아닌 사용자)
+리더가 아닌 사용자가 챌린지 삭제를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-controller-test/delete/invalid/forbidden/http-response.adoc[]
+include::{snippets}/challenge-controller-test/delete/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (진행 중인 챌린지)
+진행 중인 챌린지 삭제를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-controller-test/delete/invalid/conflict/http-response.adoc[]
+include::{snippets}/challenge-controller-test/delete/invalid/conflict/response-fields.adoc[]
 
 ==== 비정상 요청 (존재하지 않는 챌린지)
 존재하지 않는 챌린지 ID로 삭제했을 때, 다음과 같은 응답이 반환됩니다.
