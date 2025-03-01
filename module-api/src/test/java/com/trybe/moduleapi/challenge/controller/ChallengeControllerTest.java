@@ -236,7 +236,7 @@ class ChallengeControllerTest extends ControllerTest {
 
         result.andExpectAll(
                 status().isOk(),
-                jsonPath("$.content.length()").value(ChallengeFixtures.챌린지_페이지_응답.getContent().size())
+                jsonPath("$.totalElements").value(ChallengeFixtures.챌린지_페이지_응답.totalElements())
         );
 
         result.andDo(document(docsPath + "search",
@@ -251,35 +251,18 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("categories").description("챌린지 카테고리")
                 ),
                 responseFields(
-                        fieldWithPath("pageable").description("페이지 정보"),
-                        fieldWithPath("pageable.pageNumber").description("페이지 번호"),
-                        fieldWithPath("pageable.pageSize").description("페이지 크기"),
-                        fieldWithPath("pageable.sort").description("정렬 정보"),
-                        fieldWithPath("pageable.sort.empty").description("정렬이 비어있는지 여부"),
-                        fieldWithPath("pageable.sort.sorted").description("정렬된 상태인지 여부"),
-                        fieldWithPath("pageable.sort.unsorted").description("정렬되지 않은 상태인지 여부"),
-                        fieldWithPath("pageable.offset").description("페이지 오프셋"),
-                        fieldWithPath("pageable.unpaged").description("페이지가 비어 있는지 여부"),
-                        fieldWithPath("pageable.paged").description("페이징 여부"),
-                        fieldWithPath("last").description("마지막 페이지 여부"),
-                        fieldWithPath("totalPages").description("전체 페이지 수"),
-                        fieldWithPath("totalElements").description("전체 요소 수"),
-                        fieldWithPath("first").description("첫번째 페이지 여부"),
-                        fieldWithPath("size").description("페이지 크기"),
-                        fieldWithPath("number").description("현재 페이지 번호"),
-                        fieldWithPath("numberOfElements").description("현재 페이지 요소 수"),
-                        fieldWithPath("empty").description("비어있는지 여부"),
-                        fieldWithPath("sort").description("전체 정렬 정보"),
-                        fieldWithPath("sort.empty").description("정렬이 비어있는지 여부"),
-                        fieldWithPath("sort.sorted").description("정렬된 상태인지 여부"),
-                        fieldWithPath("sort.unsorted").description("정렬되지 않은 상태인지 여부"),
                         fieldWithPath("content").description("챌린지 목록"),
                         fieldWithPath("content[].id").description("챌린지 ID"),
                         fieldWithPath("content[].title").description("챌린지 제목"),
                         fieldWithPath("content[].description").description("챌린지 설명"),
                         fieldWithPath("content[].status").description("챌린지 상태"),
                         fieldWithPath("content[].capacity").description("챌린지 인원"),
-                        fieldWithPath("content[].category").description("챌린지 카테고리")
+                        fieldWithPath("content[].category").description("챌린지 카테고리"),
+                        fieldWithPath("totalPages").description("총 페이지 수"),
+                        fieldWithPath("totalElements").description("총 요소 수"),
+                        fieldWithPath("size").description("페이지 크기"),
+                        fieldWithPath("number").description("현재 페이지 번호"),
+                        fieldWithPath("last").description("마지막 페이지 여부")
                 )));
     }
 

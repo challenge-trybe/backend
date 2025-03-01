@@ -7,6 +7,7 @@ import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeParticipationFixtures;
+import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
 
 import java.util.Optional;
 
@@ -97,10 +97,10 @@ class ChallengeServiceTest {
                 .thenReturn(ChallengeFixtures.챌린지_페이지);
 
         /* when */
-        Page<ChallengeResponse.Summary> response = challengeService.findAll(request, ChallengeFixtures.페이지_요청);
+        PageResponse<ChallengeResponse.Summary> response = challengeService.findAll(request, ChallengeFixtures.페이지_요청);
 
         /* then */
-        assertEquals(ChallengeFixtures.챌린지_페이지.getTotalElements(), response.getTotalElements());
+        assertEquals(ChallengeFixtures.챌린지_페이지_응답.totalElements(), response.totalElements());
     }
 
     @Test
