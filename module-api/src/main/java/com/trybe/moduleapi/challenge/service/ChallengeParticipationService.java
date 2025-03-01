@@ -3,6 +3,7 @@ package com.trybe.moduleapi.challenge.service;
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.challenge.exception.*;
 import com.trybe.moduleapi.challenge.exception.participation.*;
+import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
@@ -42,21 +43,19 @@ public class ChallengeParticipationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ChallengeParticipationResponse.Detail> getMyParticipations(User user, ParticipationStatus status, Pageable pageable) {
+    public PageResponse<ChallengeParticipationResponse.Detail> getMyParticipations(User user, ParticipationStatus status, Pageable pageable) {
         Page<ChallengeParticipation> participations = challengeParticipationRepository.findAllByUserIdAndStatusOrderByCreatedAtDesc(user.getId(), status, pageable);
 
-        return participations.map(ChallengeParticipationResponse.Detail::from);
+        return new PageResponse<>(participations.map(ChallengeParticipationResponse.Detail::from));
     }
 
     @Transactional(readOnly = true)
-    public Page<ChallengeParticipationResponse.Summary> getParticipants(User user, Long challengeId, ParticipationStatus status, Pageable pageable) {
-        Challenge challenge = getChallenge(challengeId);
-
+    public PageResponse<ChallengeParticipationResponse.Summary> getParticipants(User user, Long challengeId, ParticipationStatus status, Pageable pageable) {
         ChallengeParticipation participation = getParticipation(user.getId(), challengeId);
         checkRole(participation, ChallengeRole.LEADER, "리더만 참여자 목록을 조회할 수 있습니다.");
 
         Page<ChallengeParticipation> participations = challengeParticipationRepository.findAllByChallengeIdAndStatusOrderByCreatedAtAsc(challengeId, status, pageable);
-        return participations.map(ChallengeParticipationResponse.Summary::from);
+        return new PageResponse<>(participations.map(ChallengeParticipationResponse.Summary::from));
     }
 
     @Transactional
