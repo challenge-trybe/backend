@@ -13,4 +13,12 @@ public enum ChallengeStatus {
     ChallengeStatus(String description) {
         this.description = description;
     }
+
+    public boolean is(ChallengeStatus status) {
+        return this == status;
+    }
+
+    public boolean isNot(ChallengeStatus status) {
+        return this != status;
+    }
 }

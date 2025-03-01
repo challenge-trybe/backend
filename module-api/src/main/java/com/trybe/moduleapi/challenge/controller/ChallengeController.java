@@ -1,12 +1,14 @@
 package com.trybe.moduleapi.challenge.controller;
 
+import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.service.ChallengeService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/challenges")
@@ -17,12 +19,12 @@ public class ChallengeController {
         this.challengeService = challengeService;
     }
 
-    private final Long TMP_USER_ID = 1L;
-    // TODO: Authentication 적용
-
     @PostMapping
-    public ChallengeResponse.Detail save(@Valid @RequestBody ChallengeRequest.Create request) {
-        return challengeService.save(request, TMP_USER_ID);
+    public ChallengeResponse.Detail save(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody ChallengeRequest.Create request
+    ) {
+        return challengeService.save(userDetails.getUser(), request);
     }
 
     @GetMapping("/{id}")
@@ -31,28 +33,36 @@ public class ChallengeController {
     }
 
     @PostMapping("/search")
-    public List<ChallengeResponse.Summary> findAll(@Valid @RequestBody ChallengeRequest.Read request) {
-        return challengeService.findAll(request);
+    public Page<ChallengeResponse.Summary> findAll(
+            @Valid @RequestBody ChallengeRequest.Read request,
+            Pageable pageable
+    ) {
+        return challengeService.findAll(request, pageable);
     }
 
     @PutMapping("/{id}/content")
     public ChallengeResponse.Detail updateContent(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("id") Long id,
             @Valid @RequestBody ChallengeRequest.UpdateContent request
     ) {
-        return challengeService.updateContent(id, request, TMP_USER_ID);
+        return challengeService.updateContent(userDetails.getUser(), id, request);
     }
 
     @PutMapping("/{id}/proof")
     public ChallengeResponse.Detail updateProof(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("id") Long id,
             @Valid @RequestBody ChallengeRequest.UpdateProof request
     ) {
-        return challengeService.updateProof(id, request, TMP_USER_ID);
+        return challengeService.updateProof(userDetails.getUser(), id, request);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") Long id) {
-        challengeService.delete(id, TMP_USER_ID);
+    public void delete(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") Long id
+    ) {
+        challengeService.delete(userDetails.getUser(), id);
     }
 }

@@ -10,4 +10,12 @@ public enum ChallengeRole {
     ChallengeRole(String description) {
         this.description = description;
     }
+
+    public boolean is(ChallengeRole role) {
+        return this == role;
+    }
+
+    public boolean isNot(ChallengeRole role) {
+        return this != role;
+    }
 }

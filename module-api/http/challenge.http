@@ -1,12 +1,13 @@
 ### 1. 챌린지 생성
 POST http://localhost:8080/api/v1/challenges
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
   "title": "클린코드 도서 읽기",
   "description": "클린코드 책을 일주일에 한 챕터씩 읽은 후 리뷰하기",
   "startDate": "2025-04-07",
-  "endDate": "2025-08-03",
+  "endDate": "2025-06-01",
   "capacity": 5,
   "category": "STUDY",
   "proofWay": "읽은 내용을 정리해서 공유",
@@ -15,6 +16,7 @@ Content-Type: application/json
 
 ### 1-1. 챌린지 생성 (유효성 검증 실패)
 POST http://localhost:8080/api/v1/challenges
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -30,7 +32,7 @@ Content-Type: application/json
 GET http://localhost:8080/api/v1/challenges/1
 
 ### 3. 챌린지 검색 조회
-POST http://localhost:8080/api/v1/challenges/search
+POST http://localhost:8080/api/v1/challenges/search?page=0&size=10
 Content-Type: application/json
 
 {
@@ -40,13 +42,14 @@ Content-Type: application/json
 
 ### 4. 챌린지 내용 수정
 PUT http://localhost:8080/api/v1/challenges/1/content
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
   "title": "클린코드 도서 읽기",
   "description": "클린코드 책을 일주일에 한 챕터씩 읽은 후 리뷰하기",
   "startDate": "2025-04-07",
-  "endDate": "2025-07-27",
+  "endDate": "2025-05-31",
   "capacity": 10,
   "category": "STUDY"
 }
@@ -54,6 +57,7 @@ Content-Type: application/json
 
 ### 4-1. 챌린지 내용 수정 (유효성 검증 실패)
 PUT http://localhost:8080/api/v1/challenges/1/content
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -67,6 +71,7 @@ Content-Type: application/json
 
 ### 5. 챌린지 인증 내용 수정
 PUT http://localhost:8080/api/v1/challenges/1/proof
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -76,6 +81,7 @@ Content-Type: application/json
 
 ### 5-1. 챌린지 인증 내용 수정 (유효성 검증 실패)
 PUT http://localhost:8080/api/v1/challenges/1/proof
+Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
@@ -85,3 +91,4 @@ Content-Type: application/json
 
 ### 6. 챌린지 삭제
 DELETE http://localhost:8080/api/v1/challenges/1
+Authorization: {{accessToken}}

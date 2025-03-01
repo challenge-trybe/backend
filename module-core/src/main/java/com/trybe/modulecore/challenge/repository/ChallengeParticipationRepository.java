@@ -17,4 +17,5 @@ public interface ChallengeParticipationRepository extends JpaRepository<Challeng
     Page<ChallengeParticipation> findAllByUserIdAndStatusOrderByCreatedAtDesc(Long userId, ParticipationStatus status, Pageable pageable);
     Page<ChallengeParticipation> findAllByChallengeIdAndStatusOrderByCreatedAtAsc(Long challengeId, ParticipationStatus status, Pageable pageable);
     Optional<ChallengeParticipation> findByUserIdAndChallengeId(Long userId, Long challengeId);
+    void deleteAllByChallengeId(Long challengeId);
 }

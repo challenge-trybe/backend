@@ -96,7 +96,7 @@ public class ChallengeParticipationService {
     }
 
     private void checkRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
-        if (participation.getRole() != requiredRole) {
+        if (participation.getRole().isNot(requiredRole)) {
             throw new InvalidChallengeRoleActionException(message);
         }
     }
@@ -118,11 +118,11 @@ public class ChallengeParticipationService {
     }
 
     private void validateStatus(ChallengeParticipation participation, ParticipationStatus status) {
-        if (participation.getStatus() != ParticipationStatus.PENDING) {
+        if (participation.getStatus().isNot(ParticipationStatus.PENDING)) {
             throw new InvalidParticipationStatusException("참여 상태가 대기 중인 참여자만 처리할 수 있습니다.");
         }
 
-        if (status != ParticipationStatus.ACCEPTED && status != ParticipationStatus.REJECTED) {
+        if (status.isNot(ParticipationStatus.ACCEPTED) && status.isNot(ParticipationStatus.REJECTED)) {
             throw new InvalidParticipationStatusException("참여 수락 또는 거절만 가능합니다.");
         }
     }

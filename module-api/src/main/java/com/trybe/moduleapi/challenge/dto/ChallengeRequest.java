@@ -7,6 +7,7 @@ import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class ChallengeRequest {
@@ -22,6 +23,7 @@ public class ChallengeRequest {
     private static final String END_DATE_NOT_NULL_MESSAGE = "종료일을 입력해주세요.";
     private static final String START_DATE_BEFORE_END_DATE_MESSAGE = "시작일은 종료일보다 빠를 수 없습니다.";
     private static final String DATES_AFTER_TODAY_MESSAGE = "시작일과 종료일은 모두 현재 날짜 이후여야 합니다.";
+    private static final String DURATION_LIMIT_MESSAGE = "챌린지는 최소 1주, 최대 8주까지 진행 가능합니다.";
 
     private static final String CAPACITY_NOT_NULL_MESSAGE = "챌린지 인원을 입력해주세요.";
     private static final int CAPACITY_MIN = 1;
@@ -86,6 +88,12 @@ public class ChallengeRequest {
             return startDate.isAfter(LocalDate.now()) && endDate.isAfter(LocalDate.now());
         }
 
+        @AssertTrue(message = DURATION_LIMIT_MESSAGE)
+        private boolean isDurationLimit() {
+            long durationInDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+            return durationInDays >= 7 && durationInDays <= 56;
+        }
+
         public Challenge toEntity() {
             return new Challenge(
                     title,
@@ -140,6 +148,12 @@ public class ChallengeRequest {
         @AssertTrue(message = DATES_AFTER_TODAY_MESSAGE)
         private boolean isDatesAfterToday() {
             return startDate.isAfter(LocalDate.now()) && endDate.isAfter(LocalDate.now());
+        }
+
+        @AssertTrue(message = DURATION_LIMIT_MESSAGE)
+        private boolean isDurationLimit() {
+            long durationInDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+            return durationInDays >= 7 && durationInDays <= 56;
         }
     }
 

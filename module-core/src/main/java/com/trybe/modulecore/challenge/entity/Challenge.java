@@ -2,6 +2,7 @@ package com.trybe.modulecore.challenge.entity;
 
 import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
+import com.trybe.modulecore.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE challenge SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
-public class Challenge {
+public class Challenge extends BaseEntity {
     public Challenge(String title, String description, LocalDate startDate, LocalDate endDate, int capacity, ChallengeCategory category, String proofWay, int proofCount) {
         this.title = title;
         this.description = description;

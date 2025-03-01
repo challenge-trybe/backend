@@ -14,4 +14,12 @@ public enum ParticipationStatus {
     ParticipationStatus(String description) {
         this.description = description;
     }
+
+    public boolean is(ParticipationStatus status) {
+        return this == status;
+    }
+
+    public boolean isNot(ParticipationStatus status) {
+        return this != status;
+    }
 }

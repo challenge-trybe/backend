@@ -1,10 +1,14 @@
-package com.trybe.moduleapi.fixtures;
+package com.trybe.moduleapi.challenge.fixtures;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -158,7 +162,9 @@ public class ChallengeFixtures {
     public static Challenge 진행중인_챌린지 = createChallenge(ChallengeStatus.ONGOING);
     public static Challenge 종료된_챌린지 = createChallenge(ChallengeStatus.DONE);
 
-    public static List<Challenge> 챌린지_목록 = List.of(진행중인_챌린지);
+    public static Pageable 페이지_요청 = PageRequest.of(0, 10);
+    private static List<Challenge> 챌린지_목록 = List.of(진행중인_챌린지);
+    public static Page<Challenge> 챌린지_페이지 = new PageImpl<>(챌린지_목록, 페이지_요청, 챌린지_목록.size());
 
     public static ChallengeStatus 대기중 = ChallengeStatus.PENDING;
 
@@ -169,5 +175,5 @@ public class ChallengeFixtures {
     public static final ChallengeResponse.Detail 내용_수정된_챌린지_상세_응답 = ChallengeResponse.Detail.from(내용_수정된_챌린지);
     public static final ChallengeResponse.Detail 인증_내용_수정된_챌린지_상세_응답 = ChallengeResponse.Detail.from(인증_내용_수정된_챌린지);
 
-    public static final List<ChallengeResponse.Summary> 챌린지_목록_응답 = 챌린지_목록.stream().map(ChallengeResponse.Summary::from).toList();
+    public static final Page<ChallengeResponse.Summary> 챌린지_페이지_응답 = 챌린지_페이지.map(ChallengeResponse.Summary::from);
 }
