@@ -18,8 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
-
 @Service
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
@@ -106,13 +104,13 @@ public class ChallengeService {
     }
 
     private void validateRole(ChallengeParticipation participation, ChallengeRole role, String message) {
-        if (participation.getRole() != role) {
+        if (participation.getRole().isNot(role)) {
             throw new InvalidChallengeRoleActionException(message);
         }
     }
 
     private void validateChallengeStatus(Challenge challenge, boolean shouldBe, ChallengeStatus status, String message) {
-        if ((shouldBe && challenge.getStatus() != status) || (!shouldBe && challenge.getStatus() == status)) {
+        if ((shouldBe && challenge.getStatus().isNot(status)) || (!shouldBe && challenge.getStatus().is(status))) {
             throw new InvalidChallengeStatusException(message);
         }
     }
