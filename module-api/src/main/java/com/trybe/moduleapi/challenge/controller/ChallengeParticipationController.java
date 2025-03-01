@@ -3,8 +3,8 @@ package com.trybe.moduleapi.challenge.controller;
 import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.challenge.service.ChallengeParticipationService;
+import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,7 @@ public class ChallengeParticipationController {
     }
 
     @GetMapping("/my")
-    public Page<ChallengeParticipationResponse.Detail> getMyParticipations(
+    public PageResponse<ChallengeParticipationResponse.Detail> getMyParticipations(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam("status") ParticipationStatus status,
             Pageable pageable
@@ -36,7 +36,7 @@ public class ChallengeParticipationController {
     }
 
     @GetMapping("/{challengeId}")
-    public Page<ChallengeParticipationResponse.Summary> getParticipants(
+    public PageResponse<ChallengeParticipationResponse.Summary> getParticipants(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("challengeId") Long challengeId,
             @RequestParam("status") ParticipationStatus status,

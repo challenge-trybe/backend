@@ -2,6 +2,7 @@ package com.trybe.moduleapi.challenge.fixtures;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
@@ -175,5 +176,5 @@ public class ChallengeFixtures {
     public static final ChallengeResponse.Detail 내용_수정된_챌린지_상세_응답 = ChallengeResponse.Detail.from(내용_수정된_챌린지);
     public static final ChallengeResponse.Detail 인증_내용_수정된_챌린지_상세_응답 = ChallengeResponse.Detail.from(인증_내용_수정된_챌린지);
 
-    public static final Page<ChallengeResponse.Summary> 챌린지_페이지_응답 = 챌린지_페이지.map(ChallengeResponse.Summary::from);
+    public static final PageResponse<ChallengeResponse.Summary> 챌린지_페이지_응답 = new PageResponse<>(챌린지_페이지.map(ChallengeResponse.Summary::from));
 }
