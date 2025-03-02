@@ -30,10 +30,9 @@ public class ChallengeParticipationService {
 
     @Transactional
     public ChallengeParticipationResponse.Detail join(User user, Long challengeId) {
-        validateDuplicatedParticipation(user.getId(), challengeId);
-
         Challenge challenge = getChallenge(challengeId);
 
+        validateDuplicatedParticipation(user.getId(), challengeId);
         validateCapacity(challenge);
 
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
@@ -108,12 +107,12 @@ public class ChallengeParticipationService {
     }
 
     private void validateCapacity(Challenge challenge) {
-        if (MAX_PENDING_PARTICIPATIONS <= challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.PENDING)) {
-            throw new ChallengeParticipationFullException("참여 신청이 꽉 찼습니다.");
-        }
-
         if (challenge.getCapacity() <= challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED)) {
             throw new ChallengeFullException();
+        }
+
+        if (MAX_PENDING_PARTICIPATIONS <= challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.PENDING)) {
+            throw new ChallengeParticipationFullException("참여 신청이 꽉 찼습니다.");
         }
     }
 
