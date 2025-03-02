@@ -53,7 +53,8 @@ public class ChallengeParticipationService {
 
     @Transactional(readOnly = true)
     public PageResponse<ChallengeParticipationResponse.Summary> getParticipants(User user, Long challengeId, ParticipationStatus status, Pageable pageable) {
-        ChallengeParticipation participation = getParticipation(user.getId(), challengeId);
+        Challenge challenge = getChallenge(challengeId);
+        ChallengeParticipation participation = getParticipation(user.getId(), challenge.getId());
 
         validateParticipationStatus(participation, ParticipationStatus.ACCEPTED);
         if (status.isNot(ParticipationStatus.ACCEPTED)) {
