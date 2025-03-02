@@ -89,6 +89,16 @@ public class ChallengeParticipationService {
         participation.updateStatus(ParticipationStatus.DISABLED);
     }
 
+    @Transactional
+    public void cancel(User user, Long participationId) {
+        ChallengeParticipation participation = getParticipation(participationId);
+
+        validateParticipationUser(participation, user.getId());
+        validateParticipationStatus(participation, ParticipationStatus.PENDING);
+
+        challengeParticipationRepository.delete(participation);
+    }
+
     private Challenge getChallenge(Long id) {
         return challengeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundChallengeException());
@@ -113,6 +123,12 @@ public class ChallengeParticipationService {
     private void validateParticipationStatus(ChallengeParticipation participation, ParticipationStatus requiredStatus) {
         if (participation.getStatus().isNot(requiredStatus)) {
             throw new InvalidParticipationStatusActionException("참여 상태가 " + requiredStatus.getDescription() + "인 참여자만 접근 가능합니다.");
+        }
+    }
+
+    private void validateParticipationUser(ChallengeParticipation participation, Long userId) {
+        if (participation.getUser().getId() != userId) {
+            throw new ForbiddenParticipationException("해당 챌린지 참여 정보에 접근할 수 없습니다.");
         }
     }
 

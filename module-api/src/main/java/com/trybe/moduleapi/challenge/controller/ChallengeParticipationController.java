@@ -61,4 +61,12 @@ public class ChallengeParticipationController {
     ) {
         challengeParticipationService.leave(userDetails.getUser(), participationId);
     }
+
+    @DeleteMapping("/{participationId}")
+    public void cancel(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("participationId") Long participationId
+    ) {
+        challengeParticipationService.cancel(userDetails.getUser(), participationId);
+    }
 }
