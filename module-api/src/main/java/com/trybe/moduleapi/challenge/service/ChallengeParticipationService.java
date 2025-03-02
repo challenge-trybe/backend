@@ -61,8 +61,9 @@ public class ChallengeParticipationService {
     @Transactional
     public ChallengeParticipationResponse.Detail confirm(User user, Long participationId, ParticipationStatus status) {
         ChallengeParticipation participation = getParticipation(participationId);
+        ChallengeParticipation userParticipation = getParticipation(user.getId(), participation.getChallenge().getId());
 
-        checkRole(participation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
+        checkRole(userParticipation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
         validateStatus(participation, status);
 
         participation.updateStatus(status);
