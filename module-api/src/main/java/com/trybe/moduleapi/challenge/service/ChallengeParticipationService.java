@@ -55,10 +55,9 @@ public class ChallengeParticipationService {
     public PageResponse<ChallengeParticipationResponse.Summary> getParticipants(User user, Long challengeId, ParticipationStatus status, Pageable pageable) {
         ChallengeParticipation participation = getParticipation(user.getId(), challengeId);
 
-        checkParticipationStatus(participation, ParticipationStatus.ACCEPTED);
-
+        validateParticipationStatus(participation, ParticipationStatus.ACCEPTED);
         if (status.isNot(ParticipationStatus.ACCEPTED)) {
-            checkRole(participation, ChallengeRole.LEADER, "리더만 참여 신청 목록을 조회할 수 있습니다.");
+            validateRole(participation, ChallengeRole.LEADER, "리더만 참여 신청 목록을 조회할 수 있습니다.");
         }
 
         Page<ChallengeParticipation> participations = challengeParticipationRepository.findAllByChallengeIdAndStatusOrderByCreatedAtAsc(challengeId, status, pageable);
@@ -70,7 +69,7 @@ public class ChallengeParticipationService {
         ChallengeParticipation participation = getParticipation(participationId);
         ChallengeParticipation userParticipation = getParticipation(user.getId(), participation.getChallenge().getId());
 
-        checkRole(userParticipation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
+        validateRole(userParticipation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
         validateChallengeStatus(participation.getChallenge(), "챌린지가 진행 예정인 경우에만 참여 신청을 처리할 수 있습니다.");
         validateChallengeCapacity(participation.getChallenge());
         validateStatus(participation, status);
@@ -84,7 +83,7 @@ public class ChallengeParticipationService {
     public void leave(User user, Long challengeId) {
         ChallengeParticipation participation = getParticipation(user.getId(), challengeId);
 
-        checkRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
+        validateRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
 
         participation.updateStatus(ParticipationStatus.DISABLED);
     }
@@ -104,13 +103,13 @@ public class ChallengeParticipationService {
                 .orElseThrow(() -> new NotFoundChallengeParticipationException());
     }
 
-    private void checkRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
+    private void validateRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
         if (participation.getRole().isNot(requiredRole)) {
             throw new InvalidChallengeRoleActionException(message);
         }
     }
 
-    private void checkParticipationStatus(ChallengeParticipation participation, ParticipationStatus requiredStatus) {
+    private void validateParticipationStatus(ChallengeParticipation participation, ParticipationStatus requiredStatus) {
         if (participation.getStatus().isNot(requiredStatus)) {
             throw new InvalidParticipationStatusActionException("참여 상태가 " + requiredStatus.getDescription() + "인 참여자만 접근 가능합니다.");
         }
