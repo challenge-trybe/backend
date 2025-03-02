@@ -7,6 +7,7 @@ import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
+import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
@@ -33,6 +34,7 @@ public class ChallengeParticipationService {
         Challenge challenge = getChallenge(challengeId);
 
         validateDuplicatedParticipation(user.getId(), challengeId);
+        validateChallengeStatus(challenge, "챌린지가 진행 예정인 경우에만 참여 신청이 가능합니다.");
         validateCapacity(challenge);
 
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
@@ -63,6 +65,7 @@ public class ChallengeParticipationService {
         ChallengeParticipation userParticipation = getParticipation(user.getId(), participation.getChallenge().getId());
 
         checkRole(userParticipation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
+        validateChallengeStatus(participation.getChallenge(), "챌린지가 진행 예정인 경우에만 참여 신청을 처리할 수 있습니다.");
         validateStatus(participation, status);
 
         participation.updateStatus(status);
@@ -123,6 +126,12 @@ public class ChallengeParticipationService {
 
         if (status.isNot(ParticipationStatus.ACCEPTED) && status.isNot(ParticipationStatus.REJECTED)) {
             throw new InvalidParticipationStatusException("참여 수락 또는 거절만 가능합니다.");
+        }
+    }
+
+    private void validateChallengeStatus(Challenge challenge, String message) {
+        if (challenge.getStatus().isNot(ChallengeStatus.PENDING)) {
+            throw new InvalidChallengeStatusException(message);
         }
     }
 }
