@@ -53,7 +53,12 @@ public class ChallengeParticipationService {
     @Transactional(readOnly = true)
     public PageResponse<ChallengeParticipationResponse.Summary> getParticipants(User user, Long challengeId, ParticipationStatus status, Pageable pageable) {
         ChallengeParticipation participation = getParticipation(user.getId(), challengeId);
-        checkRole(participation, ChallengeRole.LEADER, "리더만 참여자 목록을 조회할 수 있습니다.");
+
+        checkParticipationStatus(participation, ParticipationStatus.ACCEPTED);
+
+        if (status.isNot(ParticipationStatus.ACCEPTED)) {
+            checkRole(participation, ChallengeRole.LEADER, "리더만 참여 신청 목록을 조회할 수 있습니다.");
+        }
 
         Page<ChallengeParticipation> participations = challengeParticipationRepository.findAllByChallengeIdAndStatusOrderByCreatedAtAsc(challengeId, status, pageable);
         return new PageResponse<>(participations.map(ChallengeParticipationResponse.Summary::from));
@@ -100,6 +105,12 @@ public class ChallengeParticipationService {
     private void checkRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
         if (participation.getRole().isNot(requiredRole)) {
             throw new InvalidChallengeRoleActionException(message);
+        }
+    }
+
+    private void checkParticipationStatus(ChallengeParticipation participation, ParticipationStatus requiredStatus) {
+        if (participation.getStatus().isNot(requiredStatus)) {
+            throw new InvalidParticipationStatusActionException("참여 상태가 " + requiredStatus.getDescription() + "인 참여자만 접근 가능합니다.");
         }
     }
 
