@@ -35,7 +35,8 @@ public class ChallengeParticipationService {
 
         validateDuplicatedParticipation(user.getId(), challengeId);
         validateChallengeStatus(challenge, "챌린지가 진행 예정인 경우에만 참여 신청이 가능합니다.");
-        validateCapacity(challenge);
+        validateChallengeCapacity(challenge);
+        validateChallengeParticipationCapacity(challenge);
 
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
@@ -71,6 +72,7 @@ public class ChallengeParticipationService {
 
         checkRole(userParticipation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
         validateChallengeStatus(participation.getChallenge(), "챌린지가 진행 예정인 경우에만 참여 신청을 처리할 수 있습니다.");
+        validateChallengeCapacity(participation.getChallenge());
         validateStatus(participation, status);
 
         participation.updateStatus(status);
@@ -120,11 +122,13 @@ public class ChallengeParticipationService {
         }
     }
 
-    private void validateCapacity(Challenge challenge) {
+    private void validateChallengeCapacity(Challenge challenge) {
         if (challenge.getCapacity() <= challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED)) {
             throw new ChallengeFullException();
         }
+    }
 
+    private void validateChallengeParticipationCapacity(Challenge challenge) {
         if (MAX_PENDING_PARTICIPATIONS <= challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.PENDING)) {
             throw new ChallengeParticipationFullException("참여 신청이 꽉 찼습니다.");
         }
