@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class ChallengeParticipationFixtures {
@@ -55,15 +56,15 @@ public class ChallengeParticipationFixtures {
 
     /* Response DTO */
     public static ChallengeParticipationResponse.Detail 챌린지_참여_상세_응답() {
-        return ChallengeParticipationResponse.Detail.from(챌린지_멤버_참여_대기());
+        return new ChallengeParticipationResponse.Detail(ChallengeFixtures.챌린지_요약_응답, 챌린지_참여_ID, UserFixtures.회원_응답, 챌린지_멤버_역할, 챌린지_참여_대기_상태, LocalDateTime.now());
     }
 
     public static ChallengeParticipationResponse.Summary 챌린지_참여_요약_리더() {
-        return ChallengeParticipationResponse.Summary.from(챌린지_리더_참여());
+        return new ChallengeParticipationResponse.Summary(챌린지_참여_ID, UserFixtures.회원_응답, 챌린지_리더_역할, 챌린지_참여_수락_상태, LocalDateTime.now());
     }
 
     public static ChallengeParticipationResponse.Summary 챌린지_참여_요약_멤버() {
-        return ChallengeParticipationResponse.Summary.from(챌린지_멤버_참여());
+        return new ChallengeParticipationResponse.Summary(챌린지_참여_ID, UserFixtures.회원_응답, 챌린지_멤버_역할, 챌린지_참여_수락_상태, LocalDateTime.now());
     }
 
     public static PageResponse<ChallengeParticipationResponse.Summary> 나의_참여_중인_챌린지_목록_페이지_응답 = new PageResponse<>(나의_참여_중인_챌린지_목록_페이지.map(ChallengeParticipationResponse.Summary::from));
