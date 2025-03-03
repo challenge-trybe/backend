@@ -67,7 +67,7 @@ public class ChallengeParticipationFixtures {
         return new ChallengeParticipationResponse.Summary(챌린지_참여_ID, UserFixtures.회원_응답, 챌린지_멤버_역할, 챌린지_참여_수락_상태, LocalDateTime.now());
     }
 
-    public static PageResponse<ChallengeParticipationResponse.Summary> 나의_참여_중인_챌린지_목록_페이지_응답 = new PageResponse<>(나의_참여_중인_챌린지_목록_페이지.map(ChallengeParticipationResponse.Summary::from));
+    public static PageResponse<ChallengeParticipationResponse.Detail> 나의_참여_중인_챌린지_목록_페이지_응답 = new PageResponse<>(나의_참여_중인_챌린지_목록_페이지.map(ChallengeParticipationResponse.Detail::from));
     public static PageResponse<ChallengeParticipationResponse.Summary> 챌린지_참여_목록_페이지_응답 = new PageResponse<>(챌린지_참여_목록_페이지.map(ChallengeParticipationResponse.Summary::from));
     public static PageResponse<ChallengeParticipationResponse.Summary> 챌린지_참여_신청_목록_페이지_응답 = new PageResponse<>(챌린지_참여_신청_목록_페이지.map(ChallengeParticipationResponse.Summary::from));
 }
