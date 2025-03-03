@@ -54,12 +54,12 @@ public class ChallengeParticipationController {
         return challengeParticipationService.confirm(userDetails.getUser(), participationId, status);
     }
 
-    @PutMapping("/leave/{participationId}")
+    @PutMapping("/leave/{challengeId}")
     public void leave(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("participationId") Long participationId
+            @PathVariable("challengeId") Long challengeId
     ) {
-        challengeParticipationService.leave(userDetails.getUser(), participationId);
+        challengeParticipationService.leave(userDetails.getUser(), challengeId);
     }
 
     @DeleteMapping("/{participationId}")
