@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.challenge.fixtures;
 
+import com.trybe.moduleapi.challenge.dto.ChallengeParticipationRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
@@ -30,6 +31,10 @@ public class ChallengeParticipationFixtures {
 
     public static final int 챌린지_참여_대기_최대_수 = 20;
 
+    /* Request DTO */
+    public static ChallengeParticipationRequest.Confirm 챌린지_참여_처리_요청 = new ChallengeParticipationRequest.Confirm(챌린지_참여_수락_상태);
+    public static ChallengeParticipationRequest.Confirm 잘못된_챌린지_참여_처리_요청 = new ChallengeParticipationRequest.Confirm(챌린지_참여_탈퇴_상태);
+
     /* Entity */
     public static User 리더 = UserFixtures.회원_생성("leader", "leader@test.com");
     public static User 멤버 = UserFixtures.회원_생성("member", "member@test.com");
@@ -57,6 +62,10 @@ public class ChallengeParticipationFixtures {
     /* Response DTO */
     public static ChallengeParticipationResponse.Detail 챌린지_참여_상세_응답() {
         return new ChallengeParticipationResponse.Detail(ChallengeFixtures.챌린지_요약_응답, 챌린지_참여_ID, UserFixtures.회원_응답, 챌린지_멤버_역할, 챌린지_참여_대기_상태, LocalDateTime.now());
+    }
+
+    public static ChallengeParticipationResponse.Detail 챌린지_수락된_참여_상세_응답() {
+        return new ChallengeParticipationResponse.Detail(ChallengeFixtures.챌린지_요약_응답, 챌린지_참여_ID, UserFixtures.회원_응답, 챌린지_멤버_역할, 챌린지_참여_수락_상태, LocalDateTime.now());
     }
 
     public static ChallengeParticipationResponse.Summary 챌린지_참여_요약_리더() {
