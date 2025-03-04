@@ -59,11 +59,11 @@ class ChallengeControllerTest extends ControllerTest {
                 status().isOk(),
                 jsonPath("$.title").value(request.title()),
                 jsonPath("$.description").value(request.description()),
-                jsonPath("$.startDate").value(request.startDate().toString().toString()),
-                jsonPath("$.endDate").value(request.endDate().toString().toString()),
+                jsonPath("$.startDate").value(request.startDate().toString()),
+                jsonPath("$.endDate").value(request.endDate().toString()),
                 jsonPath("$.status").value(ChallengeFixtures.대기중.toString()),
                 jsonPath("$.capacity").value(request.capacity()),
-                jsonPath("$.category").value(request.category().toString().toString()),
+                jsonPath("$.category").value(request.category().toString()),
                 jsonPath("$.proofWay").value(request.proofWay()),
                 jsonPath("$.proofCount").value(request.proofCount())
         );
@@ -318,7 +318,7 @@ class ChallengeControllerTest extends ControllerTest {
                 status().isOk(),
                 jsonPath("$.title").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.title()),
                 jsonPath("$.description").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.description()),
-                jsonPath("$.startDate").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.startDate().toString().toString()),
+                jsonPath("$.startDate").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.startDate().toString()),
                 jsonPath("$.endDate").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.endDate().toString()),
                 jsonPath("$.status").value(ChallengeFixtures.대기중.toString()),
                 jsonPath("$.capacity").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.capacity()),

@@ -28,12 +28,20 @@ public class ChallengeParticipationResponse {
 
     public record Detail(
             ChallengeResponse.Summary challenge,
-            Summary participation
+            Long id,
+            UserResponse user,
+            ChallengeRole role,
+            ParticipationStatus status,
+            LocalDateTime createdAt
     ) {
         public static Detail from(ChallengeParticipation challengeParticipation) {
             return new Detail(
                     ChallengeResponse.Summary.from(challengeParticipation.getChallenge()),
-                    Summary.from(challengeParticipation)
+                    challengeParticipation.getId(),
+                    UserResponse.from(challengeParticipation.getUser()),
+                    challengeParticipation.getRole(),
+                    challengeParticipation.getStatus(),
+                    challengeParticipation.getCreatedAt()
             );
         }
     }

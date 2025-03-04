@@ -49,6 +49,16 @@ public class UserFixtures {
                                 .birth(회원_생년월일)
                                 .build();
 
+    public static User 회원_생성(String userId, String email) {
+        return User.builder()
+                .userId(userId)
+                .email(email)
+                .nickname(회원_닉네임)
+                .gender(회원_성별)
+                .birth(회원_생년월일)
+                .build();
+    }
+
     public static UserRequest.Create 회원가입_요청 = new UserRequest.Create(회원_아이디,회원_이메일,회원_닉네임,회원_비밀번호,회원_성별,회원_생년월일);
     public static UserRequest.Create 잘못된_회원가입_요청 = new UserRequest.Create(잘못된_회원_아이디,잘못된_회원_이메일,잘못된_회원_닉네임,잘못된_회원_비밀번호,잘못된_회원_성별,잘못된_회원_생년월일);
     public static UserRequest.Update 회원정보_수정_요청 = new UserRequest.Update(수정된_회원_닉네임,수정된_회원_이메일,수정된_회원_성별,수정된_회원_생년월일);
