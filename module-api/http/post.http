@@ -1,0 +1,90 @@
+### 1. 게시글 생성 API
+POST http://localhost:8080/api/v1/posts
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "title": "다 클린코드 도서 챌린지 가입해주세요 ㅜㅜ",
+  "content": "이 포스트는 특정 챌린지에 대한 홍보 내용입니다.",
+  "category": "PROMOTION",
+  "challengeId": [1]
+}
+
+### 1.1 게시글 생성 API - 참여하지 않는 챌린지를 넘겼을 때
+POST http://localhost:8080/api/v1/posts
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "title": "이 클린코드 도서 챌린지 가입해주세요 ㅜㅜ",
+  "content": "이 포스트는 특정 챌린지에 대한 홍보 내용입니다.",
+  "category": "PROMOTION",
+  "challengeId": [2]
+}
+
+### 1.3 게시글 생성 API - 유효성 검증 실패
+POST http://localhost:8080/api/v1/posts
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "title": "",
+  "content": "",
+  "category": "",
+  "challengeId": []
+}
+
+### 2. 게시글 단건조회 API
+GET http://localhost:8080/api/v1/posts/1
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+### 2.1 게시글 단건조회 API - 존재하지 않는 포스트 조회
+GET http://localhost:8080/api/v1/posts/1000
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+
+### 3. 게시글 페이징 API
+POST http://localhost:8080/api/v1/posts/search?page=0&size=10
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "keyword": "도서",
+  "categories": ["PROMOTION"],
+  "order" : "LATEST"
+}
+
+### 4. 게시글 수정 API
+PUT http://localhost:8080/api/v1/posts
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "title": "(수정)클린코드 도서 챌린지 가입 감사합니다.",
+  "content": "이 포스트는 특정 챌린지에 대한 홍보 내용입니다.",
+  "category": "PROMOTION",
+  "challengeId": [1]
+}
+
+### 4.1 게시글 수정 API - 유효성 검증 실패
+PUT http://localhost:8080/api/v1/posts
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "title": "",
+  "content": "",
+  "category": "",
+  "challengeId": []
+}
+
+### 5. 게시글 삭제 API
+DELETE http://localhost:8080/api/v1/posts/1
+Authorization: {{accessToken}}
+
+### 5.1 게시글 삭제 API - 존재하지 않는 포스트 삭제
+DELETE http://localhost:8080/api/v1/posts/1000
+Authorization: {{accessToken}}
+
