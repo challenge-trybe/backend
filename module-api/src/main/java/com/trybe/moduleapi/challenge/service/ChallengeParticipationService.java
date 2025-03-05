@@ -86,12 +86,12 @@ public class ChallengeParticipationService {
 
     private ChallengeParticipation getParticipation(Long id) {
         return challengeParticipationRepository.findById(id)
-                .orElseThrow(() -> new NotFoundChallengeParticipationException());
+                .orElseThrow(() -> new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."));
     }
 
     private ChallengeParticipation getParticipation(Long userId, Long challengeId) {
         return challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
-                .orElseThrow(() -> new NotFoundChallengeParticipationException());
+                .orElseThrow(() -> new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."));
     }
 
     private void checkRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
