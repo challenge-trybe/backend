@@ -347,3 +347,101 @@ include::{snippets}/challenge-controller-test/delete/invalid/conflict/response-f
 존재하지 않는 챌린지 ID로 삭제했을 때, 다음과 같은 응답이 반환됩니다.
 include::{snippets}/challenge-controller-test/delete/invalid/not-found/http-response.adoc[]
 include::{snippets}/challenge-controller-test/delete/invalid/not-found/response-fields.adoc[]
+
+---
+
+== 포스트
+
+=== 포스트 생성 API
+
+게시글을 작성합니다.
+
+==== 정상 요청
+include::{snippets}/post-controller-test/save/http-request.adoc[]
+include::{snippets}/post-controller-test/save/request-fields.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/save/http-response.adoc[]
+include::{snippets}/post-controller-test/save/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+유효성 검증에 실패하는 요청 시 다음과 같이 반환합니다.
+
+include::{snippets}/post-controller-test/save/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/save/invalid/bad-request/http-response.adoc[]
+include::{snippets}/post-controller-test/save/invalid/bad-request/response-fields.adoc[]
+
+=== 게시글 단건 조회 API
+게시글을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/post-controller-test/findById/http-request.adoc[]
+include::{snippets}/post-controller-test/findById/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/findById/http-response.adoc[]
+include::{snippets}/post-controller-test/findById/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 게시글 조회 시)
+존재하지 않는 게시글 조회 시 다음과 같이 반환됩니다.
+
+include::{snippets}/post-controller-test/findById/invalid/not-found/http-request.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/findById/invalid/not-found/http-response.adoc[]
+include::{snippets}/post-controller-test/findById/invalid/not-found/response-fields.adoc[]
+
+=== 게시글 목록 조회 API
+
+게시글 목록 조회합니다.
+
+==== 정상 요청
+include::{snippets}/post-controller-test/search/http-request.adoc[]
+include::{snippets}/post-controller-test/search/query-parameters.adoc
+
+- 응답
+include::{snippets}/post-controller-test/search/http-response.adoc[]
+include::{snippets}/post-controller-test/search/response-fields.adoc[]
+
+=== 게시글 수정 API
+
+게시글을 수정합니다.
+
+==== 정상 요청
+include::{snippets}/post-controller-test/update/http-request.adoc[]
+include::{snippets}/post-controller-test/update/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/update/http-response.adoc[]
+include::{snippets}/post-controller-test/update/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+유효성 검증에 실패하는 수정 시 다음과 같이 반환합니다.
+include::{snippets}/post-controller-test/update/invalid/forbidden/http-request.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/update/invalid/forbidden/http-response.adoc[]
+include::{snippets}/post-controller-test/update/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 게시글 수 시)
+존재하지 않는 글을 수정 시 다음과 같이 반환됩니다.
+include::{snippets}/post-controller-test/update/invalid/not-found/http-request.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/update/invalid/not-found/http-response.adoc[]
+include::{snippets}/post-controller-test/update/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (작성자가 아닌 게시글 수정 시)
+작성자가 아닌 게시글 수정 시 다음과 같이 반환됩니다.
+include::{snippets}/post-controller-test/update/invalid/forbidden/http-request.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/update/invalid/forbidden/http-response.adoc[]
+include::{snippets}/post-controller-test/update/invalid/forbidden/response-fields.adoc[]
+
+
+
+
+
