@@ -16,6 +16,6 @@ public class AuthenticationFixtures {
 
     public static LoginRequest 로그인_요청 = new LoginRequest(로그인_아이디,비밀번호);
     public static LoginRequest 잘못된_로그인_요청 = new LoginRequest(잘못된_로그인_아이디,잘못된_비밀번호);
-    public static TokenResponse 토큰_반환 = TokenResponse.from(UserFixtures.회원_응답, accessToken, refreshToken);
+    public static TokenResponse 토큰_반환 = TokenResponse.from(UserFixtures.요약_회원_응답, accessToken, refreshToken);
     public static RefreshTokenRequest 토큰_재발급_요청 = new RefreshTokenRequest(refreshToken);
 }
