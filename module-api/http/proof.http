@@ -1,0 +1,33 @@
+### 1. 인증 생성
+POST http://localhost:8080/api/v1/proofs
+Authorization: {{accessToken}}
+Content-Type: application/json
+
+{
+  "challengeId": 1,
+  "date": "2025-04-08"
+}
+
+### 1-1. 인증 생성 (유효성 검증 실패)
+POST http://localhost:8080/api/v1/proofs
+Authorization: {{accessToken}}
+Content-Type: application/json
+
+{
+  "date": "2024-04-08"
+}
+
+### 2. 인증 단일 조회
+GET http://localhost:8080/api/v1/proofs/1
+Authorization: {{accessToken}}
+Content-Type: application/json
+
+### 3. 인증 목록 조회
+GET http://localhost:8080/api/v1/proofs/challenge/1
+Authorization: {{accessToken}}
+Content-Type: application/json
+
+### 4. 인증 삭제
+DELETE http://localhost:8080/api/v1/proofs/1
+Authorization: {{accessToken}}
+Content-Type: application/json
