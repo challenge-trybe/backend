@@ -57,7 +57,7 @@ public class AuthenticationService {
     private TokenResponse createTokenResponse(String userId){
         User user = getUserByUserId(userId);
         Role role = user.getRole();
-        UserResponse userResponse = UserResponse.from(user);
+        UserResponse.Summary userResponse = UserResponse.Summary.from(user);
 
         Map<String, String> tokenMap = jwtUtils.generateToken(userId, role.getDescription());
         String accessToken = tokenMap.get("accessToken");

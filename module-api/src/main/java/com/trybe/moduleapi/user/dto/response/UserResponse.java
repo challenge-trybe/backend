@@ -5,15 +5,36 @@ import com.trybe.modulecore.user.enums.Gender;
 
 import java.time.LocalDate;
 
-public record UserResponse(
-        Long id,
-        String nickname,
-        String userId,
-        String email,
-        Gender gender,
-        LocalDate birth
-){
-    public static UserResponse from(User user){
-        return new UserResponse(user.getId(), user.getNickname(), user.getUserId(), user.getEmail(), user.getGender(), user.getBirth());
+public class UserResponse {
+
+    public record Detail(
+            Long id,
+            String nickname,
+            String userId,
+            String email,
+            Gender gender,
+            LocalDate birth
+    ) {
+        public static Detail from(User user) {
+            return new Detail(user.getId(),
+                              user.getNickname(),
+                              user.getUserId(),
+                              user.getEmail(),
+                              user.getGender(),
+                              user.getBirth());
+        }
+    }
+
+    public record Summary(
+            Long id,
+            String userId,
+            String nickname
+    ){
+        public static Summary from(User user) {
+            return new Summary(user.getId(),
+                              user.getUserId(),
+                              user.getNickname());
+        }
     }
 }
+

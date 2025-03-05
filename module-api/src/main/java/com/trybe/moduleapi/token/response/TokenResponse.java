@@ -7,17 +7,17 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class TokenResponse {
-    private UserResponse userResponse;
+    private UserResponse.Summary userResponse;
     private String accessToken;
     private String refreshToken;
 
-    public TokenResponse(UserResponse userResponse, String accessToken, String refreshToken) {
+    public TokenResponse(UserResponse.Summary userResponse, String accessToken, String refreshToken) {
         this.userResponse = userResponse;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }
 
-    public static TokenResponse from(UserResponse userResponse, String accessToken, String refreshToken){
+    public static TokenResponse from(UserResponse.Summary userResponse, String accessToken, String refreshToken){
         return new TokenResponse(userResponse, accessToken, refreshToken);
     }
 }

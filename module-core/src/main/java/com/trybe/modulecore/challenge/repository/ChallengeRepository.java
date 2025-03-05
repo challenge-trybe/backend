@@ -10,10 +10,13 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     Page<Challenge> findAllByStatusInAndCategoryIn(List<ChallengeStatus> statuses, List<ChallengeCategory> categories, Pageable pageable);
     List<Challenge> findAllByStatusAndStartDate(ChallengeStatus status, LocalDate startDate);
     List<Challenge> findAllByStatusAndEndDate(ChallengeStatus status, LocalDate endDate);
+
+    List<Challenge> findAllByIdIn(Set<Long> id);
 }
