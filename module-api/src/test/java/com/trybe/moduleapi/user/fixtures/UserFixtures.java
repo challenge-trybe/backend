@@ -51,12 +51,12 @@ public class UserFixtures {
 
     public static User 회원_생성(String userId, String email) {
         return User.builder()
-                   .userId(userId)
-                   .email(email)
-                   .nickname(회원_닉네임)
-                   .gender(회원_성별)
-                   .birth(회원_생년월일)
-                   .build();
+                .userId(userId)
+                .email(email)
+                .nickname(회원_닉네임)
+                .gender(회원_성별)
+                .birth(회원_생년월일)
+                .build();
     }
 
     public static UserRequest.Create 회원가입_요청 = new UserRequest.Create(회원_아이디,회원_이메일,회원_닉네임,회원_비밀번호,회원_성별,회원_생년월일);

@@ -347,3 +347,195 @@ include::{snippets}/challenge-controller-test/delete/invalid/conflict/response-f
 존재하지 않는 챌린지 ID로 삭제했을 때, 다음과 같은 응답이 반환됩니다.
 include::{snippets}/challenge-controller-test/delete/invalid/not-found/http-response.adoc[]
 include::{snippets}/challenge-controller-test/delete/invalid/not-found/response-fields.adoc[]
+
+== 챌린지 참여 API
+
+=== 챌린지 참여 신청
+챌린지 ID에 해당하는 챌린지에 참여 신청 정보를 생성합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-participation-controller-test/join/http-request.adoc[]
+include::{snippets}/challenge-participation-controller-test/join/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/challenge-participation-controller-test/join/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/join/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 챌린지)
+존재하지 않는 챌린지 ID로 참여 신청을 요청했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-participation-controller-test/join/invalid/not-found/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/join/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (이미 참여 정보가 있는 경우)
+이미 참여 정보가 있는 챌린지에 참여 신청을 요청했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/duplicated/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/duplicated/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 상태가 진행 예정이 아닌 경우)
+진행 예정이 아닌 챌린지에 참여 신청을 요청했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/challenge-status/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/challenge-status/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 참여 인원이 초과된 경우)
+챌린지 참여 인원이 초과된 챌린지에 참여 신청을 요청했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/challenge-full/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/challenge-full/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 참여 대기열이 초과된 경우)
+챌린지 참여 대기열이 초과된 챌린지에 참여 신청을 요청했을 때, 다음과 같은 응답이 반환됩니다.
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/challenge-participation-full/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/join/invalid/conflict/challenge-participation-full/response-fields.adoc[]
+
+---
+
+=== 나의 챌린지 참여 목록 조회
+나의 챌린지 참여 목록을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-participation-controller-test/my-participations/http-request.adoc[]
+include::{snippets}/challenge-participation-controller-test/my-participations/query-parameters.adoc[]
+
+- 응답
+include::{snippets}/challenge-participation-controller-test/my-participations/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/my-participations/response-fields.adoc[]
+
+---
+
+=== 챌린지 참여자 목록 조회
+챌린지 ID에 해당하는 챌린지의 참여자 목록을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-participation-controller-test/participants/http-request.adoc[]
+include::{snippets}/challenge-participation-controller-test/participants/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/challenge-participation-controller-test/participants/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/participants/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 챌린지)
+존재하지 않는 챌린지 ID로 참여자 목록 조회를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/participants/invalid/not-found/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/participants/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 멤버가 아닌 경우)
+챌린지 멤버가 아닌 사용자가 참여자 목록 조회를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/participants/invalid/conflict/participation-status/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/participants/invalid/conflict/participation-status/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 리더가 아닌 경우 수락된 참여자 외 목록 조회 시)
+챌린지 리더가 아닌 사용자가 수락된 참여자 외 목록 조회를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/participants/invalid/conflict/challenge-role/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/participants/invalid/conflict/challenge-role/response-fields.adoc[]
+
+---
+
+=== 챌린지 참여자 처리
+챌린지 참여 ID에 대한 수락 혹은 거절 처리를 수행합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-participation-controller-test/confirm/http-request.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/path-parameters.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/request-fields.adoc[]
+
+- 응답
+include::{snippets}/challenge-participation-controller-test/confirm/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 챌린지 참여)
+존재하지 않는 챌린지 참여 ID로 참여자 처리를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/not-found/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 참여자가 아닌 경우)
+챌린지 참여자가 아닌 사용자가 참여자 처리를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/not-found/participant/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/not-found/participant/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 리더가 아닌 경우)
+챌린지 리더가 아닌 사용자가 참여자 처리를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/forbidden/challenge-role/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/forbidden/challenge-role/response-fields.adoc[]
+
+==== 비정상 요청 (진행 예정이 아닌 챌린지)
+진행 예정이 아닌 챌린지에 참여자 처리를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/conflict/challenge-status/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/conflict/challenge-status/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 참여 인원이 초과된 경우)
+챌린지 참여 인원이 초과된 챌린지에 참여자 처리를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/conflict/challenge-full/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/conflict/challenge-full/response-fields.adoc[]
+
+==== 비정상 요청 (대기 중이 아닌 챌린지 참여에 대한 처리 요청 시)
+대기 중이 아닌 챌린지 참여에 대한 처리를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/bad-request/participation-status/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/bad-request/participation-status/response-fields.adoc[]
+
+==== 비정상 요청 (수락 혹은 거절 외 처리 요청 시)
+수락 혹은 거절 외의 처리를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/bad-request/request-participation-status/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/confirm/invalid/bad-request/request-participation-status/response-fields.adoc[]
+
+---
+
+=== 챌린지 탈퇴
+챌린지 ID에 대한 챌린지 탈퇴 처리를 수행합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-participation-controller-test/leave/http-request.adoc[]
+include::{snippets}/challenge-participation-controller-test/leave/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/challenge-participation-controller-test/leave/http-response.adoc[]
+
+==== 비정상 요청 (존재하지 않는 챌린지 참여)
+챌린지에 대한 참여 정보가 존재하지 않는 경우, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/leave/invalid/not-found/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/leave/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 리더인 경우)
+챌린지 리더가 챌린지 탈퇴를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/leave/invalid/forbidden/challenge-role/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/leave/invalid/forbidden/challenge-role/response-fields.adoc[]
+
+---
+
+=== 챌린지 참여 신청 취소
+챌린지 참여 ID에 대한 챌린지 참여 신청 취소 처리를 수행합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-participation-controller-test/cancel/http-request.adoc[]
+include::{snippets}/challenge-participation-controller-test/cancel/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/challenge-participation-controller-test/cancel/http-response.adoc[]
+
+==== 비정상 요청 (존재하지 않는 챌린지 참여)
+챌린지 참여 ID에 대한 참여 정보가 존재하지 않는 경우, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/cancel/invalid/not-found/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/cancel/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 참여 신청자가 아닌 경우)
+챌린지 참여 신청자가 아닌 사용자가 챌린지 참여 신청 취소를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/cancel/invalid/forbidden/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/cancel/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 참여 상태가 대기 중이 아닌 경우)
+대기 중이 아닌 챌린지 참여 상태에 대한 챌린지 참여 신청 취소를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/challenge-participation-controller-test/cancel/invalid/forbidden/participation-status/http-response.adoc[]
+include::{snippets}/challenge-participation-controller-test/cancel/invalid/forbidden/participation-status/response-fields.adoc[]
