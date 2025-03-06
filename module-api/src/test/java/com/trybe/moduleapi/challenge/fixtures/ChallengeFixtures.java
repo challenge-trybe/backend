@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChallengeFixtures {
     public static final Long 챌린지_ID = 1L;
@@ -164,17 +165,19 @@ public class ChallengeFixtures {
     public static Challenge 종료된_챌린지 = createChallenge(ChallengeStatus.DONE);
 
     public static Pageable 페이지_요청 = PageRequest.of(0, 10);
-    private static List<Challenge> 챌린지_목록 = List.of(진행중인_챌린지);
+    public static List<Challenge> 챌린지_목록 = List.of(진행중인_챌린지,진행중인_챌린지,진행중인_챌린지);
     public static Page<Challenge> 챌린지_페이지 = new PageImpl<>(챌린지_목록, 페이지_요청, 챌린지_목록.size());
 
     public static ChallengeStatus 대기중 = ChallengeStatus.PENDING;
 
     /* Response DTO */
     public static final ChallengeResponse.Detail 챌린지_상세_응답 = ChallengeResponse.Detail.from(챌린지());
+
     public static final ChallengeResponse.Summary 챌린지_요약_응답 = ChallengeResponse.Summary.from(챌린지());
 
     public static final ChallengeResponse.Detail 내용_수정된_챌린지_상세_응답 = ChallengeResponse.Detail.from(내용_수정된_챌린지);
     public static final ChallengeResponse.Detail 인증_내용_수정된_챌린지_상세_응답 = ChallengeResponse.Detail.from(인증_내용_수정된_챌린지);
 
+    public static final List<ChallengeResponse.Summary> 챌린지_목록_응답 = 챌린지_목록.stream().map(ChallengeResponse.Summary::from).collect(Collectors.toList());
     public static final PageResponse<ChallengeResponse.Summary> 챌린지_페이지_응답 = new PageResponse<>(챌린지_페이지.map(ChallengeResponse.Summary::from));
 }

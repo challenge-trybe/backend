@@ -19,17 +19,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserResponse findById(@PathVariable Long id){
+    public UserResponse.Detail findById(@PathVariable Long id){
         return userService.findById(id);
     }
 
     @PostMapping
-    public UserResponse save(@Valid @RequestBody UserRequest.Create userRequest) {
-        return userService.save(userRequest);
+    public void save(@Valid @RequestBody UserRequest.Create userRequest) {
+        userService.save(userRequest);
     }
 
     @PutMapping
-    public UserResponse update(
+    public UserResponse.Detail update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserRequest.Update userRequest) {
         return userService.updateProfile(userDetails, userRequest);

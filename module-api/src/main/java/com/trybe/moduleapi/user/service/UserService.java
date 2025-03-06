@@ -23,7 +23,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse save(UserRequest.Create userRequest){
+    public void save(UserRequest.Create userRequest){
         checkDuplicatedUserId(userRequest.userId());
         checkDuplicatedEmail(userRequest.email());
 
@@ -31,15 +31,13 @@ public class UserService {
 
         String bcryptPassword = passwordEncoder.encode(userRequest.password());
         user.updatePassword(bcryptPassword);
-
-        User savedUser = userRepository.save(user);
-        return UserResponse.from(savedUser);
+        userRepository.save(user);
     }
 
     @Transactional
-    public UserResponse findById(Long id){
+    public UserResponse.Detail findById(Long id){
         User user = getUserById(id);
-        return UserResponse.from(user);
+        return UserResponse.Detail.from(user);
     }
 
     @Transactional
@@ -49,13 +47,13 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateProfile(CustomUserDetails userDetails, UserRequest.Update userRequest){
+    public UserResponse.Detail updateProfile(CustomUserDetails userDetails, UserRequest.Update userRequest){
         User user = userDetails.getUser();
         if (user.getEmail() != userRequest.email()) {
             checkDuplicatedEmail(userRequest.email());
         }
         user.updateProfile(userRequest.nickname(), userRequest.email(), userRequest.gender(), userRequest.birth());
-        return UserResponse.from(user);
+        return UserResponse.Detail.from(user);
     }
 
     @Transactional

@@ -106,12 +106,12 @@ public class ChallengeParticipationService {
 
     private ChallengeParticipation getParticipation(Long id) {
         return challengeParticipationRepository.findById(id)
-                .orElseThrow(() -> new NotFoundChallengeParticipationException());
+                .orElseThrow(() -> new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."));
     }
 
     private ChallengeParticipation getParticipation(Long userId, Long challengeId) {
         return challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
-                .orElseThrow(() -> new NotFoundChallengeParticipationException());
+                .orElseThrow(() -> new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."));
     }
 
     private void validateRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
@@ -159,7 +159,7 @@ public class ChallengeParticipationService {
             throw new InvalidParticipationStatusException("참여 수락 또는 거절만 가능합니다.");
         }
     }
-
+  
     private void validateChallengeStatus(Challenge challenge, String message) {
         if (challenge.getStatus().isNot(ChallengeStatus.PENDING)) {
             throw new InvalidChallengeStatusException(message);
