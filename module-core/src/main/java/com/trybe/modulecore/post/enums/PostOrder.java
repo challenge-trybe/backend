@@ -11,7 +11,7 @@ public enum PostOrder {
     LATEST("최신순") {
         @Override
         public OrderSpecifier<?> getOrderSpecifier() {
-            return post.id.desc();
+            return post.createdAt.desc();
         }
     };
 
