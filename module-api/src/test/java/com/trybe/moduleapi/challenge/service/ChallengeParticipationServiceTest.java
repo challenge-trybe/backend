@@ -498,12 +498,9 @@ class ChallengeParticipationServiceTest {
         assertEquals(challenge.getCategory(), response.category());
     }
 
-    private void verifyUserResponse(User user, UserResponse response) {
+    private void verifyUserResponse(User user, UserResponse.Summary response) {
         assertEquals(user.getId(), response.id());
         assertEquals(user.getUserId(), response.userId());
-        assertEquals(user.getEmail(), response.email());
         assertEquals(user.getNickname(), response.nickname());
-        assertEquals(user.getGender(), response.gender());
-        assertEquals(user.getBirth(), response.birth());
     }
 }

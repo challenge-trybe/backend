@@ -72,9 +72,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                 jsonPath("$.user.id").value(response.user().id()),
                 jsonPath("$.user.nickname").value(response.user().nickname()),
                 jsonPath("$.user.userId").value(response.user().userId()),
-                jsonPath("$.user.email").value(response.user().email()),
-                jsonPath("$.user.gender").value(response.user().gender().toString()),
-                jsonPath("$.user.birth").value(response.user().birth().toString()),
                 jsonPath("$.role").value(response.role().toString()),
                 jsonPath("$.status").value(response.status().toString())
 //                jsonPath("$.createdAt").value(response.createdAt().toString())
@@ -94,9 +91,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                         fieldWithPath("user.id").description("유저 ID"),
                         fieldWithPath("user.nickname").description("유저 닉네임"),
                         fieldWithPath("user.userId").description("유저 아이디"),
-                        fieldWithPath("user.email").description("유저 이메일"),
-                        fieldWithPath("user.gender").description("유저 성별"),
-                        fieldWithPath("user.birth").description("유저 생년월일"),
                         fieldWithPath("role").description("참여자 역할"),
                         fieldWithPath("status").description("참여 상태"),
                         fieldWithPath("createdAt").description("참여 생성일자")
@@ -288,9 +282,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                 jsonPath("$.content[0].user.id").value(response.content().get(0).user().id()),
                 jsonPath("$.content[0].user.nickname").value(response.content().get(0).user().nickname()),
                 jsonPath("$.content[0].user.userId").value(response.content().get(0).user().userId()),
-                jsonPath("$.content[0].user.email").value(response.content().get(0).user().email()),
-                jsonPath("$.content[0].user.gender").value(response.content().get(0).user().gender().toString()),
-                jsonPath("$.content[0].user.birth").value(response.content().get(0).user().birth().toString()),
                 jsonPath("$.content[0].role").value(response.content().get(0).role().toString()),
                 jsonPath("$.content[0].status").value(response.content().get(0).status().toString()),
 //                jsonPath("$.content[0].createdAt").value(response.content().get(0).createdAt().toString())
@@ -319,9 +310,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                         fieldWithPath("content[0].user.id").description("유저 ID"),
                         fieldWithPath("content[0].user.nickname").description("유저 닉네임"),
                         fieldWithPath("content[0].user.userId").description("유저 아이디"),
-                        fieldWithPath("content[0].user.email").description("유저 이메일"),
-                        fieldWithPath("content[0].user.gender").description("유저 성별"),
-                        fieldWithPath("content[0].user.birth").description("유저 생년월일"),
                         fieldWithPath("content[0].role").description("참여자 역할"),
                         fieldWithPath("content[0].status").description("참여 상태"),
                         fieldWithPath("content[0].createdAt").description("참여 생성일자"),
@@ -357,9 +345,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                 jsonPath("$.content[0].user.id").value(response.content().get(0).user().id()),
                 jsonPath("$.content[0].user.nickname").value(response.content().get(0).user().nickname()),
                 jsonPath("$.content[0].user.userId").value(response.content().get(0).user().userId()),
-                jsonPath("$.content[0].user.email").value(response.content().get(0).user().email()),
-                jsonPath("$.content[0].user.gender").value(response.content().get(0).user().gender().toString()),
-                jsonPath("$.content[0].user.birth").value(response.content().get(0).user().birth().toString()),
                 jsonPath("$.content[0].role").value(response.content().get(0).role().toString()),
                 jsonPath("$.content[0].status").value(response.content().get(0).status().toString()),
 //                jsonPath("$.content[0].createdAt").value(response.content().get(0).createdAt().toString())
@@ -383,9 +368,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                         fieldWithPath("content[0].user.id").description("유저 ID"),
                         fieldWithPath("content[0].user.nickname").description("유저 닉네임"),
                         fieldWithPath("content[0].user.userId").description("유저 아이디"),
-                        fieldWithPath("content[0].user.email").description("유저 이메일"),
-                        fieldWithPath("content[0].user.gender").description("유저 성별"),
-                        fieldWithPath("content[0].user.birth").description("유저 생년월일"),
                         fieldWithPath("content[0].role").description("참여자 역할"),
                         fieldWithPath("content[0].status").description("참여 상태"),
                         fieldWithPath("content[0].createdAt").description("참여 생성일자"),
@@ -527,9 +509,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                 jsonPath("$.user.id").value(response.user().id()),
                 jsonPath("$.user.nickname").value(response.user().nickname()),
                 jsonPath("$.user.userId").value(response.user().userId()),
-                jsonPath("$.user.email").value(response.user().email()),
-                jsonPath("$.user.gender").value(response.user().gender().toString()),
-                jsonPath("$.user.birth").value(response.user().birth().toString()),
                 jsonPath("$.role").value(response.role().toString()),
                 jsonPath("$.status").value(response.status().toString()),
                 jsonPath("$.createdAt").value(response.createdAt().toString())
@@ -550,9 +529,6 @@ class ChallengeParticipationControllerTest extends ControllerTest {
                         fieldWithPath("user.id").description("유저 ID"),
                         fieldWithPath("user.nickname").description("유저 닉네임"),
                         fieldWithPath("user.userId").description("유저 아이디"),
-                        fieldWithPath("user.email").description("유저 이메일"),
-                        fieldWithPath("user.gender").description("유저 성별"),
-                        fieldWithPath("user.birth").description("유저 생년월일"),
                         fieldWithPath("role").description("참여자 역할"),
                         fieldWithPath("status").description("참여 상태"),
                         fieldWithPath("createdAt").description("참여 생성일자")
@@ -569,7 +545,7 @@ class ChallengeParticipationControllerTest extends ControllerTest {
         ChallengeParticipationRequest.Confirm request = 챌린지_참여_처리_요청;
 
         when(challengeParticipationService.confirm(any(User.class), any(Long.class), any(ParticipationStatus.class)))
-                .thenThrow(new NotFoundChallengeParticipationException());
+                .thenThrow(new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."));
 
         /* when */
         /* then */
@@ -603,7 +579,7 @@ class ChallengeParticipationControllerTest extends ControllerTest {
         ChallengeParticipationRequest.Confirm request = 챌린지_참여_처리_요청;
 
         when(challengeParticipationService.confirm(any(User.class), any(Long.class), any(ParticipationStatus.class)))
-                .thenThrow(new NotFoundChallengeParticipationException());
+                .thenThrow(new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."));
 
         /* when */
         /* then */
@@ -825,7 +801,7 @@ class ChallengeParticipationControllerTest extends ControllerTest {
         /* given */
         Long challengeId = ChallengeFixtures.챌린지_ID;
 
-        doThrow(new NotFoundChallengeParticipationException())
+        doThrow(new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."))
                 .when(challengeParticipationService).leave(any(User.class), any(Long.class));
 
         /* when */
@@ -907,7 +883,7 @@ class ChallengeParticipationControllerTest extends ControllerTest {
         /* given */
         Long participationId = 챌린지_참여_ID;
 
-        doThrow(new NotFoundChallengeParticipationException())
+        doThrow(new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."))
                 .when(challengeParticipationService).cancel(any(User.class), any(Long.class));
 
         /* when */

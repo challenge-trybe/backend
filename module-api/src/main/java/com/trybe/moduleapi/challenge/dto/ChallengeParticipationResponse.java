@@ -29,7 +29,7 @@ public class ChallengeParticipationResponse {
     public record Detail(
             ChallengeResponse.Summary challenge,
             Long id,
-            UserResponse user,
+            UserResponse.Summary user,
             ChallengeRole role,
             ParticipationStatus status,
             LocalDateTime createdAt
@@ -38,7 +38,7 @@ public class ChallengeParticipationResponse {
             return new Detail(
                     ChallengeResponse.Summary.from(challengeParticipation.getChallenge()),
                     challengeParticipation.getId(),
-                    UserResponse.from(challengeParticipation.getUser()),
+                    UserResponse.Summary.from(challengeParticipation.getUser()),
                     challengeParticipation.getRole(),
                     challengeParticipation.getStatus(),
                     challengeParticipation.getCreatedAt()

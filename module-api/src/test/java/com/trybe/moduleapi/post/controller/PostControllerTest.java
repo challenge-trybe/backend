@@ -81,13 +81,13 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
                        jsonPath("$.createdAt").value(게시글_상세_응답.createdAt().toString()),
-                       jsonPath("$.challengeSummary").isArray(),
-                       jsonPath("$.challengeSummary[0].id").value(게시글_상세_응답.challengeSummary().get(0).id()),
-                       jsonPath("$.challengeSummary[0].title").value(게시글_상세_응답.challengeSummary().get(0).title()),
-                       jsonPath("$.challengeSummary[0].description").value(게시글_상세_응답.challengeSummary().get(0).description()),
-                       jsonPath("$.challengeSummary[0].status").value(게시글_상세_응답.challengeSummary().get(0).status().toString()),
-                       jsonPath("$.challengeSummary[0].capacity").value(게시글_상세_응답.challengeSummary().get(0).capacity()),
-                       jsonPath("$.challengeSummary[0].category").value(게시글_상세_응답.challengeSummary().get(0).category().toString()))
+                       jsonPath("$.challenges").isArray(),
+                       jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
+                       jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
+                       jsonPath("$.challenges[0].description").value(게시글_상세_응답.challenges().get(0).description()),
+                       jsonPath("$.challenges[0].status").value(게시글_상세_응답.challenges().get(0).status().toString()),
+                       jsonPath("$.challenges[0].capacity").value(게시글_상세_응답.challenges().get(0).capacity()),
+                       jsonPath("$.challenges[0].category").value(게시글_상세_응답.challenges().get(0).category().toString()))
                .andDo(document(docsPath + "save",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -95,24 +95,24 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 제목"),
                                        fieldWithPath("content").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("category").type(JsonFieldType.STRING).description("게시글 카테고리"),
-                                       fieldWithPath("challengeId").type(JsonFieldType.ARRAY).description("챌린지 ID").optional()
+                                       fieldWithPath("challengeIds").type(JsonFieldType.ARRAY).description("챌린지 ID").optional()
                                ),
                                responseFields(
                                        fieldWithPath("id").description("게시글 ID"),
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("content").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("category").type(JsonFieldType.STRING).description("게시글 카테고리"),
-                                       fieldWithPath("user.id").description("작성자 ID"),
-                                       fieldWithPath("user.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
-                                       fieldWithPath("user.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("writer.id").description("작성자 ID"),
+                                       fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
+                                       fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
                                        fieldWithPath("createdAt").description("게시글 생성일"), // 날짜 널로 들어감
-                                       fieldWithPath("challengeSummary[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
-                                       fieldWithPath("challengeSummary[].id").description("챌린지 ID"), // ID는 널로 들어감
-                                       fieldWithPath("challengeSummary[].title").type(JsonFieldType.STRING).description("챌린지 제목"),
-                                       fieldWithPath("challengeSummary[].description").type(JsonFieldType.STRING).description("챌린지 설명"),
-                                       fieldWithPath("challengeSummary[].status").type(JsonFieldType.STRING).description("챌린지 상태"),
-                                       fieldWithPath("challengeSummary[].capacity").type(JsonFieldType.NUMBER).description("챌린지 인원 수"),
-                                       fieldWithPath("challengeSummary[].category").type(JsonFieldType.STRING).description("챌린지 카테고리")
+                                       fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
+                                       fieldWithPath("challenges[].id").description("챌린지 ID"), // ID는 널로 들어감
+                                       fieldWithPath("challenges[].title").type(JsonFieldType.STRING).description("챌린지 제목"),
+                                       fieldWithPath("challenges[].description").type(JsonFieldType.STRING).description("챌린지 설명"),
+                                       fieldWithPath("challenges[].status").type(JsonFieldType.STRING).description("챌린지 상태"),
+                                       fieldWithPath("challenges[].capacity").type(JsonFieldType.NUMBER).description("챌린지 인원 수"),
+                                       fieldWithPath("challenges[].category").type(JsonFieldType.STRING).description("챌린지 카테고리")
                                )
                ));
 
@@ -142,7 +142,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("title").description("게시글 제목"),
                                        fieldWithPath("content").description("게시글 내용"),
                                        fieldWithPath("category").description("게시글 카테고리"),
-                                       fieldWithPath("challengeId").description("챌린지 ID").optional()
+                                       fieldWithPath("challengeIds").description("챌린지 ID").optional()
                                ),
                                responseFields(
                                        fieldWithPath("status").description("HTTP 상태 코드"),
@@ -177,7 +177,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 제목"),
                                        fieldWithPath("content").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("category").type(JsonFieldType.STRING).description("게시글 카테고리"),
-                                       fieldWithPath("challengeId").type(JsonFieldType.ARRAY).description("챌린지 ID").optional()
+                                       fieldWithPath("challengeIds").type(JsonFieldType.ARRAY).description("챌린지 ID").optional()
                                ),
                                responseFields(
                                        fieldWithPath("status").description("HTTP 상태 코드"),
@@ -205,13 +205,13 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
                        jsonPath("$.createdAt").exists(), // 이게 왜 존재하지 않지?
-                       jsonPath("$.challengeSummary").isArray(),
-                       jsonPath("$.challengeSummary[0].id").value(게시글_상세_응답.challengeSummary().get(0).id()),
-                       jsonPath("$.challengeSummary[0].title").value(게시글_상세_응답.challengeSummary().get(0).title()),
-                       jsonPath("$.challengeSummary[0].description").value(게시글_상세_응답.challengeSummary().get(0).description()),
-                       jsonPath("$.challengeSummary[0].status").value(게시글_상세_응답.challengeSummary().get(0).status().toString()),
-                       jsonPath("$.challengeSummary[0].capacity").value(게시글_상세_응답.challengeSummary().get(0).capacity()),
-                       jsonPath("$.challengeSummary[0].category").value(게시글_상세_응답.challengeSummary().get(0).category().toString()))
+                       jsonPath("$.challenges").isArray(),
+                       jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
+                       jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
+                       jsonPath("$.challenges[0].description").value(게시글_상세_응답.challenges().get(0).description()),
+                       jsonPath("$.challenges[0].status").value(게시글_상세_응답.challenges().get(0).status().toString()),
+                       jsonPath("$.challenges[0].capacity").value(게시글_상세_응답.challenges().get(0).capacity()),
+                       jsonPath("$.challenges[0].category").value(게시글_상세_응답.challenges().get(0).category().toString()))
                .andDo(document(docsPath + "findById",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -221,17 +221,17 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("content").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("category").type(JsonFieldType.STRING).description("게시글 카테고리"),
-                                       fieldWithPath("user.id").description("작성자 ID"),
-                                       fieldWithPath("user.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
-                                       fieldWithPath("user.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("writer.id").description("작성자 ID"),
+                                       fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
+                                       fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
                                        fieldWithPath("createdAt").description("게시글 생성일"), // 날짜 널로 들어감
-                                       fieldWithPath("challengeSummary[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
-                                       fieldWithPath("challengeSummary[].id").description("챌린지 ID"), // ID는 널로 들어감
-                                       fieldWithPath("challengeSummary[].title").type(JsonFieldType.STRING).description("챌린지 제목"),
-                                       fieldWithPath("challengeSummary[].description").type(JsonFieldType.STRING).description("챌린지 설명"),
-                                       fieldWithPath("challengeSummary[].status").type(JsonFieldType.STRING).description("챌린지 상태"),
-                                       fieldWithPath("challengeSummary[].capacity").type(JsonFieldType.NUMBER).description("챌린지 인원 수"),
-                                       fieldWithPath("challengeSummary[].category").type(JsonFieldType.STRING).description("챌린지 카테고리")
+                                       fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
+                                       fieldWithPath("challenges[].id").description("챌린지 ID"), // ID는 널로 들어감
+                                       fieldWithPath("challenges[].title").type(JsonFieldType.STRING).description("챌린지 제목"),
+                                       fieldWithPath("challenges[].description").type(JsonFieldType.STRING).description("챌린지 설명"),
+                                       fieldWithPath("challenges[].status").type(JsonFieldType.STRING).description("챌린지 상태"),
+                                       fieldWithPath("challenges[].capacity").type(JsonFieldType.NUMBER).description("챌린지 인원 수"),
+                                       fieldWithPath("challenges[].category").type(JsonFieldType.STRING).description("챌린지 카테고리")
                                )
                ));
 
@@ -285,12 +285,11 @@ class PostControllerTest extends ControllerTest {
                             jsonPath("$.content").isArray(),
                             jsonPath("$.content[0].id").value(포스트_페이지_응답.content().get(0).id()),
                             jsonPath("$.content[0].title").value(포스트_페이지_응답.content().get(0).title()),
-                            jsonPath("$.content[0].content").value(포스트_페이지_응답.content().get(0).content()),
                             jsonPath("$.content[0].category").value(포스트_페이지_응답.content().get(0).category().toString()),
                             jsonPath("$.content[0].createdAt").value(포스트_페이지_응답.content().get(0).createdAt().toString()),
-                            jsonPath("content[0].user.id").value(포스트_페이지_응답.content().get(0).user().id()),
-                            jsonPath("content[0].user.userId").value(포스트_페이지_응답.content().get(0).user().userId()),
-                            jsonPath("content[0].user.nickname").value(포스트_페이지_응답.content().get(0).user().nickname()),
+                            jsonPath("content[0].writer.id").value(포스트_페이지_응답.content().get(0).writer().id()),
+                            jsonPath("content[0].writer.userId").value(포스트_페이지_응답.content().get(0).writer().userId()),
+                            jsonPath("content[0].writer.nickname").value(포스트_페이지_응답.content().get(0).writer().nickname()),
                             jsonPath("$.totalElements").value(포스트_페이지_응답.totalElements()),
                             jsonPath("$.totalPages").value(PostFixtures.포스트_페이지_응답.totalPages()),
                             jsonPath("$.size").value(10),
@@ -313,12 +312,11 @@ class PostControllerTest extends ControllerTest {
                                       fieldWithPath("content").description("포스트 목록"),
                                       fieldWithPath("content[].id").description("포스트 ID"),
                                       fieldWithPath("content[].title").description("포스트 제목"),
-                                      fieldWithPath("content[].content").description("포스트 내용"),
                                       fieldWithPath("content[].category").description("포스트 카테고리"),
                                       fieldWithPath("content[].createdAt").description("포스트 생성일"),
-                                      fieldWithPath("content[].user.id").description("포스트 작성자 ID"),
-                                      fieldWithPath("content[].user.userId").description("포스트 작성자 유저 ID"),
-                                      fieldWithPath("content[].user.nickname").description("포스트 작성자 닉네임"),
+                                      fieldWithPath("content[].writer.id").description("포스트 작성자 ID"),
+                                      fieldWithPath("content[].writer.userId").description("포스트 작성자 유저 ID"),
+                                      fieldWithPath("content[].writer.nickname").description("포스트 작성자 닉네임"),
                                       fieldWithPath("totalPages").description("총 페이지 수"),
                                       fieldWithPath("totalElements").description("총 요소 수"),
                                       fieldWithPath("size").description("페이지 크기"),
@@ -348,13 +346,13 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
                        jsonPath("$.createdAt").value(게시글_상세_응답.createdAt().toString()),
-                       jsonPath("$.challengeSummary").isArray(),
-                       jsonPath("$.challengeSummary[0].id").value(게시글_상세_응답.challengeSummary().get(0).id()),
-                       jsonPath("$.challengeSummary[0].title").value(게시글_상세_응답.challengeSummary().get(0).title()),
-                       jsonPath("$.challengeSummary[0].description").value(게시글_상세_응답.challengeSummary().get(0).description()),
-                       jsonPath("$.challengeSummary[0].status").value(게시글_상세_응답.challengeSummary().get(0).status().toString()),
-                       jsonPath("$.challengeSummary[0].capacity").value(게시글_상세_응답.challengeSummary().get(0).capacity()),
-                       jsonPath("$.challengeSummary[0].category").value(게시글_상세_응답.challengeSummary().get(0).category().toString()))
+                       jsonPath("$.challenges").isArray(),
+                       jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
+                       jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
+                       jsonPath("$.challenges[0].description").value(게시글_상세_응답.challenges().get(0).description()),
+                       jsonPath("$.challenges[0].status").value(게시글_상세_응답.challenges().get(0).status().toString()),
+                       jsonPath("$.challenges[0].capacity").value(게시글_상세_응답.challenges().get(0).capacity()),
+                       jsonPath("$.challenges[0].category").value(게시글_상세_응답.challenges().get(0).category().toString()))
                .andDo(document(docsPath + "update",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -363,24 +361,24 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 제목"),
                                        fieldWithPath("content").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("category").type(JsonFieldType.STRING).description("게시글 카테고리"),
-                                       fieldWithPath("challengeId").type(JsonFieldType.ARRAY).description("챌린지 ID").optional()
+                                       fieldWithPath("challengeIds").type(JsonFieldType.ARRAY).description("챌린지 ID").optional()
                                ),
                                responseFields(
                                        fieldWithPath("id").description("게시글 ID"),
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("content").type(JsonFieldType.STRING).description("게시글 내용"),
                                        fieldWithPath("category").type(JsonFieldType.STRING).description("게시글 카테고리"),
-                                       fieldWithPath("user.id").description("작성자 ID"),
-                                       fieldWithPath("user.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
-                                       fieldWithPath("user.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("writer.id").description("작성자 ID"),
+                                       fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
+                                       fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
                                        fieldWithPath("createdAt").description("게시글 생성일"),
-                                       fieldWithPath("challengeSummary[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
-                                       fieldWithPath("challengeSummary[].id").description("챌린지 ID"),
-                                       fieldWithPath("challengeSummary[].title").type(JsonFieldType.STRING).description("챌린지 제목"),
-                                       fieldWithPath("challengeSummary[].description").type(JsonFieldType.STRING).description("챌린지 설명"),
-                                       fieldWithPath("challengeSummary[].status").type(JsonFieldType.STRING).description("챌린지 상태"),
-                                       fieldWithPath("challengeSummary[].capacity").type(JsonFieldType.NUMBER).description("챌린지 인원 수"),
-                                       fieldWithPath("challengeSummary[].category").type(JsonFieldType.STRING).description("챌린지 카테고리")
+                                       fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
+                                       fieldWithPath("challenges[].id").description("챌린지 ID"),
+                                       fieldWithPath("challenges[].title").type(JsonFieldType.STRING).description("챌린지 제목"),
+                                       fieldWithPath("challenges[].description").type(JsonFieldType.STRING).description("챌린지 설명"),
+                                       fieldWithPath("challenges[].status").type(JsonFieldType.STRING).description("챌린지 상태"),
+                                       fieldWithPath("challenges[].capacity").type(JsonFieldType.NUMBER).description("챌린지 인원 수"),
+                                       fieldWithPath("challenges[].category").type(JsonFieldType.STRING).description("챌린지 카테고리")
                                )
                ));
 
@@ -413,7 +411,7 @@ class PostControllerTest extends ControllerTest {
                                         fieldWithPath("title").description("게시글 제목"),
                                         fieldWithPath("content").description("게시글 내용"),
                                         fieldWithPath("category").description("게시글 카테고리"),
-                                        fieldWithPath("challengeId").description("챌린지 ID").optional()
+                                        fieldWithPath("challengeIds").description("챌린지 ID").optional()
                                 ),
                                 responseFields(
                                         fieldWithPath("status").description("HTTP 상태 코드"),
