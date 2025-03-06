@@ -49,12 +49,23 @@ public class UserFixtures {
                                 .birth(회원_생년월일)
                                 .build();
 
+    public static User 회원_생성(String userId, String email) {
+        return User.builder()
+                   .userId(userId)
+                   .email(email)
+                   .nickname(회원_닉네임)
+                   .gender(회원_성별)
+                   .birth(회원_생년월일)
+                   .build();
+    }
+
     public static UserRequest.Create 회원가입_요청 = new UserRequest.Create(회원_아이디,회원_이메일,회원_닉네임,회원_비밀번호,회원_성별,회원_생년월일);
     public static UserRequest.Create 잘못된_회원가입_요청 = new UserRequest.Create(잘못된_회원_아이디,잘못된_회원_이메일,잘못된_회원_닉네임,잘못된_회원_비밀번호,잘못된_회원_성별,잘못된_회원_생년월일);
     public static UserRequest.Update 회원정보_수정_요청 = new UserRequest.Update(수정된_회원_닉네임,수정된_회원_이메일,수정된_회원_성별,수정된_회원_생년월일);
     public static UserRequest.Update 잘못된_회원정보_수정_요청 = new UserRequest.Update(잘못된_회원_닉네임,잘못된_회원_이메일,잘못된_회원_성별,잘못된_회원_생년월일);
-    public static UserResponse 회원_응답 = new UserResponse(회원_PK,회원_닉네임,회원_아이디,회원_이메일,회원_성별,회원_생년월일);
-    public static UserResponse 수정된_회원_응답 = new UserResponse(회원_PK,수정된_회원_닉네임,회원_아이디,수정된_회원_이메일,수정된_회원_성별,수정된_회원_생년월일);
+    public static UserResponse.Detail 회원_응답 = new UserResponse.Detail(회원_PK,회원_닉네임,회원_아이디,회원_이메일,회원_성별,회원_생년월일);
+    public static UserResponse.Detail 수정된_회원_응답 = new UserResponse.Detail(회원_PK,수정된_회원_닉네임,회원_아이디,수정된_회원_이메일,수정된_회원_성별,수정된_회원_생년월일);
+    public static UserResponse.Summary 요약_회원_응답 = new UserResponse.Summary(회원_PK,회원_닉네임,회원_아이디);
     public static UserRequest.UpdatePassword 비밀번호_변경_요청 = new UserRequest.UpdatePassword(현재_비밀번호,새로운_비밀번호,확인_비밀번호);
     public static UserRequest.UpdatePassword 현재_새로운_비밀번호_동일한_비밀번호_변경_요청 = new UserRequest.UpdatePassword(현재_비밀번호,현재_비밀번호,확인_비밀번호);
     public static UserRequest.UpdatePassword 현재_비밀번호_잘못된_비밀번호_변경_요청 = new UserRequest.UpdatePassword(새로운_비밀번호,새로운_비밀번호,확인_비밀번호);
