@@ -43,6 +43,8 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/v1/users/check-user-id")).permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/challenges/{id}").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/challenges/search").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/posts/{id}").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/posts/search").permitAll()
                 .anyRequest()
                 .authenticated());
 
