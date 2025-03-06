@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.Set;
 
 public class PostRequest {
-    private static final String CATEGORIES_NOT_EMPTY_MESSAGE = "포스트 카테고리를 선택해주세요.";
+    private static final String CATEGORIES_NOT_EMPTY_MESSAGE = "게시글 카테고리를 선택해주세요.";
     private static final String TITLE_VALIDATION_MESSAGE = "제목을 입력해주세요.";
-    private static final int TITLE_MESSAGE_MIN = 10;
-    private static final int TITLE_MESSAGE_MAX = 20;
-    private static final String TITLE_MESSAGE_SIZE_VALIDATION_MESSAGE = "내용은 10자~20자 사이로 입력해주세요.";
+    private static final int TITLE_MIN = 10;
+    private static final int TITLE_MAX = 50;
+    private static final String TITLE_MESSAGE_SIZE_VALIDATION_MESSAGE = "제목은 10자~50자 사이로 입력해주세요.";
 
     private static final String CONTENT_VALIDATION_MESSAGE = "내용을 입력해주세요.";
     private static final int CONTENT_MESSAGE_MIN = 10;
@@ -26,7 +26,7 @@ public class PostRequest {
 
     public record Create(
             @NotBlank(message = TITLE_VALIDATION_MESSAGE)
-            @Size(min = TITLE_MESSAGE_MIN, max = TITLE_MESSAGE_MAX, message = TITLE_MESSAGE_SIZE_VALIDATION_MESSAGE)
+            @Size(min = TITLE_MIN, max = TITLE_MAX, message = TITLE_MESSAGE_SIZE_VALIDATION_MESSAGE)
             String title,
 
             @NotBlank(message = CONTENT_VALIDATION_MESSAGE)
@@ -36,7 +36,7 @@ public class PostRequest {
             @NotNull(message = CATEGORIES_NOT_EMPTY_MESSAGE)
             PostCategory category,
 
-            Set<Long> challengeId
+            Set<Long> challengeIds
     ){
         public Post toEntity(User user) {
             return Post.builder()
@@ -51,7 +51,7 @@ public class PostRequest {
 
     public record Update(
             @NotBlank(message = TITLE_VALIDATION_MESSAGE)
-            @Size(min = TITLE_MESSAGE_MIN, max = TITLE_MESSAGE_MAX, message = TITLE_MESSAGE_SIZE_VALIDATION_MESSAGE)
+            @Size(min = TITLE_MIN, max = TITLE_MAX, message = TITLE_MESSAGE_SIZE_VALIDATION_MESSAGE)
             String title,
 
             @NotBlank(message = CONTENT_VALIDATION_MESSAGE)
@@ -61,7 +61,7 @@ public class PostRequest {
             @NotNull(message = CATEGORIES_NOT_EMPTY_MESSAGE)
             PostCategory category,
 
-            Set<Long> challengeId
+            Set<Long> challengeIds
     ){}
 
     public record Read(
