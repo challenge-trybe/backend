@@ -36,7 +36,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
-
     @Mock
     private PostRepository postRepository;
     @Mock
@@ -68,9 +67,9 @@ class PostServiceTest {
         /* then */
         assertEquals(postDetail.title(), PostFixtures.제목);
         assertEquals(postDetail.content(), PostFixtures.내용);
-        assertEquals(postDetail.user().userId(), UserFixtures.회원_아이디);
-        assertEquals(postDetail.user().nickname(), UserFixtures.회원_닉네임);
-        assertEquals(postDetail.challengeSummary().size(), 3);
+        assertEquals(postDetail.writer().userId(), UserFixtures.회원_아이디);
+        assertEquals(postDetail.writer().nickname(), UserFixtures.회원_닉네임);
+        assertEquals(postDetail.challenges().size(), 3);
     }
 
     @Test
@@ -105,9 +104,9 @@ class PostServiceTest {
         /* then */
         assertEquals(postDetail.title(), 게시글.getTitle());
         assertEquals(postDetail.content(), 게시글.getContent());
-        assertEquals(postDetail.user().userId(), 게시글.getUser().getUserId());
-        assertEquals(postDetail.user().nickname(), 게시글.getUser().getNickname());
-        assertEquals(postDetail.challengeSummary().size(), 1);
+        assertEquals(postDetail.writer().userId(), 게시글.getUser().getUserId());
+        assertEquals(postDetail.writer().nickname(), 게시글.getUser().getNickname());
+        assertEquals(postDetail.challenges().size(), 1);
     }
 
     @Test
@@ -158,9 +157,9 @@ class PostServiceTest {
         /* then */
         assertEquals(postDetail.title(), PostFixtures.수정_제목);
         assertEquals(postDetail.content(), PostFixtures.수정_내용);
-        assertEquals(postDetail.user().userId(), UserFixtures.회원_아이디);
-        assertEquals(postDetail.user().nickname(), UserFixtures.회원_닉네임);
-        assertEquals(postDetail.challengeSummary().size(), 2);
+        assertEquals(postDetail.writer().userId(), UserFixtures.회원_아이디);
+        assertEquals(postDetail.writer().nickname(), UserFixtures.회원_닉네임);
+        assertEquals(postDetail.challenges().size(), 2);
     }
     @Test
     @DisplayName("존재하지 않는 포스트 수정 시 예외를 터뜨린다.")
@@ -216,6 +215,20 @@ class PostServiceTest {
         verify(postRepository, times(1)).deleteById(any());
         verify(postChallengeRepository, times(1)).deleteAllByPostId(any());
 
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 포스트 삭제 시 예외를 터뜨린다.")
+    void 존재하지_않는_포스트_삭제_시_예외를_터뜨린다() {
+        /* given */
+        User newUser = UserFixtures.회원_생성("gunny", "gunny@gunny.com");
+
+        when(postRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+
+        /* when, then */
+        assertThrows(NotFoundPostException.class, () -> {
+            postService.delete(newUser,1L);
+        }, "존재하지 않는 포스트입니다.");
     }
 
     @Test
