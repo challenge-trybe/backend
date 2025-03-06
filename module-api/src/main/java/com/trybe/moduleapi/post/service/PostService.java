@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,7 +32,6 @@ public class PostService {
     private final ChallengeRepository challengeRepository;
     private final PostChallengeRepository postChallengeRepository;
     private final ChallengeParticipationRepository participationRepository;
-
 
     public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository) {
         this.postRepository = postRepository;
@@ -45,34 +45,30 @@ public class PostService {
         Post post = request.toEntity(user);
         Post savePost = postRepository.save(post);
 
-        if (request.challengeId().isEmpty()) {
-            return PostResponse.Detail.from(savePost, List.of());
-        }
-
-        for (Long challengeId: request.challengeId()) {
+        for (Long challengeId: request.challengeIds()) {
             if (!participationRepository.existsByStatusAndUserIdAndChallengeId(ParticipationStatus.ACCEPTED, user.getId(), challengeId)){
                 throw new NotFoundChallengeParticipationException("참여하지 않는 챌린지는 언급할 수 없습니다.");
             }
         }
 
-        List<ChallengeResponse.Summary> summaryChallenges = savePostChallenge(post, request.challengeId());
-        return PostResponse.Detail.from(savePost ,summaryChallenges);
+        List<Challenge> challenges = getChallenges(request.challengeIds());
+        savePostChallenge(post,challenges);
+        return PostResponse.Detail.from(savePost, challenges);
     }
 
     @Transactional(readOnly = true)
     public PostResponse.Detail find(Long id){
         Post post = getPostById(id);
-        List<ChallengeResponse.Summary> summaryChallenges = getSummaryChallengesByPostId(post.getId());
-
-        return PostResponse.Detail.from(post, summaryChallenges);
+        List<Challenge> challenges = getChallengesByPostId(post.getId());
+        return PostResponse.Detail.from(post, challenges);
     }
 
     // 전체 조회 + 필터링(키워드, 카테고리) 조회
     @Transactional(readOnly = true)
     public PageResponse<PostResponse.Summary> findAll(PostRequest.Read request, Pageable pageable){
         Page<Post> posts = postRepository.findAllByKeywordAndCategories(request.keyword(), request.categories(), request.order(), pageable);
-        Page<PostResponse.Summary> summaryPostPageDate = posts.map(PostResponse.Summary::from);
-        return new PageResponse<>(summaryPostPageDate);
+        Page<PostResponse.Summary> postPages = posts.map(PostResponse.Summary::from);
+        return new PageResponse<>(postPages);
     }
 
     @Transactional
@@ -83,14 +79,10 @@ public class PostService {
 
         post.updatePost(request.title(), request.content(), request.category());
 
-        if (request.challengeId().isEmpty()) {
-            List<ChallengeResponse.Summary> summaryChallenges = getSummaryChallengesByPostId(post.getId());
-            return PostResponse.Detail.from(post, summaryChallenges);
-        }
-
-        postChallengeRepository.deleteAllById(request.challengeId());
-        List<ChallengeResponse.Summary> summaryChallenges = savePostChallenge(post, request.challengeId());
-        return PostResponse.Detail.from(post, summaryChallenges);
+        postChallengeRepository.deleteAllByPostId(post.getId());
+        List<Challenge> challenges = getChallenges(request.challengeIds());
+        savePostChallenge(post,challenges);
+        return PostResponse.Detail.from(post, challenges);
     }
 
     @Transactional
@@ -99,8 +91,8 @@ public class PostService {
 
         checkLoginUserAndPostUser(user, post);
 
-        postRepository.deleteById(id);
         postChallengeRepository.deleteAllByPostId(post.getId());
+        postRepository.deleteById(id);
     }
 
     private static void checkLoginUserAndPostUser(User user, Post post) {
@@ -114,21 +106,18 @@ public class PostService {
         return post;
     }
 
-    private List<ChallengeResponse.Summary> getSummaryChallengesByPostId(Long postId) {
-        List<PostChallenge> postChallenges = postChallengeRepository.findAllByPostId(postId);
-        return postChallenges.stream()
-                             .map(PostChallenge::getChallenge)
-                             .map(ChallengeResponse.Summary::from)
-                             .collect(Collectors.toList());
+    private List<Challenge> getChallengesByPostId(Long postId) {
+        return postChallengeRepository.findAllByPostId(postId)
+                                      .stream()
+                                      .map(PostChallenge::getChallenge)
+                                      .collect(Collectors.toList());
     }
 
-    private List<ChallengeResponse.Summary> savePostChallenge(Post post, Set<Long> challengeId){
-        List<Challenge> challenges = challengeRepository.findAllByIdIn(challengeId);
-        List<ChallengeResponse.Summary> summaryChallenges = challenges
-                .stream()
-                .map(ChallengeResponse.Summary::from)
-                .collect(Collectors.toList());
+    private List<Challenge> getChallenges(Set<Long> challengeIds){
+        return challengeRepository.findAllByIdIn(challengeIds);
+    }
 
+    private void savePostChallenge(Post post, List<Challenge> challenges) {
         for (Challenge challenge: challenges) {
             PostChallenge postChallenge = PostChallenge.builder()
                                                        .post(post)
@@ -136,7 +125,6 @@ public class PostService {
                                                        .build();
             postChallengeRepository.save(postChallenge);
         }
-        return summaryChallenges;
     }
 
 }
