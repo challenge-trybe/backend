@@ -467,7 +467,7 @@ class ChallengeParticipationControllerTest extends ControllerTest {
     @Test
     @WithCustomMockUser
     @DisplayName("챌린지 참여자 목록 조회 요청 시 리더가 아닌 요청자가 수락된 참여자 외의 조회를 수행하면 응답코드 403을 반환한다.")
-    void 챌린지_참여자_목록_조회_요청_시_리더가_아닌_요청자가_수락된_참여자_외의_조회를_수행하면_응답코드_404을_반환한다 () throws Exception {
+    void 챌린지_참여자_목록_조회_요청_시_리더가_아닌_요청자가_수락된_참여자_외의_조회를_수행하면_응답코드_403을_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.챌린지_ID;
 
