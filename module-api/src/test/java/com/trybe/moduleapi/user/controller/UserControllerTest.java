@@ -6,6 +6,7 @@ import com.trybe.moduleapi.auth.CustomUserDetailsService;
 import com.trybe.moduleapi.auth.jwt.JwtUtils;
 import com.trybe.moduleapi.auth.jwt.exception.CustomAccessDeniedHandler;
 import com.trybe.moduleapi.auth.jwt.exception.CustomAuthenticationEntryPoint;
+import com.trybe.moduleapi.common.ControllerTest;
 import com.trybe.moduleapi.config.SecurityConfig;
 import com.trybe.moduleapi.user.dto.request.UserRequest;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
@@ -47,30 +48,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureRestDocs(outputDir = "build/generated-snippets")
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
-class UserControllerTest {
+class UserControllerTest  extends ControllerTest {
     private String docsPath = "user-controller-test/";
     private final String invalidBadRequestPath = "invalid/bad-request/";
     private final String invalidNotFoundPath = "invalid/not-found/";
     private final String invalidDuplicatedUserIdPath = "invalid/duplicated-userId/";
     private final String invalidDuplicatedEmailPath = "invalid/duplicated-email/";
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private CustomUserDetailsService customUserDetailsService;
-
-    @MockitoBean
-    private JwtUtils jwtUtils;
-
-    @MockitoBean
-    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-
-    @MockitoBean
-    private CustomAccessDeniedHandler customAccessDeniedHandler;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockitoBean
     private UserService userService;
@@ -78,22 +61,13 @@ class UserControllerTest {
     @Test
     @DisplayName("정상적인 회원가입 요청 시 200을 반환한다.")
     void 정상적인_회원가입_요청_시_200을_반환한다() throws Exception {
-        UserResponse 회원_응답 = UserFixtures.회원_응답;
 
-        when(userService.save(any(UserRequest.Create.class))).thenReturn(회원_응답);
+        doNothing().when(userService).save(any(UserRequest.Create.class));
 
         mockMvc.perform(post("/api/v1/users")
                                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                                 .content(objectMapper.writeValueAsString(UserFixtures.회원가입_요청)))
                .andExpect(status().isOk())
-               .andExpectAll(
-                       jsonPath("$.id").value(회원_응답.id()),
-                       jsonPath("$.nickname").value(회원_응답.nickname()),
-                       jsonPath("$.email").value(회원_응답.email()),
-                       jsonPath("$.userId").value(회원_응답.userId()),
-                       jsonPath("$.gender").value(회원_응답.gender().toString()),
-                       jsonPath("$.birth").value(회원_응답.birth().toString())
-               )
                .andDo(document(docsPath + "save",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -102,14 +76,6 @@ class UserControllerTest {
                                        fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
                                        fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네임"),
                                        fieldWithPath("password").type(JsonFieldType.STRING).description("비밀번호"),
-                                       fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
-                                       fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)")
-                               ),
-                               responseFields(
-                                       fieldWithPath("id").type(JsonFieldType.NUMBER).description("PK"),
-                                       fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네임"),
-                                       fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
-                                       fieldWithPath("userId").type(JsonFieldType.STRING).description("아이디"),
                                        fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
                                        fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)")
                                )
@@ -227,7 +193,7 @@ class UserControllerTest {
     @Test
     @DisplayName("존재하는 회원 조회 시 200을 반환한다.")
     void 존재하는_회원_조회_시_200을_반환한다() throws Exception {
-        UserResponse 회원_응답 = UserFixtures.회원_응답;
+        UserResponse.Detail 회원_응답 = UserFixtures.회원_응답;
         when(userService.findById(1L)).thenReturn(회원_응답);
         CustomUserDetails principalDetails = new CustomUserDetails(UserFixtures.회원);
 
@@ -289,7 +255,7 @@ class UserControllerTest {
     @DisplayName("정상적인 회원 정보 수정 시 200을 반환한다.")
     void 정상적인_회원_정보_수정_시_200을_반환한다() throws Exception {
         UserRequest.Update 회원정보_수정_요청 = UserFixtures.회원정보_수정_요청;
-        UserResponse 회원_응답 = UserFixtures.수정된_회원_응답;
+        UserResponse.Detail 회원_응답 = UserFixtures.수정된_회원_응답;
         CustomUserDetails principalDetails = new CustomUserDetails(UserFixtures.회원);
 
         when(userService.updateProfile(

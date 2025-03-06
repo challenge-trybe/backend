@@ -5,6 +5,7 @@ import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
+import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
@@ -48,11 +49,11 @@ public class ChallengeService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ChallengeResponse.Summary> findAll(ChallengeRequest.Read request, Pageable pageable) {
+    public PageResponse<ChallengeResponse.Summary> findAll(ChallengeRequest.Read request, Pageable pageable) {
         // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
         Page<Challenge> challenges = challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories(), pageable);
 
-        return challenges.map(ChallengeResponse.Summary::from);
+        return new PageResponse<>(challenges.map(ChallengeResponse.Summary::from));
     }
 
     @Transactional
