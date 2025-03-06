@@ -33,7 +33,7 @@ public class PostFixtures {
 
     public static final String 수정_제목 = "테스트 게시글 수정 제목입니다.";
     public static final String 수정_내용 = "테스트 게시글 수정 내용입니다.";
-    public static final PostCategory 수정_카테고리 = PostCategory.PROMOTION;
+    public static final PostCategory 수정_카테고리 = PostCategory.QNA;
     public static final Set<Long> 수정_챌린지_Ids = Set.of(1L, 2L);
 
     public static final String 검색_키워드 = "키워드";
@@ -62,9 +62,9 @@ public class PostFixtures {
     public static final PostRequest.Update 게시글_수정 = new PostRequest.Update(수정_제목, 수정_내용, 수정_카테고리, 수정_챌린지_Ids);
     public static final PostRequest.Update 잘못된_게시글_수정 = new PostRequest.Update("", "", null, null);
     public static final PostRequest.Read 게시글_필터링_조회 = new PostRequest.Read(검색_키워드, 게시글_카테고리,정렬);
-    public static final PostResponse.Detail 게시글_상세_응답 = PostResponse.Detail.from(게시글, List.of(ChallengeFixtures.챌린지_요약_응답));
+    public static final PostResponse.Detail 게시글_상세_응답 = PostResponse.Detail.from(게시글, ChallengeFixtures.챌린지_목록);
     public static final PostResponse.Detail 컨트롤러_테스트_게시글_상세_응답 = new PostResponse.Detail(id, 제목, 내용, 카테고리, UserFixtures.요약_회원_응답, 작성일, ChallengeFixtures.챌린지_목록_응답);
-    public static final PostResponse.Summary 게시글_요약_응답 = new PostResponse.Summary(id, 제목, 내용, 카테고리, UserFixtures.요약_회원_응답, 작성일);
+    public static final PostResponse.Summary 게시글_요약_응답 = new PostResponse.Summary(id, 제목, 카테고리, UserFixtures.요약_회원_응답, 작성일);
 
     public static Pageable 페이지_요청 = PageRequest.of(0, 10);
     public static List<Post> 포스트_목록 = List.of(게시글,게시글,게시글,게시글,게시글,게시글,게시글);
@@ -77,7 +77,6 @@ public class PostFixtures {
             컨트롤러_페이지_응답.map(post -> new PostResponse.Summary(
                     post.getId(),
                     post.getTitle(),
-                    post.getContent(),
                     post.getCategory(),
                     UserFixtures.요약_회원_응답,
                     작성일
