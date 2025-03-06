@@ -31,7 +31,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         List<Post> result = jpaQueryFactory.select(post)
                                            .from(post)
                                            .where(containsKeyword(keyword), filterCategories(categories))
-                                           .offset(pageable.getPageNumber() * pageable.getPageSize())
+                                           .offset(pageable.getOffset())
                                            .orderBy(getOrder(order))
                                            .limit(pageable.getPageSize())
                                            .fetch();
