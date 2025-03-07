@@ -20,6 +20,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.proof.entity.Proof;
 import com.trybe.modulecore.proof.repository.ProofRepository;
 import com.trybe.modulecore.user.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,7 +72,8 @@ public class ProofService {
 
         validateMemberParticipation(user.getId(), challenge.getId(), "참여자만 인증 목록을 조회할 수 있습니다.");
 
-        return new PageResponse<>(proofRepository.findAllByChallengeId(challengeId, pageable).map(ProofResponse.Summary::from));
+        Page<Proof> proofs = proofRepository.findAllByChallengeId(challengeId, pageable);
+        return new PageResponse<>(proofs.map(ProofResponse.Summary::from));
     }
 
     @Transactional
