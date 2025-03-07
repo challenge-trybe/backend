@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "proofs")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE proof SET deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE proofs SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class Proof extends BaseEntity {
     public Proof(Challenge challenge, LocalDate date, int round) {
