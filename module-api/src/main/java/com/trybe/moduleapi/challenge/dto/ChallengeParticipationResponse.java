@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class ChallengeParticipationResponse {
     public record Summary(
             Long id,
-            UserResponse user,
+            UserResponse.Summary user,
             ChallengeRole role,
             ParticipationStatus status,
             LocalDateTime createdAt
@@ -18,7 +18,7 @@ public class ChallengeParticipationResponse {
         public static Summary from(ChallengeParticipation challengeParticipation) {
             return new Summary(
                     challengeParticipation.getId(),
-                    UserResponse.from(challengeParticipation.getUser()),
+                    UserResponse.Summary.from(challengeParticipation.getUser()),
                     challengeParticipation.getRole(),
                     challengeParticipation.getStatus(),
                     challengeParticipation.getCreatedAt()
@@ -28,12 +28,20 @@ public class ChallengeParticipationResponse {
 
     public record Detail(
             ChallengeResponse.Summary challenge,
-            Summary participation
+            Long id,
+            UserResponse.Summary user,
+            ChallengeRole role,
+            ParticipationStatus status,
+            LocalDateTime createdAt
     ) {
         public static Detail from(ChallengeParticipation challengeParticipation) {
             return new Detail(
                     ChallengeResponse.Summary.from(challengeParticipation.getChallenge()),
-                    Summary.from(challengeParticipation)
+                    challengeParticipation.getId(),
+                    UserResponse.Summary.from(challengeParticipation.getUser()),
+                    challengeParticipation.getRole(),
+                    challengeParticipation.getStatus(),
+                    challengeParticipation.getCreatedAt()
             );
         }
     }

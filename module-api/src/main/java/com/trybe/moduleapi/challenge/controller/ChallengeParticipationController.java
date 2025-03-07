@@ -1,10 +1,12 @@
 package com.trybe.moduleapi.challenge.controller;
 
 import com.trybe.moduleapi.auth.CustomUserDetails;
+import com.trybe.moduleapi.challenge.dto.ChallengeParticipationRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.challenge.service.ChallengeParticipationService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -49,16 +51,24 @@ public class ChallengeParticipationController {
     public ChallengeParticipationResponse.Detail confirm(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("participationId") Long participationId,
-            @RequestParam("status") ParticipationStatus status
+            @Valid @RequestBody ChallengeParticipationRequest.Confirm request
     ) {
-        return challengeParticipationService.confirm(userDetails.getUser(), participationId, status);
+        return challengeParticipationService.confirm(userDetails.getUser(), participationId, request.status());
     }
 
-    @PutMapping("/leave/{participationId}")
+    @PutMapping("/leave/{challengeId}")
     public void leave(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("challengeId") Long challengeId
+    ) {
+        challengeParticipationService.leave(userDetails.getUser(), challengeId);
+    }
+
+    @DeleteMapping("/{participationId}")
+    public void cancel(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("participationId") Long participationId
     ) {
-        challengeParticipationService.leave(userDetails.getUser(), participationId);
+        challengeParticipationService.cancel(userDetails.getUser(), participationId);
     }
 }

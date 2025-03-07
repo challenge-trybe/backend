@@ -23,6 +23,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -51,14 +52,10 @@ class UserServiceTest {
         Mockito.when(passwordEncoder.encode(UserFixtures.회원_비밀번호)).thenReturn(UserFixtures.회원_암호화된_비밀번호);
 
         /* when */
-        UserResponse response = userService.save(request);
+       userService.save(request);
 
         /* then */
-        assertEquals(response.userId(), UserFixtures.회원_아이디);
-        assertEquals(response.nickname(), UserFixtures.회원_닉네임);
-        assertEquals(response.email(), UserFixtures.회원_이메일);
-        assertEquals(response.gender(), UserFixtures.회원_성별);
-        assertEquals(response.birth(), UserFixtures.회원_생년월일);
+        Mockito.verify(userRepository, times(1)).save(user);
     }
 
     @Test
@@ -94,7 +91,7 @@ class UserServiceTest {
         Mockito.when(userRepository.findById(UserFixtures.회원_PK)).thenReturn(Optional.of(UserFixtures.회원));
 
         /* when */
-        UserResponse response = userService.findById(UserFixtures.회원_PK);
+        UserResponse.Detail response = userService.findById(UserFixtures.회원_PK);
 
         /* then */
         assertEquals(response.userId(), UserFixtures.회원_아이디);
@@ -128,7 +125,7 @@ class UserServiceTest {
                            UserFixtures.수정된_회원_생년월일);
 
         /* when */
-        UserResponse response = userService.updateProfile(customUserDetails, request);
+        UserResponse.Detail response = userService.updateProfile(customUserDetails, request);
 
         /* then */
         assertEquals(response.nickname(), UserFixtures.수정된_회원_닉네임);
