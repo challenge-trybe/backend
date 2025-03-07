@@ -8,3 +8,4 @@ public class InvalidParticipationStatusActionException extends BusinessException
         super(message, HttpStatus.FORBIDDEN.value());
     }
 }
+
