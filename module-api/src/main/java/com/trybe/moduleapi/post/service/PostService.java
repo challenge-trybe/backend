@@ -46,7 +46,7 @@ public class PostService {
         Post savePost = postRepository.save(post);
 
         for (Long challengeId: request.challengeIds()) {
-            if (!participationRepository.existsByStatusAndUserIdAndChallengeId(ParticipationStatus.ACCEPTED, user.getId(), challengeId)){
+            if (!participationRepository.existsByUserIdAndChallengeIdAndStatus(user.getId(), challengeId, ParticipationStatus.ACCEPTED)){
                 throw new NotFoundChallengeParticipationException("참여하지 않는 챌린지는 언급할 수 없습니다.");
             }
         }

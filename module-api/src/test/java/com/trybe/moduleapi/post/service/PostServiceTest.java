@@ -58,8 +58,8 @@ class PostServiceTest {
 
         when(postRepository.save(any(Post.class))).thenReturn(게시글);
         when(challengeRepository.findAllByIdIn(PostFixtures.챌린지_Ids)).thenReturn(ChallengeFixtures.챌린지_목록);
-        when(participationRepository.existsByStatusAndUserIdAndChallengeId(
-                any(ParticipationStatus.class), any(), any())).thenReturn(true);
+        when(participationRepository.existsByUserIdAndChallengeIdAndStatus(
+                any(), any(), any(ParticipationStatus.class))).thenReturn(true);
 
         /* when */
         PostResponse.Detail postDetail = postService.save(회원, 게시글_생성_요청);
@@ -81,8 +81,8 @@ class PostServiceTest {
         Post 게시글 = 게시글_생성_요청.toEntity(회원);
 
         when(postRepository.save(any(Post.class))).thenReturn(게시글);
-        when(participationRepository.existsByStatusAndUserIdAndChallengeId(
-                any(ParticipationStatus.class), any(), any())).thenReturn(false);
+        when(participationRepository.existsByUserIdAndChallengeIdAndStatus(
+                any(), any(), any(ParticipationStatus.class))).thenReturn(false);
 
         /* when, then */
         assertThrows(NotFoundChallengeParticipationException.class, () -> {
