@@ -40,6 +40,8 @@ public class ProofService {
         this.challengeParticipationRepository = challengeParticipationRepository;
     }
 
+    private final static long DELETE_TIME_LIMIT = 1L;
+
     @Transactional
     public ProofResponse.Summary save(User user, ProofRequest.Create request) {
         Challenge challenge = getChallenge(request.challengeId());
@@ -81,7 +83,7 @@ public class ProofService {
         Proof proof = getProof(proofId);
 
         validateLeaderParticipation(user.getId(), proof.getChallenge().getId(), "리더만 인증을 삭제할 수 있습니다.");
-        validateTimeConstraint(proof.getDate(), 1L);
+        validateTimeConstraint(proof.getDate(), DELETE_TIME_LIMIT);
 
         proofRepository.delete(proof);
     }
