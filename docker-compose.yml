@@ -15,3 +15,12 @@ services:
       - "33306:3306"
     volumes:
       - ./data/:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    container_name: "trybe-redis"
+    volumes:
+      - ./redis/redis-data:/data
+    ports:
+      - "16379:6379"
+    restart: always
