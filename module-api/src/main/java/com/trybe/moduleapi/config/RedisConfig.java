@@ -28,12 +28,12 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Set<Long>> redisTemplate() {
-        RedisTemplate<String, Set<Long>> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, Long> redisTemplate() {
+        RedisTemplate<String, Long> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
         redisTemplate.setKeySerializer(new GenericToStringSerializer<>(String.class));
-        redisTemplate.setValueSerializer(new GenericToStringSerializer<>(Set.class));
+        redisTemplate.setValueSerializer(new GenericToStringSerializer<>(Long.class));
         return redisTemplate;
     }
 }
