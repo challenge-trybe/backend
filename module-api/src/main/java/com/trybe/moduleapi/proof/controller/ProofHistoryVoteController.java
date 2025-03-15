@@ -33,7 +33,7 @@ public class ProofHistoryVoteController {
     }
 
     @GetMapping("/{proofHistoryId}/result")
-    public ProofHistoryVoteResponse.Result findResult(
+    public ProofHistoryVoteResponse.Result getResult(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("proofHistoryId") Long proofHistoryId
     ) {
