@@ -1,0 +1,11 @@
+### 1. 게시글 좋아요
+POST http://localhost:8080/api/v1/posts/likes/5
+Authorization: {{accessToken}}
+
+### 2. 게시글 좋아요 삭제
+DELETE http://localhost:8080/api/v1/posts/likes/1
+Authorization: {{accessToken}}
+
+### 3. 유저 좋아요 누른 게시글 조회
+GET http://localhost:8080/api/v1/posts/likes/my?pageNo=0&size=5
+Authorization: {{accessToken}}

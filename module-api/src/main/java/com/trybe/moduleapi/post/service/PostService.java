@@ -32,12 +32,14 @@ public class PostService {
     private final ChallengeRepository challengeRepository;
     private final PostChallengeRepository postChallengeRepository;
     private final ChallengeParticipationRepository participationRepository;
+    private final PostLikeService postLikeService;
 
-    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository) {
+    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository, PostLikeService postLikeService) {
         this.postRepository = postRepository;
         this.challengeRepository = challengeRepository;
         this.postChallengeRepository = postChallengeRepository;
         this.participationRepository = participationRepository;
+        this.postLikeService = postLikeService;
     }
 
     @Transactional
@@ -53,17 +55,17 @@ public class PostService {
 
         List<Challenge> challenges = getChallenges(request.challengeIds());
         savePostChallenge(post,challenges);
-        return PostResponse.Detail.from(savePost, challenges);
+        return PostResponse.Detail.from(savePost, challenges, 0);
     }
 
     @Transactional(readOnly = true)
     public PostResponse.Detail find(Long id){
         Post post = getPostById(id);
+        int likes = postLikeService.count(post.getId());
         List<Challenge> challenges = getChallengesByPostId(post.getId());
-        return PostResponse.Detail.from(post, challenges);
+        return PostResponse.Detail.from(post, challenges, likes);
     }
 
-    // 전체 조회 + 필터링(키워드, 카테고리) 조회
     @Transactional(readOnly = true)
     public PageResponse<PostResponse.Summary> findAll(PostRequest.Read request, Pageable pageable){
         Page<Post> posts = postRepository.findAllByKeywordAndCategories(request.keyword(), request.categories(), request.order(), pageable);
@@ -74,6 +76,7 @@ public class PostService {
     @Transactional
     public PostResponse.Detail updatePost(User user, Long id, PostRequest.Update request) {
         Post post = getPostById(id);
+        int likes = postLikeService.count(post.getId());
 
         checkLoginUserAndPostUser(user, post);
 
@@ -82,7 +85,7 @@ public class PostService {
         postChallengeRepository.deleteAllByPostId(post.getId());
         List<Challenge> challenges = getChallenges(request.challengeIds());
         savePostChallenge(post,challenges);
-        return PostResponse.Detail.from(post, challenges);
+        return PostResponse.Detail.from(post, challenges, likes);
     }
 
     @Transactional
@@ -92,6 +95,7 @@ public class PostService {
         checkLoginUserAndPostUser(user, post);
 
         postChallengeRepository.deleteAllByPostId(post.getId());
+        postLikeService.removeLikesByPost(post.getId());
         postRepository.deleteById(id);
     }
 

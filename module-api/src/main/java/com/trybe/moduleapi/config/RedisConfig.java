@@ -31,6 +31,7 @@ public class RedisConfig {
     public RedisTemplate<String, Long> redisTemplate() {
         RedisTemplate<String, Long> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
+        redisTemplate.setEnableTransactionSupport(true);
 
         redisTemplate.setKeySerializer(new GenericToStringSerializer<>(String.class));
         redisTemplate.setValueSerializer(new GenericToStringSerializer<>(Long.class));

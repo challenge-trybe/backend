@@ -18,15 +18,17 @@ public class PostResponse{
             PostCategory category,
             UserResponse.Summary writer,
             LocalDateTime createdAt,
+            int likeCount,
             List<ChallengeResponse.Summary> challenges
     ){
-        public static Detail from(Post post, List<Challenge> challenges){
+        public static Detail from(Post post, List<Challenge> challenges, int likeCount){
             return new Detail(post.getId(),
                               post.getTitle(),
                               post.getContent(),
                               post.getCategory(),
                               UserResponse.Summary.from(post.getUser()),
                               post.getCreatedAt(),
+                              likeCount,
                               challenges.stream().map(ChallengeResponse.Summary::from).collect(Collectors.toList()));
         }
     }
@@ -43,6 +45,15 @@ public class PostResponse{
                                post.getCategory(),
                                UserResponse.Summary.from(post.getUser()),
                                post.getCreatedAt());
+        }
+    }
+
+    public record Like(
+            int likeCount,
+            boolean isLiked
+    ){
+        public static Like from(int likeCount, boolean isLiked) {
+            return new Like(likeCount, isLiked);
         }
     }
 }
