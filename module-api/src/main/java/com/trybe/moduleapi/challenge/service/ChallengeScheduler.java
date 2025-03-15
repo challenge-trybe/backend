@@ -29,7 +29,7 @@ public class ChallengeScheduler {
 
     @Scheduled(cron = "59 59 23 * * *")
     @Transactional
-    public void updateChalengeStatusDone() {
+    public void updateChallengeStatusDone() {
         List<Challenge> challenges = challengeRepository.findAllByStatusAndEndDate(ChallengeStatus.ONGOING, LocalDate.now());
         challenges.forEach(challenge -> {
             challenge.updateStatus(ChallengeStatus.DONE);
