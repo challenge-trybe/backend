@@ -1,0 +1,115 @@
+package com.trybe.moduleapi.proof.service;
+
+import com.trybe.moduleapi.challenge.exception.participation.InvalidParticipationStatusActionException;
+import com.trybe.moduleapi.proof.dto.response.ProofHistoryVoteResponse;
+import com.trybe.moduleapi.proof.exception.history.DuplicatedProofHistoryVoteException;
+import com.trybe.moduleapi.proof.exception.history.ForbiddenProofHistoryException;
+import com.trybe.moduleapi.proof.exception.history.InvalidProofHistoryStatusException;
+import com.trybe.moduleapi.proof.exception.history.NotFoundProofHistoryException;
+import com.trybe.modulecore.challenge.enums.ParticipationStatus;
+import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
+import com.trybe.modulecore.proof.entity.ProofHistory;
+import com.trybe.modulecore.proof.enums.ProofHistoryStatus;
+import com.trybe.modulecore.proof.repository.ProofHistoryRepository;
+import com.trybe.modulecore.user.entity.User;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class ProofHistoryVoteService {
+    private final ProofHistoryRepository proofHistoryRepository;
+    private final ChallengeParticipationRepository challengeParticipationRepository;
+    private final RedisTemplate<String, Long> redisTemplate;
+
+    public ProofHistoryVoteService(ProofHistoryRepository proofHistoryRepository, ChallengeParticipationRepository challengeParticipationRepository, RedisTemplate<String, Long> redisTemplate) {
+        this.proofHistoryRepository = proofHistoryRepository;
+        this.challengeParticipationRepository = challengeParticipationRepository;
+        this.redisTemplate = redisTemplate;
+    }
+
+    @Transactional
+    public ProofHistoryVoteResponse.My save(User user, Long proofHistoryId, boolean approved) {
+        ProofHistory proofHistory = getProofHistory(proofHistoryId);
+
+        validateMemberParticipation(user.getId(), proofHistory.getProof().getChallenge().getId(), "챌린지 멤버만 인증 기록에 대해 투표할 수 있습니다.");
+        validateProofHistoryOwner(user, false, proofHistory, "자기 자신의 인증 기록에 투표할 수 없습니다.");
+        validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대해 투표할 수 없습니다.");
+
+        String key = "proofHistory:" + proofHistory.getId() + ":votes";
+        String userKey = "user:" + user.getId();
+
+        if (redisTemplate.opsForHash().get(key, userKey) != null) {
+            throw new DuplicatedProofHistoryVoteException();
+        }
+
+        String approvedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:approvedCount";
+        String disapprovedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:disapprovedCount";
+
+        if (approved) {
+            redisTemplate.opsForValue().increment(approvedCountKey, 1);
+        } else {
+            redisTemplate.opsForValue().increment(disapprovedCountKey, 1);
+        }
+        redisTemplate.opsForHash().put(key, userKey, (approved ? "1" : "0"));
+
+        return new ProofHistoryVoteResponse.My(approved);
+    }
+
+    @Transactional(readOnly = true)
+    public ProofHistoryVoteResponse.My findMyVote(User user, Long proofHistoryId) {
+        ProofHistory proofHistory = getProofHistory(proofHistoryId);
+
+        validateMemberParticipation(user.getId(), proofHistory.getProof().getChallenge().getId(), "챌린지 멤버만 투표 내역을 조회할 수 있슶니다.");
+        validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대한 투표 내역을 조회할 수 없습니다.");
+
+        String key = "proofHistory:" + proofHistory.getId() + ":votes";
+        String userKey = "user:" + user.getId();
+        String vote = (String) redisTemplate.opsForHash().get(key, userKey);
+
+        return new ProofHistoryVoteResponse.My(vote == null ? null : vote.equals("1"));
+    }
+
+    @Transactional(readOnly = true)
+    public ProofHistoryVoteResponse.Result getResult(User user, Long proofHistoryId) {
+        ProofHistory proofHistory = getProofHistory(proofHistoryId);
+
+        validateProofHistoryOwner(user, true, proofHistory, "인증 기록의 작성자만 투표 결과를 조회할 수 있습니다.");
+
+        String approvedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:approvedCount";
+        String disapprovedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:disapprovedCount";
+
+        Long approvedCount = redisTemplate.opsForValue().get(approvedCountKey);
+        Long disapprovedCount = redisTemplate.opsForValue().get(disapprovedCountKey);
+
+        approvedCount = approvedCount == null ? 0 : approvedCount;
+        disapprovedCount = disapprovedCount == null ? 0 : disapprovedCount;
+
+        int participantCount = challengeParticipationRepository.countByChallengeIdAndStatus(proofHistory.getProof().getChallenge().getId(), ParticipationStatus.ACCEPTED) - 1;
+
+        return new ProofHistoryVoteResponse.Result(approvedCount, disapprovedCount, participantCount - (approvedCount + disapprovedCount));
+    }
+
+    private ProofHistory getProofHistory(Long proofHistoryId) {
+        return proofHistoryRepository.findById(proofHistoryId)
+                .orElseThrow(() -> new NotFoundProofHistoryException());
+    }
+
+    private void validateMemberParticipation(Long userId, Long challengeId, String message) {
+        if (!challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(userId, challengeId, ParticipationStatus.ACCEPTED)) {
+            throw new InvalidParticipationStatusActionException(message);
+        }
+    }
+
+    private void validateProofHistoryOwner(User user, boolean shouldBe, ProofHistory proofHistory, String message) {
+        if ((user.getId() != proofHistory.getUser().getId()) == shouldBe) {
+            throw new ForbiddenProofHistoryException(message);
+        }
+    }
+
+    private void validateProofHistoryStatus(ProofHistory proofHistory, ProofHistoryStatus status, String message) {
+        if (proofHistory.getStatus().isNot(status)) {
+            throw new InvalidProofHistoryStatusException(message);
+        }
+    }
+}
