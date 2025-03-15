@@ -66,7 +66,6 @@ public class PostService {
         return PostResponse.Detail.from(post, challenges, likes);
     }
 
-    // 전체 조회 + 필터링(키워드, 카테고리) 조회
     @Transactional(readOnly = true)
     public PageResponse<PostResponse.Summary> findAll(PostRequest.Read request, Pageable pageable){
         Page<Post> posts = postRepository.findAllByKeywordAndCategories(request.keyword(), request.categories(), request.order(), pageable);
@@ -96,8 +95,8 @@ public class PostService {
         checkLoginUserAndPostUser(user, post);
 
         postChallengeRepository.deleteAllByPostId(post.getId());
+        postLikeService.removeLikesByPost(post.getId());
         postRepository.deleteById(id);
-        postLikeService.removeLikesFromRedisForDeletedPost(post.getId());
     }
 
     private static void checkLoginUserAndPostUser(User user, Post post) {
