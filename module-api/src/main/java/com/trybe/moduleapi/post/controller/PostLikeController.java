@@ -18,7 +18,7 @@ public class PostLikeController {
     }
 
     @PostMapping("/{postId}")
-    public PostResponse.Like like(
+    public PostResponse.Like addLike(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("postId") Long postId
     ) {
@@ -30,7 +30,7 @@ public class PostLikeController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("postId") Long postId
     ){
-        return postLikeService.removedLike(userDetails.getUser(), postId);
+        return postLikeService.removeLike(userDetails.getUser(), postId);
     }
 
     @GetMapping("/my")
@@ -40,5 +40,4 @@ public class PostLikeController {
     ){
         return postLikeService.getLikePostByUser(userDetails.getUser(), pageable);
     }
-
 }
