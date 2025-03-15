@@ -41,6 +41,7 @@ public class ProofHistory extends BaseEntity {
     private String content;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ProofHistoryStatus status = ProofHistoryStatus.PENDING;
 
     @Column(name = "deleted_at")
