@@ -31,8 +31,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -411,6 +410,10 @@ class ProofControllerTest extends ControllerTest {
                 preprocessResponse(prettyPrint()),
                 pathParameters(
                         parameterWithName("challengeId").description("챌린지 ID")
+                ),
+                queryParameters(
+                        parameterWithName("page").description("페이지 번호"),
+                        parameterWithName("size").description("페이지 크기")
                 ),
                 responseFields(
                         fieldWithPath("content").description("인증 목록"),
