@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class PostLikeService {
         this.postRepository = postRepository;
     }
 
+    @Transactional
     public PostResponse.Like addLike(User user, Long postId) {
         validateExistPost(postId);
 
@@ -40,11 +42,12 @@ public class PostLikeService {
         }
 
         double score = getCurrentTimeInSeconds();
+
         restTemplate.opsForZSet().add(userKey, postId, score);
         restTemplate.opsForSet().add(postKey, user.getId());
         return PostResponse.Like.from(count(postId), true);
     }
-
+    @Transactional
     public PostResponse.Like removedLike(User user, Long postId){
         validateExistPost(postId);
 
@@ -60,6 +63,7 @@ public class PostLikeService {
         return PostResponse.Like.from(count(postId),false);
     }
 
+    @Transactional
     public void removeLikesFromRedisForDeletedPost(Long postId){
         String postKey = createRedisKey(POST_REDIS_PREFIX, postId);
         Set<Long> userIds = restTemplate.opsForSet().members(postKey);
@@ -72,12 +76,14 @@ public class PostLikeService {
         }
     }
 
+    @Transactional
     public int count(Long postId){
         String postKey = createRedisKey(POST_REDIS_PREFIX, postId);
         Long count = restTemplate.opsForSet().size(postKey);
         return count == null ? 0 : count.intValue();
     }
 
+    @Transactional
     public PageResponse<PostResponse.Summary> getLikePostByUser(User user, Pageable pageable){
         String userKey = createRedisKey(USER_REDIS_PREFIX, user.getId());
 
