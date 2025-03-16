@@ -91,9 +91,10 @@ public class PostLikeService {
         List<Post> posts = postRepository.findAllByIdIn(postIds);
         List<Post> sortedPosts = postIds.stream()
                                         .map(postId -> posts.stream()
-                                                                  .filter(post -> post.getId().equals(postId))
+                                                                  .filter(post -> postId.equals(post.getId()))
                                                                   .findFirst()
-                                                                  .orElseThrow(() -> new NotFoundPostException()))
+                                                                  .orElse(null))
+                                        .filter(Objects::nonNull)
                                         .collect(Collectors.toList());
 
 
