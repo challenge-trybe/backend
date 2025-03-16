@@ -46,9 +46,7 @@ public class ProofHistoryVoteService {
         String key = getRedisKey(PROOF_HISTORY_VOTES_KEY, proofHistory.getId());
         String userKey = getRedisKey(USER_KEY, user.getId());
 
-        if (redisTemplate.opsForHash().get(key, userKey) != null) {
-            throw new DuplicatedProofHistoryVoteException();
-        }
+        validateDuplicatedVote(key, userKey);
 
         String approvedCountKey = getRedisKey(PROOF_HISTORY_VOTES_APPROVED_COUNT_KEY, proofHistory.getId());
         String disapprovedCountKey = getRedisKey(PROOF_HISTORY_VOTES_DISAPPROVED_COUNT_KEY, proofHistory.getId());
@@ -117,6 +115,12 @@ public class ProofHistoryVoteService {
     private void validateProofHistoryStatus(ProofHistory proofHistory, ProofHistoryStatus status, String message) {
         if (proofHistory.getStatus().isNot(status)) {
             throw new InvalidProofHistoryStatusException(message);
+        }
+    }
+
+    private void validateDuplicatedVote(String key, String userKey) {
+        if (redisTemplate.opsForHash().get(key, userKey) != null) {
+            throw new DuplicatedProofHistoryVoteException();
         }
     }
 
