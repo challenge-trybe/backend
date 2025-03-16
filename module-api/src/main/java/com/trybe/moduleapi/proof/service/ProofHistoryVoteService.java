@@ -28,6 +28,13 @@ public class ProofHistoryVoteService {
         this.redisTemplate = redisTemplate;
     }
 
+    private final String USER_KEY = "user:%d";
+    private final String PROOF_HISTORY_VOTES_KEY = "proofHistory:%d:votes";
+    private final String PROOF_HISTORY_VOTES_APPROVED_COUNT_KEY = "proofHistory:%d:votes:approvedCount";
+    private final String PROOF_HISTORY_VOTES_DISAPPROVED_COUNT_KEY = "proofHistory:%d:votes:disapprovedCount";
+    private final String APPROVED = "approved";
+    private final String DISAPPROVED = "disapproved";
+
     @Transactional
     public ProofHistoryVoteResponse.My save(User user, Long proofHistoryId, boolean approved) {
         ProofHistory proofHistory = getProofHistory(proofHistoryId);
@@ -36,22 +43,22 @@ public class ProofHistoryVoteService {
         validateProofHistoryOwner(user, false, proofHistory, "자기 자신의 인증 기록에 투표할 수 없습니다.");
         validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대해 투표할 수 없습니다.");
 
-        String key = "proofHistory:" + proofHistory.getId() + ":votes";
-        String userKey = "user:" + user.getId();
+        String key = getRedisKey(PROOF_HISTORY_VOTES_KEY, proofHistory.getId());
+        String userKey = getRedisKey(USER_KEY, user.getId());
 
         if (redisTemplate.opsForHash().get(key, userKey) != null) {
             throw new DuplicatedProofHistoryVoteException();
         }
 
-        String approvedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:approvedCount";
-        String disapprovedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:disapprovedCount";
+        String approvedCountKey = getRedisKey(PROOF_HISTORY_VOTES_APPROVED_COUNT_KEY, proofHistory.getId());
+        String disapprovedCountKey = getRedisKey(PROOF_HISTORY_VOTES_DISAPPROVED_COUNT_KEY, proofHistory.getId());
 
         if (approved) {
             redisTemplate.opsForValue().increment(approvedCountKey, 1);
         } else {
             redisTemplate.opsForValue().increment(disapprovedCountKey, 1);
         }
-        redisTemplate.opsForHash().put(key, userKey, (approved ? "1" : "0"));
+        redisTemplate.opsForHash().put(key, userKey, (approved ? APPROVED : DISAPPROVED));
 
         return new ProofHistoryVoteResponse.My(approved);
     }
@@ -63,11 +70,11 @@ public class ProofHistoryVoteService {
         validateMemberParticipation(user.getId(), proofHistory.getProof().getChallenge().getId(), "챌린지 멤버만 투표 내역을 조회할 수 있슶니다.");
         validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대한 투표 내역을 조회할 수 없습니다.");
 
-        String key = "proofHistory:" + proofHistory.getId() + ":votes";
-        String userKey = "user:" + user.getId();
+        String key = getRedisKey(PROOF_HISTORY_VOTES_KEY, proofHistory.getId());
+        String userKey = getRedisKey(USER_KEY, user.getId());
         String vote = (String) redisTemplate.opsForHash().get(key, userKey);
 
-        return new ProofHistoryVoteResponse.My(vote == null ? null : vote.equals("1"));
+        return new ProofHistoryVoteResponse.My(vote == null ? null : vote.equals(APPROVED));
     }
 
     @Transactional(readOnly = true)
@@ -76,8 +83,8 @@ public class ProofHistoryVoteService {
 
         validateProofHistoryOwner(user, true, proofHistory, "인증 기록의 작성자만 투표 결과를 조회할 수 있습니다.");
 
-        String approvedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:approvedCount";
-        String disapprovedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:disapprovedCount";
+        String approvedCountKey = getRedisKey(PROOF_HISTORY_VOTES_APPROVED_COUNT_KEY, proofHistory.getId());
+        String disapprovedCountKey = getRedisKey(PROOF_HISTORY_VOTES_DISAPPROVED_COUNT_KEY, proofHistory.getId());
 
         Long approvedCount = redisTemplate.opsForValue().get(approvedCountKey);
         Long disapprovedCount = redisTemplate.opsForValue().get(disapprovedCountKey);
@@ -111,5 +118,9 @@ public class ProofHistoryVoteService {
         if (proofHistory.getStatus().isNot(status)) {
             throw new InvalidProofHistoryStatusException(message);
         }
+    }
+
+    private String getRedisKey(String key, Long id) {
+        return String.format(key, id);
     }
 }
