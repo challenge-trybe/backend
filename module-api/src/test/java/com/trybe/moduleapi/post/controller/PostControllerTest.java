@@ -81,6 +81,7 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
                        jsonPath("$.createdAt").value(게시글_상세_응답.createdAt().toString()),
+                       jsonPath("$.likeCount").value(게시글_상세_응답.likeCount()),
                        jsonPath("$.challenges").isArray(),
                        jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
                        jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
@@ -105,6 +106,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("writer.id").description("작성자 ID"),
                                        fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
                                        fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("좋아요 개수"),
                                        fieldWithPath("createdAt").description("게시글 생성일"), // 날짜 널로 들어감
                                        fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
                                        fieldWithPath("challenges[].id").description("챌린지 ID"), // ID는 널로 들어감
@@ -204,7 +206,8 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.title").value(게시글_상세_응답.title()),
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
-                       jsonPath("$.createdAt").exists(), // 이게 왜 존재하지 않지?
+                       jsonPath("$.createdAt").exists(),
+                       jsonPath("$.likeCount").value(게시글_상세_응답.likeCount()),
                        jsonPath("$.challenges").isArray(),
                        jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
                        jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
@@ -224,6 +227,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("writer.id").description("작성자 ID"),
                                        fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
                                        fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("좋아요 개수"),
                                        fieldWithPath("createdAt").description("게시글 생성일"), // 날짜 널로 들어감
                                        fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
                                        fieldWithPath("challenges[].id").description("챌린지 ID"), // ID는 널로 들어감
@@ -346,6 +350,7 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
                        jsonPath("$.createdAt").value(게시글_상세_응답.createdAt().toString()),
+                       jsonPath("$.likeCount").value(게시글_상세_응답.likeCount()),
                        jsonPath("$.challenges").isArray(),
                        jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
                        jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
@@ -371,6 +376,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("writer.id").description("작성자 ID"),
                                        fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
                                        fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("좋아요 개수"),
                                        fieldWithPath("createdAt").description("게시글 생성일"),
                                        fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
                                        fieldWithPath("challenges[].id").description("챌린지 ID"),

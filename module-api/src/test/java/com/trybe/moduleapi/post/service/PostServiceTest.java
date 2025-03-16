@@ -44,6 +44,8 @@ class PostServiceTest {
     private PostChallengeRepository postChallengeRepository;
     @Mock
     private ChallengeParticipationRepository participationRepository;
+    @Mock
+    private PostLikeService postLikeService;
 
     @InjectMocks
     private PostService postService;
@@ -97,6 +99,7 @@ class PostServiceTest {
         Post 게시글 = PostFixtures.게시글;
         when(postRepository.findById(any())).thenReturn(Optional.of(PostFixtures.게시글));
         when(postChallengeRepository.findAllByPostId(any())).thenReturn(PostChallengeFixtures.포스트_챌린지_목록);
+        when(postLikeService.count(any())).thenReturn(1);
 
         /* when */
         PostResponse.Detail postDetail = postService.find(1L);
@@ -106,6 +109,7 @@ class PostServiceTest {
         assertEquals(postDetail.content(), 게시글.getContent());
         assertEquals(postDetail.writer().userId(), 게시글.getUser().getUserId());
         assertEquals(postDetail.writer().nickname(), 게시글.getUser().getNickname());
+        assertEquals(postDetail.likeCount(), 1);
         assertEquals(postDetail.challenges().size(), 1);
     }
 
@@ -214,6 +218,7 @@ class PostServiceTest {
         /* then */
         verify(postRepository, times(1)).deleteById(any());
         verify(postChallengeRepository, times(1)).deleteAllByPostId(any());
+        verify(postLikeService, times(1)).removeLikesByPost(any());
 
     }
 
