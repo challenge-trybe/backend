@@ -61,7 +61,7 @@ class PostLikeServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 게시글에 좋아요를 누르면 예외를 환한다")
+    @DisplayName("존재하지 않는 게시글에 좋아요를 누르면 예외를 반환한다.")
     void 존재하지_않는_게시글에_좋아요를_누르면_예외를_반환한다() {
         // given
         User 회원 = UserFixtures.회원;
@@ -95,7 +95,7 @@ class PostLikeServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 게시글에 좋아요를 삭제하면 예외를 환한다")
+    @DisplayName("존재하지 않는 게시글에 좋아요를 삭제하면 예외를 반환한다")
     void 존재하지_않는_게시글에_좋아요를_삭제하면_예외를_반환한다() {
         // given
         User 회원 = UserFixtures.회원;
