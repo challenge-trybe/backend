@@ -4,6 +4,8 @@ import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
+import com.trybe.modulecore.challenge.enums.ParticipationStatus;
+import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -19,10 +21,12 @@ import java.util.stream.Collectors;
 @Service
 public class ChallengeBookmarkService {
     private final ChallengeRepository challengeRepository;
+    private final ChallengeParticipationRepository challengeParticipationRepository;
     private final RedisTemplate<String, Long> redisTemplate;
 
-    public ChallengeBookmarkService(ChallengeRepository challengeRepository, RedisTemplate<String, Long> redisTemplate) {
+    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, RedisTemplate<String, Long> redisTemplate) {
         this.challengeRepository = challengeRepository;
+        this.challengeParticipationRepository = challengeParticipationRepository;
         this.redisTemplate = redisTemplate;
     }
 
@@ -89,7 +93,11 @@ public class ChallengeBookmarkService {
                 : challengeRepository.findAllByIdIn(challengeIds);
 
         List<ChallengeResponse.Summary> challengeSummaries = sortChallenges(challenges, challengeIds).stream()
-                .map(challenge -> ChallengeResponse.Summary.from(challenge, getChallengeBookmarkCount(challenge.getId()), true))
+                .map(challenge -> {
+                    int participantCount = challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED);
+                    ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(getChallengeBookmarkCount(challenge.getId()), true);
+                    return ChallengeResponse.Summary.from(challenge, participantCount, bookmark);
+                })
                 .collect(Collectors.toList());
 
         Page<ChallengeResponse.Summary> challengePage = new PageImpl<>(challengeSummaries, pageable, getUserBookmarkCount(user.getId()));
