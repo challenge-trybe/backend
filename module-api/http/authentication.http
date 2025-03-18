@@ -24,6 +24,10 @@ Content-Type: application/json
 POST http://localhost:8080/api/v1/auth/logout
 Authorization: {{accessToken}}
 
+> {%
+    client.global.clear("accessToken");
+    client.global.clear("refreshToken");
+%}
 
 ### 2-1 로그아웃 API (인증 객체 없음)
 POST http://localhost:8080/api/v1/auth/logout
