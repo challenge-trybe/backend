@@ -8,7 +8,9 @@ import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.user.entity.User;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,7 +40,7 @@ public class ChallengeController {
     }
 
     @PostMapping("/search")
-    public PageResponse<ChallengeResponse.Summary> findAll(
+    public PageResponse<ChallengeResponse.Preview> findAll(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ChallengeRequest.Read request,
             Pageable pageable

@@ -34,7 +34,7 @@ public class ChallengeBookmarkController {
     }
 
     @GetMapping("/my")
-    public PageResponse<ChallengeResponse.Summary> getMyBookmarkedChallenges(
+    public PageResponse<ChallengeResponse.Preview> getMyBookmarkedChallenges(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             Pageable pageable
     ) {

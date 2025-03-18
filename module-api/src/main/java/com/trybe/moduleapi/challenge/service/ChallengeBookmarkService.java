@@ -80,7 +80,7 @@ public class ChallengeBookmarkService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ChallengeResponse.Summary> getMyBookmarkedChallenges(User user, Pageable pageable) {
+    public PageResponse<ChallengeResponse.Preview> getMyBookmarkedChallenges(User user, Pageable pageable) {
         String userKey = getRedisKey(USER_KEY, user.getId());
 
         int start = pageable.getPageNumber() * pageable.getPageSize();
@@ -92,15 +92,15 @@ public class ChallengeBookmarkService {
                 ? Collections.emptyList()
                 : challengeRepository.findAllByIdIn(challengeIds);
 
-        List<ChallengeResponse.Summary> challengeSummaries = sortChallenges(challenges, challengeIds).stream()
+        List<ChallengeResponse.Preview> challengeSummaries = sortChallenges(challenges, challengeIds).stream()
                 .map(challenge -> {
                     int participantCount = challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED);
                     ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(getChallengeBookmarkCount(challenge.getId()), true);
-                    return ChallengeResponse.Summary.from(challenge, participantCount, bookmark);
+                    return ChallengeResponse.Preview.from(challenge, participantCount, bookmark);
                 })
                 .collect(Collectors.toList());
 
-        Page<ChallengeResponse.Summary> challengePage = new PageImpl<>(challengeSummaries, pageable, getUserBookmarkCount(user.getId()));
+        Page<ChallengeResponse.Preview> challengePage = new PageImpl<>(challengeSummaries, pageable, getUserBookmarkCount(user.getId()));
 
         return new PageResponse<>(challengePage);
     }

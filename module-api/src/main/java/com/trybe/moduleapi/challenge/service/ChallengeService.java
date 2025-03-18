@@ -51,10 +51,10 @@ public class ChallengeService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ChallengeResponse.Summary> findAll(User user, ChallengeRequest.Read request, Pageable pageable) {
+    public PageResponse<ChallengeResponse.Preview> findAll(User user, ChallengeRequest.Read request, Pageable pageable) {
         Page<Challenge> challenges = challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories(), pageable);
 
-        Page<ChallengeResponse.Summary> challengeSummaries = challenges.map(challenge -> createSummary(user, challenge));
+        Page<ChallengeResponse.Preview> challengeSummaries = challenges.map(challenge -> createPreview(user, challenge));
 
         return new PageResponse<>(challengeSummaries);
     }
@@ -101,10 +101,10 @@ public class ChallengeService {
         return ChallengeResponse.Detail.from(challenge, participantCount, bookmark);
     }
 
-    private ChallengeResponse.Summary createSummary(User user, Challenge challenge) {
+    private ChallengeResponse.Preview createPreview(User user, Challenge challenge) {
         int participantCount = getParticipantCount(challenge.getId());
         ChallengeResponse.Bookmark bookmark = createBookmark(user, challenge.getId());
-        return ChallengeResponse.Summary.from(challenge, participantCount, bookmark);
+        return ChallengeResponse.Preview.from(challenge, participantCount, bookmark);
     }
 
     private ChallengeResponse.Bookmark createBookmark(User user, Long challengeId) {
@@ -115,7 +115,7 @@ public class ChallengeService {
 
     private Challenge getChallenge(Long id) {
         return challengeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundChallengeException());
+                .orElseThrow(NotFoundChallengeException::new);
     }
 
     private int getParticipantCount(Long challengeId) {
