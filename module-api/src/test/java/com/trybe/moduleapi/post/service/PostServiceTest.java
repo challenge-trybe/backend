@@ -9,6 +9,7 @@ import com.trybe.moduleapi.post.exception.ForbiddenPostException;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.moduleapi.post.fixtures.PostChallengeFixtures;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
+import com.trybe.moduleapi.post.fixtures.PostLikeFixtures;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
@@ -71,6 +72,7 @@ class PostServiceTest {
         assertEquals(postDetail.content(), PostFixtures.내용);
         assertEquals(postDetail.writer().userId(), UserFixtures.회원_아이디);
         assertEquals(postDetail.writer().nickname(), UserFixtures.회원_닉네임);
+        assertEquals(postDetail.likeCount(), 0);
         assertEquals(postDetail.challenges().size(), 3);
     }
 
@@ -97,9 +99,11 @@ class PostServiceTest {
     void 게시글_단건_조회_시_게시글를_응답해준다() {
         /* given */
         Post 게시글 = PostFixtures.게시글;
-        when(postRepository.findById(any())).thenReturn(Optional.of(PostFixtures.게시글));
+        int 좋아요_개수 = PostLikeFixtures.좋아요_개수;
+
+        when(postRepository.findById(any())).thenReturn(Optional.of(게시글));
         when(postChallengeRepository.findAllByPostId(any())).thenReturn(PostChallengeFixtures.게시글_챌린지_목록);
-        when(postLikeService.count(any())).thenReturn(1);
+        when(postLikeService.count(any())).thenReturn(좋아요_개수);
 
         /* when */
         PostResponse.Detail postDetail = postService.find(1L);
@@ -109,7 +113,7 @@ class PostServiceTest {
         assertEquals(postDetail.content(), 게시글.getContent());
         assertEquals(postDetail.writer().userId(), 게시글.getUser().getUserId());
         assertEquals(postDetail.writer().nickname(), 게시글.getUser().getNickname());
-        assertEquals(postDetail.likeCount(), 1);
+        assertEquals(postDetail.likeCount(), 좋아요_개수);
         assertEquals(postDetail.challenges().size(), 1);
     }
 
@@ -150,9 +154,11 @@ class PostServiceTest {
     void 게시글_수정_시_수정된_게시글를_응답해준다() {
         /* given */
         PostRequest.Update 게시글_수정_요청 = PostFixtures.게시글_수정;
+        int 좋아요_개수 = PostLikeFixtures.좋아요_개수;
 
         when(postRepository.findById(any())).thenReturn(Optional.of(PostFixtures.게시글));
         when(challengeRepository.findAllByIdIn(PostFixtures.수정_챌린지_Ids)).thenReturn(List.of(ChallengeFixtures.챌린지(),ChallengeFixtures.챌린지()));
+        when(postLikeService.count(any())).thenReturn(좋아요_개수);
 
 
         /* when */
@@ -163,6 +169,7 @@ class PostServiceTest {
         assertEquals(postDetail.content(), PostFixtures.수정_내용);
         assertEquals(postDetail.writer().userId(), UserFixtures.회원_아이디);
         assertEquals(postDetail.writer().nickname(), UserFixtures.회원_닉네임);
+        assertEquals(postDetail.likeCount(), 좋아요_개수);
         assertEquals(postDetail.challenges().size(), 2);
     }
     @Test
