@@ -19,9 +19,9 @@ public class ChallengeResponse {
             int participantCount,
             String proofWay,
             int proofCount,
-            Boolean bookmarked
+            Bookmark bookmark
     ) {
-        public static Detail from(Challenge challenge, int participantCount, Boolean bookmarked) {
+        public static Detail from(Challenge challenge, int participantCount, Bookmark bookmark) {
             return new Detail(
                     challenge.getId(),
                     challenge.getTitle(),
@@ -34,7 +34,7 @@ public class ChallengeResponse {
                     participantCount,
                     challenge.getProofWay(),
                     challenge.getProofCount(),
-                    bookmarked
+                    bookmark
             );
         }
     }
@@ -47,9 +47,9 @@ public class ChallengeResponse {
             ChallengeCategory category,
             int capacity,
             int participantCount,
-            Boolean bookmarked
+            Bookmark bookmark
     ) {
-        public static Summary from(Challenge challenge, int participantCount, Boolean bookmarked) {
+        public static Summary from(Challenge challenge, int participantCount, Bookmark bookmark) {
             return new Summary(
                     challenge.getId(),
                     challenge.getTitle(),
@@ -58,13 +58,13 @@ public class ChallengeResponse {
                     challenge.getCategory(),
                     challenge.getCapacity(),
                     participantCount,
-                    bookmarked
+                    bookmark
             );
         }
     }
 
     public record Bookmark(
             int bookmarkCount,
-            boolean bookmarked
+            Boolean bookmarked
     ) { }
 }
