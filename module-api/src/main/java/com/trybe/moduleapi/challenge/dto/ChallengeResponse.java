@@ -56,4 +56,9 @@ public class ChallengeResponse {
             );
         }
     }
+
+    public record Bookmark(
+            int bookmarkCount,
+            boolean bookmarked
+    ) { }
 }
