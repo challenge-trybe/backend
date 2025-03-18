@@ -14,13 +14,14 @@ public class ChallengeResponse {
             LocalDate startDate,
             LocalDate endDate,
             ChallengeStatus status,
-            int capacity,
             ChallengeCategory category,
+            int capacity,
+            int participantCount,
             String proofWay,
-            int proofCount
-            // TODO: 현재 참여 인원수, 참여 인원 필드 추가
+            int proofCount,
+            Boolean bookmarked
     ) {
-        public static Detail from(Challenge challenge) {
+        public static Detail from(Challenge challenge, int participantCount, Boolean bookmarked) {
             return new Detail(
                     challenge.getId(),
                     challenge.getTitle(),
@@ -28,10 +29,12 @@ public class ChallengeResponse {
                     challenge.getStartDate(),
                     challenge.getEndDate(),
                     challenge.getStatus(),
-                    challenge.getCapacity(),
                     challenge.getCategory(),
+                    challenge.getCapacity(),
+                    participantCount,
                     challenge.getProofWay(),
-                    challenge.getProofCount()
+                    challenge.getProofCount(),
+                    bookmarked
             );
         }
     }
@@ -41,18 +44,21 @@ public class ChallengeResponse {
             String title,
             String description,
             ChallengeStatus status,
+            ChallengeCategory category,
             int capacity,
-            ChallengeCategory category
-            // TODO: 현재 참여 인원수 필드 추가
+            int participantCount,
+            Boolean bookmarked
     ) {
-        public static Summary from(Challenge challenge) {
+        public static Summary from(Challenge challenge, int participantCount, Boolean bookmarked) {
             return new Summary(
                     challenge.getId(),
                     challenge.getTitle(),
                     challenge.getDescription(),
                     challenge.getStatus(),
+                    challenge.getCategory(),
                     challenge.getCapacity(),
-                    challenge.getCategory()
+                    participantCount,
+                    bookmarked
             );
         }
     }
