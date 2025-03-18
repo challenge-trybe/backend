@@ -154,8 +154,8 @@ class PostLikeControllerTest extends ControllerTest {
     @WithCustomMockUser
     void 자신이_좋아요_누른_게시글을_조회하면_200을_반환한다() throws Exception {
         // given
-        PageResponse<PostResponse.Summary> 포스트_페이지_응답 = PostFixtures.컨트롤러_포스트_페이지_응답;
-        when(postLikeService.getLikePostByUser(any(User.class), any(Pageable.class))).thenReturn(PostFixtures.컨트롤러_포스트_페이지_응답);
+        PageResponse<PostResponse.Summary> 게시글_페이지_응답 = PostFixtures.컨트롤러_게시글_페이지_응답;
+        when(postLikeService.getLikePostByUser(any(User.class), any(Pageable.class))).thenReturn(PostFixtures.컨트롤러_게시글_페이지_응답);
 
         // when
         mockMvc.perform(get("/api/v1/posts/likes/my")
@@ -165,18 +165,18 @@ class PostLikeControllerTest extends ControllerTest {
                .andExpect(status().isOk())
                .andExpectAll(status().isOk(),
                               jsonPath("$.content").isArray(),
-                              jsonPath("$.content[0].id").value(포스트_페이지_응답.content().get(0).id()),
-                              jsonPath("$.content[0].title").value(포스트_페이지_응답.content().get(0).title()),
-                              jsonPath("$.content[0].category").value(포스트_페이지_응답.content().get(0).category().toString()),
-                              jsonPath("$.content[0].createdAt").value(포스트_페이지_응답.content().get(0).createdAt().toString()),
-                              jsonPath("content[0].writer.id").value(포스트_페이지_응답.content().get(0).writer().id()),
-                              jsonPath("content[0].writer.userId").value(포스트_페이지_응답.content().get(0).writer().userId()),
-                              jsonPath("content[0].writer.nickname").value(포스트_페이지_응답.content().get(0).writer().nickname()),
-                              jsonPath("$.totalElements").value(포스트_페이지_응답.totalElements()),
-                              jsonPath("$.totalPages").value(PostFixtures.포스트_페이지_응답.totalPages()),
+                              jsonPath("$.content[0].id").value(게시글_페이지_응답.content().get(0).id()),
+                              jsonPath("$.content[0].title").value(게시글_페이지_응답.content().get(0).title()),
+                              jsonPath("$.content[0].category").value(게시글_페이지_응답.content().get(0).category().toString()),
+                              jsonPath("$.content[0].createdAt").value(게시글_페이지_응답.content().get(0).createdAt().toString()),
+                              jsonPath("content[0].writer.id").value(게시글_페이지_응답.content().get(0).writer().id()),
+                              jsonPath("content[0].writer.userId").value(게시글_페이지_응답.content().get(0).writer().userId()),
+                              jsonPath("content[0].writer.nickname").value(게시글_페이지_응답.content().get(0).writer().nickname()),
+                              jsonPath("$.totalElements").value(게시글_페이지_응답.totalElements()),
+                              jsonPath("$.totalPages").value(PostFixtures.게시글_페이지_응답.totalPages()),
                               jsonPath("$.size").value(10),
                               jsonPath("$.number").value(0),
-                              jsonPath("$.last").value(PostFixtures.포스트_페이지_응답.last()))
+                              jsonPath("$.last").value(PostFixtures.게시글_페이지_응답.last()))
                .andDo(document(docsPath + "getLikedPost",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -185,14 +185,14 @@ class PostLikeControllerTest extends ControllerTest {
                                        parameterWithName("size").description("페이지 크기")
                                ),
                                responseFields(
-                                       fieldWithPath("content").description("포스트 목록"),
-                                       fieldWithPath("content[].id").description("포스트 ID"),
-                                       fieldWithPath("content[].title").description("포스트 제목"),
-                                       fieldWithPath("content[].category").description("포스트 카테고리"),
-                                       fieldWithPath("content[].createdAt").description("포스트 생성일"),
-                                       fieldWithPath("content[].writer.id").description("포스트 작성자 ID"),
-                                       fieldWithPath("content[].writer.userId").description("포스트 작성자 유저 ID"),
-                                       fieldWithPath("content[].writer.nickname").description("포스트 작성자 닉네임"),
+                                       fieldWithPath("content").description("게시글 목록"),
+                                       fieldWithPath("content[].id").description("게시글 ID"),
+                                       fieldWithPath("content[].title").description("게시글 제목"),
+                                       fieldWithPath("content[].category").description("게시글 카테고리"),
+                                       fieldWithPath("content[].createdAt").description("게시글 생성일"),
+                                       fieldWithPath("content[].writer.id").description("게시글 작성자 ID"),
+                                       fieldWithPath("content[].writer.userId").description("게시글 작성자 유저 ID"),
+                                       fieldWithPath("content[].writer.nickname").description("게시글 작성자 닉네임"),
                                        fieldWithPath("totalPages").description("총 페이지 수"),
                                        fieldWithPath("totalElements").description("총 요소 수"),
                                        fieldWithPath("size").description("페이지 크기"),

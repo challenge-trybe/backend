@@ -72,11 +72,11 @@ public class PostFixtures {
     public static Pageable 페이지_요청 = PageRequest.of(0, 10);
     public static List<Post> 게시글_목록 = List.of(게시글,게시글,게시글,게시글,게시글,게시글,게시글);
     public static Page<Post> 페이지_응답 = new PageImpl<>(게시글_목록, 페이지_요청, 게시글_목록.size());
-    public static final PageResponse<PostResponse.Summary> 포스트_페이지_응답 = new PageResponse<>(페이지_응답.map(PostResponse.Summary::from));
+    public static final PageResponse<PostResponse.Summary> 게시글_페이지_응답 = new PageResponse<>(페이지_응답.map(PostResponse.Summary::from));
 
-    public static List<Post> 컨트롤러_포스트_목록 = List.of(게시글);
-    public static Page<Post> 컨트롤러_페이지_응답 = new PageImpl<>(컨트롤러_포스트_목록, 페이지_요청, 게시글_목록.size());
-    public static final PageResponse<PostResponse.Summary> 컨트롤러_포스트_페이지_응답 = new PageResponse<>(
+    public static List<Post> 컨트롤러_게시글_목록 = List.of(게시글);
+    public static Page<Post> 컨트롤러_페이지_응답 = new PageImpl<>(컨트롤러_게시글_목록, 페이지_요청, 게시글_목록.size());
+    public static final PageResponse<PostResponse.Summary> 컨트롤러_게시글_페이지_응답 = new PageResponse<>(
             컨트롤러_페이지_응답.map(post -> new PostResponse.Summary(
                     post.getId(),
                     post.getTitle(),
