@@ -23,10 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
+    private final ChallengeBookmarkService challengeBookmarkService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
+        this.challengeBookmarkService = challengeBookmarkService;
     }
 
     @Transactional
@@ -37,23 +39,24 @@ public class ChallengeService {
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
         challengeParticipationRepository.save(participation);
 
-        return ChallengeResponse.Detail.from(savedChallenge);
+        ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
+        return ChallengeResponse.Detail.from(savedChallenge, 1, bookmark);
     }
 
     @Transactional(readOnly = true)
-    public ChallengeResponse.Detail find(Long id) {
-        // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
+    public ChallengeResponse.Detail find(User user, Long id) {
         Challenge challenge = getChallenge(id);
 
-        return ChallengeResponse.Detail.from(challenge);
+        return createDetail(user, challenge);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ChallengeResponse.Summary> findAll(ChallengeRequest.Read request, Pageable pageable) {
-        // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
+    public PageResponse<ChallengeResponse.Summary> findAll(User user, ChallengeRequest.Read request, Pageable pageable) {
         Page<Challenge> challenges = challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories(), pageable);
 
-        return new PageResponse<>(challenges.map(ChallengeResponse.Summary::from));
+        Page<ChallengeResponse.Summary> challengeSummaries = challenges.map(challenge -> createSummary(user, challenge));
+
+        return new PageResponse<>(challengeSummaries);
     }
 
     @Transactional
@@ -65,7 +68,7 @@ public class ChallengeService {
 
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
-        return ChallengeResponse.Detail.from(challenge);
+        return createDetail(user, challenge);
     }
 
     @Transactional
@@ -77,7 +80,7 @@ public class ChallengeService {
 
         challenge.updateProof(request.proofWay(), request.proofCount());
 
-        return ChallengeResponse.Detail.from(challenge);
+        return createDetail(user, challenge);
     }
 
     @Transactional
@@ -91,9 +94,31 @@ public class ChallengeService {
         challengeRepository.delete(challenge);
     }
 
+    private ChallengeResponse.Detail createDetail(User user, Challenge challenge) {
+        int participantCount = getParticipantCount(challenge.getId());
+        ChallengeResponse.Bookmark bookmark = createBookmark(user, challenge.getId());
+        return ChallengeResponse.Detail.from(challenge, participantCount, bookmark);
+    }
+
+    private ChallengeResponse.Summary createSummary(User user, Challenge challenge) {
+        int participantCount = getParticipantCount(challenge.getId());
+        ChallengeResponse.Bookmark bookmark = createBookmark(user, challenge.getId());
+        return ChallengeResponse.Summary.from(challenge, participantCount, bookmark);
+    }
+
+    private ChallengeResponse.Bookmark createBookmark(User user, Long challengeId) {
+        int bookmarkCount = challengeBookmarkService.getChallengeBookmarkCount(challengeId);
+        Boolean bookmarked = user == null ? null : challengeBookmarkService.isBookmarked(user.getId(), challengeId);
+        return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
+    }
+
     private Challenge getChallenge(Long id) {
         return challengeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundChallengeException());
+    }
+
+    private int getParticipantCount(Long challengeId) {
+        return challengeParticipationRepository.countByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED);
     }
 
     private void validateChallengeStatus(Challenge challenge, boolean shouldBe, ChallengeStatus status, String message) {
