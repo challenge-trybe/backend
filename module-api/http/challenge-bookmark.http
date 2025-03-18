@@ -1,0 +1,11 @@
+### 1. 챌린지 북마크 추가
+POST http://localhost:8080/api/v1/challenges/bookmarks/1
+Authorization: {{accessToken}}
+
+### 2. 챌린지 북마크 삭제
+DELETE http://localhost:8080/api/v1/challenges/bookmarks/1
+Authorization: {{accessToken}}
+
+### 3. 나의 챌린지 북마크 목록 조회
+GET http://localhost:8080/api/v1/challenges/bookmarks/my?page=0&size=10
+Authorization: {{accessToken}}
