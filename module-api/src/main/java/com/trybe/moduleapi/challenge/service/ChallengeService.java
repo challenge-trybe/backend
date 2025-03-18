@@ -59,9 +59,8 @@ public class ChallengeService {
     @Transactional
     public ChallengeResponse.Detail updateContent(User user, Long id, ChallengeRequest.UpdateContent request) {
         Challenge challenge = getChallenge(id);
-        ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
+        validateLeader(user.getId(), id, "리더만 챌린지 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 정보를 수정할 수 있습니다.");
 
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
@@ -72,9 +71,8 @@ public class ChallengeService {
     @Transactional
     public ChallengeResponse.Detail updateProof(User user, Long id, ChallengeRequest.UpdateProof request) {
         Challenge challenge = getChallenge(id);
-        ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지 인증 정보를 수정할 수 있습니다.");
+        validateLeader(user.getId(), id, "리더만 챌린지 인증 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 인증 정보를 수정할 수 있습니다.");
 
         challenge.updateProof(request.proofWay(), request.proofCount());
@@ -85,9 +83,8 @@ public class ChallengeService {
     @Transactional
     public void delete(User user, Long id) {
         Challenge challenge = getChallenge(id);
-        ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지를 삭제할 수 있습니다.");
+        validateLeader(user.getId(), id, "리더만 챌린지를 삭제할 수 있습니다.");
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
         challengeParticipationRepository.deleteAllByChallengeId(id);
@@ -99,20 +96,15 @@ public class ChallengeService {
                 .orElseThrow(() -> new NotFoundChallengeException());
     }
 
-    private ChallengeParticipation getParticipation(Long userId, Long challengeId) {
-        return challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
-                .orElseThrow(() -> new NotFoundChallengeException());
-    }
-
-    private void validateRole(ChallengeParticipation participation, ChallengeRole role, String message) {
-        if (participation.getRole().isNot(role)) {
-            throw new InvalidChallengeRoleActionException(message);
-        }
-    }
-
     private void validateChallengeStatus(Challenge challenge, boolean shouldBe, ChallengeStatus status, String message) {
         if ((shouldBe && challenge.getStatus().isNot(status)) || (!shouldBe && challenge.getStatus().is(status))) {
             throw new InvalidChallengeStatusException(message);
+        }
+    }
+
+    private void validateLeader(Long userId, Long challengeId, String message) {
+        if (!challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(userId, challengeId, ChallengeRole.LEADER)) {
+            throw new InvalidChallengeRoleActionException(message);
         }
     }
 }
