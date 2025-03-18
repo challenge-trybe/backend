@@ -39,7 +39,7 @@ public class ChallengeResponse {
         }
     }
 
-    public record Summary(
+    public record Preview(
             Long id,
             String title,
             String description,
@@ -49,8 +49,8 @@ public class ChallengeResponse {
             int participantCount,
             Bookmark bookmark
     ) {
-        public static Summary from(Challenge challenge, int participantCount, Bookmark bookmark) {
-            return new Summary(
+        public static Preview from(Challenge challenge, int participantCount, Bookmark bookmark) {
+            return new Preview(
                     challenge.getId(),
                     challenge.getTitle(),
                     challenge.getDescription(),
@@ -59,6 +59,26 @@ public class ChallengeResponse {
                     challenge.getCapacity(),
                     participantCount,
                     bookmark
+            );
+        }
+    }
+
+    public record Summary(
+            Long id,
+            String title,
+            String description,
+            ChallengeStatus status,
+            ChallengeCategory category,
+            int capacity
+    ) {
+        public static Summary from(Challenge challenge) {
+            return new Summary(
+                    challenge.getId(),
+                    challenge.getTitle(),
+                    challenge.getDescription(),
+                    challenge.getStatus(),
+                    challenge.getCategory(),
+                    challenge.getCapacity()
             );
         }
     }

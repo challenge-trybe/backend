@@ -5,6 +5,7 @@ import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.service.ChallengeService;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.modulecore.user.entity.User;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,16 +29,22 @@ public class ChallengeController {
     }
 
     @GetMapping("/{id}")
-    public ChallengeResponse.Detail find(@PathVariable("id") Long id) {
-        return challengeService.find(id);
+    public ChallengeResponse.Detail find(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("id") Long id
+    ) {
+        User user = userDetails == null ? null : userDetails.getUser();
+        return challengeService.find(user, id);
     }
 
     @PostMapping("/search")
     public PageResponse<ChallengeResponse.Summary> findAll(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody ChallengeRequest.Read request,
             Pageable pageable
     ) {
-        return challengeService.findAll(request, pageable);
+        User user = userDetails == null ? null : userDetails.getUser();
+        return challengeService.findAll(user, request, pageable);
     }
 
     @PutMapping("/{id}/content")
