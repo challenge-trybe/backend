@@ -12,8 +12,8 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "postLikes")
-@SQLDelete(sql = "UPDATE postLikes SET deleted_at = NOW() WHERE id = ?")
+@Table(name = "post_likes")
+@SQLDelete(sql = "UPDATE post_likes SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class PostLike extends BaseEntity {
 

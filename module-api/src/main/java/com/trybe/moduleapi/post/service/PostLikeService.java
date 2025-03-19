@@ -36,14 +36,15 @@ public class PostLikeService {
 
         String userKey = createRedisKey(USER_REDIS_PREFIX, user.getId());
         String postKey = createRedisKey(POST_REDIS_PREFIX, postId);
+        int likeCount = count(postId);
 
         if (!alreadyLike(userKey, postId)) {
             double score = getCurrentTimeInSeconds();
             redisTemplate.opsForZSet().add(userKey, postId, score);
             redisTemplate.opsForSet().add(postKey, user.getId());
+            likeCount++;
         }
-
-        return PostResponse.Like.from(count(postId), true);
+        return PostResponse.Like.from(likeCount, true);
     }
 
     @Transactional
@@ -52,13 +53,14 @@ public class PostLikeService {
 
         String userKey = createRedisKey(USER_REDIS_PREFIX, user.getId());
         String postKey = createRedisKey(POST_REDIS_PREFIX, postId);
+        int likeCount = count(postId);
 
         if (alreadyLike(userKey, postId)) {
             redisTemplate.opsForZSet().remove(userKey, postId);
             redisTemplate.opsForSet().remove(postKey, user.getId());
+            likeCount--;
         }
-
-        return PostResponse.Like.from(count(postId),false);
+        return PostResponse.Like.from(likeCount,false);
     }
 
     public void removeLikesByPost(Long postId){
@@ -91,9 +93,10 @@ public class PostLikeService {
         List<Post> posts = postRepository.findAllByIdIn(postIds);
         List<Post> sortedPosts = postIds.stream()
                                         .map(postId -> posts.stream()
-                                                                  .filter(post -> post.getId().equals(postId))
+                                                                  .filter(post -> postId.equals(post.getId()))
                                                                   .findFirst()
-                                                                  .orElseThrow(() -> new NotFoundPostException()))
+                                                                  .orElse(null))
+                                        .filter(Objects::nonNull)
                                         .collect(Collectors.toList());
 
 

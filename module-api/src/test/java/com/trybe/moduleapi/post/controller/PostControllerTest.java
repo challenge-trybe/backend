@@ -63,9 +63,9 @@ class PostControllerTest extends ControllerTest {
     private PostService postService;
 
     @Test
-    @DisplayName("정상적인 포스트 생성 요청 시 200을 반환한다.")
+    @DisplayName("정상적인 게시글 생성 요청 시 200을 반환한다.")
     @WithCustomMockUser
-    void 정상적인_포스트_생성_요청_시_200을_반환한다() throws Exception {
+    void 정상적인_게시글_생성_요청_시_200을_반환한다() throws Exception {
         PostRequest.Create 게시글_생성 = PostFixtures.게시글_생성;
         PostResponse.Detail 게시글_상세_응답 = PostFixtures.컨트롤러_테스트_게시글_상세_응답;
         when(postService.save(any(User.class), any(PostRequest.Create.class))).thenReturn(게시글_상세_응답);
@@ -81,6 +81,7 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
                        jsonPath("$.createdAt").value(게시글_상세_응답.createdAt().toString()),
+                       jsonPath("$.likeCount").value(게시글_상세_응답.likeCount()),
                        jsonPath("$.challenges").isArray(),
                        jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
                        jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
@@ -105,6 +106,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("writer.id").description("작성자 ID"),
                                        fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
                                        fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("좋아요 개수"),
                                        fieldWithPath("createdAt").description("게시글 생성일"), // 날짜 널로 들어감
                                        fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
                                        fieldWithPath("challenges[].id").description("챌린지 ID"), // ID는 널로 들어감
@@ -119,9 +121,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("유효성 검증에 실패하는 포스트 생성 요청 시 400을 반환한다.")
+    @DisplayName("유효성 검증에 실패하는 게시글 생성 요청 시 400을 반환한다.")
     @WithCustomMockUser
-    void 유효성_검증에_실패하는_포스트_생성_요청_시_400을_반환한다() throws Exception {
+    void 유효성_검증에_실패하는_게시글_생성_요청_시_400을_반환한다() throws Exception {
         PostRequest.Create 게시글_생성 = PostFixtures.잘못된_게시글_생성;
 
         mockMvc.perform(post("/api/v1/posts")
@@ -147,7 +149,7 @@ class PostControllerTest extends ControllerTest {
                                responseFields(
                                        fieldWithPath("status").description("HTTP 상태 코드"),
                                        fieldWithPath("message").description("유효성 검증 오류 메시지"),
-                                       fieldWithPath("data.category").description("포스트 카테고리 필드에 대한 유효성 오류 메시지"),
+                                       fieldWithPath("data.category").description("게시글 카테고리 필드에 대한 유효성 오류 메시지"),
                                        fieldWithPath("data.title").description("제목 필드에 대한 유효성 오류 메시지"),
                                        fieldWithPath("data.content").description("내용 필드에 대한 유효성 오류 메시지")
                                )
@@ -155,9 +157,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("포스트 생성 시 참여하지 않은 챌린지_ID를 보내면 404을 반환한다.")
+    @DisplayName("게시글 생성 시 참여하지 않은 챌린지_ID를 보내면 404을 반환한다.")
     @WithCustomMockUser
-    void 포스트_생성_시_참여하지_않은_챌린지_ID를_보내면_404을_반환한다() throws Exception {
+    void 게시글_생성_시_참여하지_않은_챌린지_ID를_보내면_404을_반환한다() throws Exception {
         PostRequest.Create 게시글_생성 = PostFixtures.게시글_생성;
         doThrow(new NotFoundChallengeParticipationException("참여하지 않는 챌린지는 언급할 수 없습니다.")).when(postService).save(any(User.class), any(PostRequest.Create.class));
 
@@ -189,9 +191,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("존재하는 포스트 조회 시 200을 반환한다.")
+    @DisplayName("존재하는 게시글 조회 시 200을 반환한다.")
     @WithCustomMockUser
-    void 존재하는_포스트_조회_시_200을_반환한다() throws Exception {
+    void 존재하는_게시글_조회_시_200을_반환한다() throws Exception {
         PostResponse.Detail 게시글_상세_응답 = PostFixtures.컨트롤러_테스트_게시글_상세_응답;
         when(postService.find(any(Long.class))).thenReturn(게시글_상세_응답);
 
@@ -204,7 +206,8 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.title").value(게시글_상세_응답.title()),
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
-                       jsonPath("$.createdAt").exists(), // 이게 왜 존재하지 않지?
+                       jsonPath("$.createdAt").exists(),
+                       jsonPath("$.likeCount").value(게시글_상세_응답.likeCount()),
                        jsonPath("$.challenges").isArray(),
                        jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
                        jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
@@ -215,7 +218,7 @@ class PostControllerTest extends ControllerTest {
                .andDo(document(docsPath + "findById",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
-                               pathParameters(parameterWithName("id").description("포스트 ID")),
+                               pathParameters(parameterWithName("id").description("게시글 ID")),
                                responseFields(
                                        fieldWithPath("id").description("게시글 ID"),
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 내용"),
@@ -224,6 +227,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("writer.id").description("작성자 ID"),
                                        fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
                                        fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("좋아요 개수"),
                                        fieldWithPath("createdAt").description("게시글 생성일"), // 날짜 널로 들어감
                                        fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
                                        fieldWithPath("challenges[].id").description("챌린지 ID"), // ID는 널로 들어감
@@ -238,9 +242,9 @@ class PostControllerTest extends ControllerTest {
 
     }
     @Test
-    @DisplayName("존재하지 않는 포스트 조회 시 404을 반환한다.")
+    @DisplayName("존재하지 않는 게시글 조회 시 404을 반환한다.")
     @WithCustomMockUser
-    void 존재하지_않는_포스트_조회_시_404을_반환한다() throws Exception {
+    void 존재하지_않는_게시글_조회_시_404을_반환한다() throws Exception {
         doThrow(new NotFoundPostException()).when(postService).find(eq(1L));
         mockMvc.perform(get("/api/v1/posts/{id}", 1L)
                                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
@@ -253,7 +257,7 @@ class PostControllerTest extends ControllerTest {
                ).andDo(document(docsPath + "findById" + invalidNotFoundPath,
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                pathParameters(parameterWithName("id").description("수정할 포스트 ID")),
+                                pathParameters(parameterWithName("id").description("수정할 게시글 ID")),
                                 responseFields(
                                         fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
                                         fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
@@ -263,15 +267,15 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("포스트 페이징 조회 시 200을 반환한다")
+    @DisplayName("게시글 페이징 조회 시 200을 반환한다")
     @WithCustomMockUser
-    void 포스트_페이징_조회_시_200을_반환한다() throws Exception {
+    void 게시글_페이징_조회_시_200을_반환한다() throws Exception {
         /* given */
         PostRequest.Read request = PostFixtures.게시글_필터링_조회;
-        PageResponse<PostResponse.Summary> 포스트_페이지_응답 = PostFixtures.컨트롤러_포스트_페이지_응답;
+        PageResponse<PostResponse.Summary> 게시글_페이지_응답 = PostFixtures.컨트롤러_게시글_페이지_응답;
 
         when(postService.findAll(request, PageRequest.of(0, 10)))
-                .thenReturn(포스트_페이지_응답);
+                .thenReturn(게시글_페이지_응답);
 
         /* when */
        mockMvc.perform(post("/api/v1/posts/search")
@@ -283,18 +287,18 @@ class PostControllerTest extends ControllerTest {
                                .content(objectMapper.writeValueAsString(request)))
               .andExpectAll(status().isOk(),
                             jsonPath("$.content").isArray(),
-                            jsonPath("$.content[0].id").value(포스트_페이지_응답.content().get(0).id()),
-                            jsonPath("$.content[0].title").value(포스트_페이지_응답.content().get(0).title()),
-                            jsonPath("$.content[0].category").value(포스트_페이지_응답.content().get(0).category().toString()),
-                            jsonPath("$.content[0].createdAt").value(포스트_페이지_응답.content().get(0).createdAt().toString()),
-                            jsonPath("content[0].writer.id").value(포스트_페이지_응답.content().get(0).writer().id()),
-                            jsonPath("content[0].writer.userId").value(포스트_페이지_응답.content().get(0).writer().userId()),
-                            jsonPath("content[0].writer.nickname").value(포스트_페이지_응답.content().get(0).writer().nickname()),
-                            jsonPath("$.totalElements").value(포스트_페이지_응답.totalElements()),
-                            jsonPath("$.totalPages").value(PostFixtures.포스트_페이지_응답.totalPages()),
+                            jsonPath("$.content[0].id").value(게시글_페이지_응답.content().get(0).id()),
+                            jsonPath("$.content[0].title").value(게시글_페이지_응답.content().get(0).title()),
+                            jsonPath("$.content[0].category").value(게시글_페이지_응답.content().get(0).category().toString()),
+                            jsonPath("$.content[0].createdAt").value(게시글_페이지_응답.content().get(0).createdAt().toString()),
+                            jsonPath("content[0].writer.id").value(게시글_페이지_응답.content().get(0).writer().id()),
+                            jsonPath("content[0].writer.userId").value(게시글_페이지_응답.content().get(0).writer().userId()),
+                            jsonPath("content[0].writer.nickname").value(게시글_페이지_응답.content().get(0).writer().nickname()),
+                            jsonPath("$.totalElements").value(게시글_페이지_응답.totalElements()),
+                            jsonPath("$.totalPages").value(PostFixtures.게시글_페이지_응답.totalPages()),
                             jsonPath("$.size").value(10),
                             jsonPath("$.number").value(0),
-                            jsonPath("$.last").value(PostFixtures.포스트_페이지_응답.last()))
+                            jsonPath("$.last").value(PostFixtures.게시글_페이지_응답.last()))
               .andDo(document(docsPath + "search",
                               preprocessRequest(prettyPrint()),
                               preprocessResponse(prettyPrint()),
@@ -304,19 +308,19 @@ class PostControllerTest extends ControllerTest {
                                       parameterWithName("order").description("정렬 기준")
                               ),
                               requestFields(
-                                      fieldWithPath("keyword").description("포스트 검색 키워트"),
-                                      fieldWithPath("categories").description("포스트 카테고리"),
-                                      fieldWithPath("order").description("포스트 정렬 기준")
+                                      fieldWithPath("keyword").description("게시글 검색 키워트"),
+                                      fieldWithPath("categories").description("게시글 카테고리"),
+                                      fieldWithPath("order").description("게시글 정렬 기준")
                               ),
                               responseFields(
-                                      fieldWithPath("content").description("포스트 목록"),
-                                      fieldWithPath("content[].id").description("포스트 ID"),
-                                      fieldWithPath("content[].title").description("포스트 제목"),
-                                      fieldWithPath("content[].category").description("포스트 카테고리"),
-                                      fieldWithPath("content[].createdAt").description("포스트 생성일"),
-                                      fieldWithPath("content[].writer.id").description("포스트 작성자 ID"),
-                                      fieldWithPath("content[].writer.userId").description("포스트 작성자 유저 ID"),
-                                      fieldWithPath("content[].writer.nickname").description("포스트 작성자 닉네임"),
+                                      fieldWithPath("content").description("게시글 목록"),
+                                      fieldWithPath("content[].id").description("게시글 ID"),
+                                      fieldWithPath("content[].title").description("게시글 제목"),
+                                      fieldWithPath("content[].category").description("게시글 카테고리"),
+                                      fieldWithPath("content[].createdAt").description("게시글 생성일"),
+                                      fieldWithPath("content[].writer.id").description("게시글 작성자 ID"),
+                                      fieldWithPath("content[].writer.userId").description("게시글 작성자 유저 ID"),
+                                      fieldWithPath("content[].writer.nickname").description("게시글 작성자 닉네임"),
                                       fieldWithPath("totalPages").description("총 페이지 수"),
                                       fieldWithPath("totalElements").description("총 요소 수"),
                                       fieldWithPath("size").description("페이지 크기"),
@@ -328,9 +332,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("정상적인 포스트 수정 요청 시 200을 반환한다")
+    @DisplayName("정상적인 게시글 수정 요청 시 200을 반환한다")
     @WithCustomMockUser
-    void 정상적인_포스트_수정_요청_시_200을_반환한다() throws Exception {
+    void 정상적인_게시글_수정_요청_시_200을_반환한다() throws Exception {
         PostRequest.Update 게시글_수정 = PostFixtures.게시글_수정;
         PostResponse.Detail 게시글_상세_응답 = PostFixtures.컨트롤러_테스트_게시글_상세_응답;
         when(postService.updatePost(any(User.class), any(Long.class), any(PostRequest.Update.class))).thenReturn(게시글_상세_응답);
@@ -346,6 +350,7 @@ class PostControllerTest extends ControllerTest {
                        jsonPath("$.content").value(게시글_상세_응답.content()),
                        jsonPath("$.category").value(게시글_상세_응답.category().toString()),
                        jsonPath("$.createdAt").value(게시글_상세_응답.createdAt().toString()),
+                       jsonPath("$.likeCount").value(게시글_상세_응답.likeCount()),
                        jsonPath("$.challenges").isArray(),
                        jsonPath("$.challenges[0].id").value(게시글_상세_응답.challenges().get(0).id()),
                        jsonPath("$.challenges[0].title").value(게시글_상세_응답.challenges().get(0).title()),
@@ -356,7 +361,7 @@ class PostControllerTest extends ControllerTest {
                .andDo(document(docsPath + "update",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
-                               pathParameters(parameterWithName("id").description("포스트 ID")),
+                               pathParameters(parameterWithName("id").description("게시글 ID")),
                                requestFields(
                                        fieldWithPath("title").type(JsonFieldType.STRING).description("게시글 제목"),
                                        fieldWithPath("content").type(JsonFieldType.STRING).description("게시글 내용"),
@@ -371,6 +376,7 @@ class PostControllerTest extends ControllerTest {
                                        fieldWithPath("writer.id").description("작성자 ID"),
                                        fieldWithPath("writer.userId").type(JsonFieldType.STRING).description("작성자 아이디"),
                                        fieldWithPath("writer.nickname").type(JsonFieldType.STRING).description("작성자 닉네임"),
+                                       fieldWithPath("likeCount").type(JsonFieldType.NUMBER).description("좋아요 개수"),
                                        fieldWithPath("createdAt").description("게시글 생성일"),
                                        fieldWithPath("challenges[]").type(JsonFieldType.ARRAY).description("챌린지 요약 내용"),
                                        fieldWithPath("challenges[].id").description("챌린지 ID"),
@@ -385,9 +391,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("유효성 검증에 실패하는 포스트 수정 요청 시 400을 반환한다")
+    @DisplayName("유효성 검증에 실패하는 게시글 수정 요청 시 400을 반환한다")
     @WithCustomMockUser
-    void 유효성_검증에_실패하는_포스트_수정_요청_시_400을_반환한다() throws Exception {
+    void 유효성_검증에_실패하는_게시글_수정_요청_시_400을_반환한다() throws Exception {
         PostRequest.Update 게시글_수정 = PostFixtures.잘못된_게시글_수정;
         PostResponse.Detail 게시글_상세_응답 = PostFixtures.컨트롤러_테스트_게시글_상세_응답;
         when(postService.updatePost(any(User.class), any(Long.class), any(PostRequest.Update.class))).thenReturn(게시글_상세_응답);
@@ -406,7 +412,7 @@ class PostControllerTest extends ControllerTest {
                ).andDo(document(docsPath + "update" + invalidBadRequestPath,
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                pathParameters(parameterWithName("id").description("포스트 ID")),
+                                pathParameters(parameterWithName("id").description("게시글 ID")),
                                 requestFields(
                                         fieldWithPath("title").description("게시글 제목"),
                                         fieldWithPath("content").description("게시글 내용"),
@@ -416,7 +422,7 @@ class PostControllerTest extends ControllerTest {
                                 responseFields(
                                         fieldWithPath("status").description("HTTP 상태 코드"),
                                         fieldWithPath("message").description("유효성 검증 오류 메시지"),
-                                        fieldWithPath("data.category").description("포스트 카테고리 필드에 대한 유효성 오류 메시지"),
+                                        fieldWithPath("data.category").description("게시글 카테고리 필드에 대한 유효성 오류 메시지"),
                                         fieldWithPath("data.title").description("제목 필드에 대한 유효성 오류 메시지"),
                                         fieldWithPath("data.content").description("내용 필드에 대한 유효성 오류 메시지")
                                 )
@@ -425,9 +431,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("접근권한이 없는 포스트 수정 요청 시 403을 반환한다")
+    @DisplayName("접근권한이 없는 게시글 수정 요청 시 403을 반환한다")
     @WithCustomMockUser
-    void 접근권한이_없는_포스트_수정_요청_시_403을_반환한다() throws Exception {
+    void 접근권한이_없는_게시글_수정_요청_시_403을_반환한다() throws Exception {
         PostRequest.Update 게시글_수정 = PostFixtures.게시글_수정;
 
         doThrow(new ForbiddenPostException()).when(postService).updatePost(any(User.class), eq(1L), any(PostRequest.Update.class));
@@ -443,7 +449,7 @@ class PostControllerTest extends ControllerTest {
                ).andDo(document(docsPath + "update" + invalidForbiddenPath,
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                pathParameters(parameterWithName("id").description("조회할 포스트 ID")),
+                                pathParameters(parameterWithName("id").description("조회할 게시글 ID")),
                                 responseFields(
                                         fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
                                         fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
@@ -454,9 +460,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 포스트 수정 요청 시 404을 반환한다")
+    @DisplayName("존재하지 않는 게시글 수정 요청 시 404을 반환한다")
     @WithCustomMockUser
-    void 존재하지_않는_포스트_수정_요청_시_404을_반환한다() throws Exception {
+    void 존재하지_않는_게시글_수정_요청_시_404을_반환한다() throws Exception {
         PostRequest.Update 게시글_수정 = PostFixtures.게시글_수정;
 
         doThrow(new NotFoundPostException()).when(postService).updatePost(any(User.class), eq(1L), any(PostRequest.Update.class));
@@ -472,7 +478,7 @@ class PostControllerTest extends ControllerTest {
                ).andDo(document(docsPath + "update" + invalidNotFoundPath,
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                pathParameters(parameterWithName("id").description("수정할 포스트 ID")),
+                                pathParameters(parameterWithName("id").description("수정할 게시글 ID")),
                                 responseFields(
                                         fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
                                         fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
@@ -483,9 +489,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("포스트 성공적으로 삭제 시 200을 반환한다")
+    @DisplayName("게시글 성공적으로 삭제 시 200을 반환한다")
     @WithCustomMockUser
-    void 포스트_성공적으로_삭제_시_200을_반환한다() throws Exception {
+    void 게시글_성공적으로_삭제_시_200을_반환한다() throws Exception {
         doNothing().when(postService).delete(any(User.class), eq(1L));
         mockMvc.perform(delete("/api/v1/posts/{id}", 1L)
                                 .header("Authorization", "Bearer "+ AuthenticationFixtures.accessToken))
@@ -493,14 +499,14 @@ class PostControllerTest extends ControllerTest {
                .andDo(document(docsPath + "delete",
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                pathParameters(parameterWithName("id").description("조회할 포스트 ID"))
+                                pathParameters(parameterWithName("id").description("조회할 게시글 ID"))
                ));
     }
 
     @Test
-    @DisplayName("접근권한이 없는 포스트 삭제 시 403을 반환한다.")
+    @DisplayName("접근권한이 없는 게시글 삭제 시 403을 반환한다.")
     @WithCustomMockUser
-    void 접근권한이_없는_포스트_삭제_시_403을_반환한다() throws Exception {
+    void 접근권한이_없는_게시글_삭제_시_403을_반환한다() throws Exception {
         doThrow(new ForbiddenPostException()).when(postService).delete(any(User.class), eq(1L));
         mockMvc.perform(delete("/api/v1/posts/{id}", 1L)
                                 .header("Authorization", "Bearer "+ AuthenticationFixtures.accessToken))
@@ -512,7 +518,7 @@ class PostControllerTest extends ControllerTest {
                ).andDo(document(docsPath + "delete" + invalidForbiddenPath,
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
-                               pathParameters(parameterWithName("id").description("조회할 포스트 ID")),
+                               pathParameters(parameterWithName("id").description("조회할 게시글 ID")),
                                responseFields(
                                        fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
                                        fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),
@@ -522,9 +528,9 @@ class PostControllerTest extends ControllerTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 포스트 삭제 시 404을 반환한다")
+    @DisplayName("존재하지 않는 게시글 삭제 시 404을 반환한다")
     @WithCustomMockUser
-    void 존재하지_않는_포스트_삭제_시_404을_반환한다() throws Exception {
+    void 존재하지_않는_게시글_삭제_시_404을_반환한다() throws Exception {
         doThrow(new NotFoundPostException()).when(postService).delete(any(User.class), eq(1L));
         mockMvc.perform(delete("/api/v1/posts/{id}", 1L)
                                 .header("Authorization", "Bearer "+ AuthenticationFixtures.accessToken))
@@ -536,7 +542,7 @@ class PostControllerTest extends ControllerTest {
                ).andDo(document(docsPath + "delete" + invalidNotFoundPath,
                                 preprocessRequest(prettyPrint()),
                                 preprocessResponse(prettyPrint()),
-                                pathParameters(parameterWithName("id").description("조회할 포스트 ID")),
+                                pathParameters(parameterWithName("id").description("조회할 게시글 ID")),
                                 responseFields(
                                         fieldWithPath("status").type(JsonFieldType.NUMBER).description("응답 코드"),
                                         fieldWithPath("message").type(JsonFieldType.STRING).description("응답 메시지"),

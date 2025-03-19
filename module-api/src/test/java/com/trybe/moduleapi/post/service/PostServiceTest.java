@@ -9,6 +9,7 @@ import com.trybe.moduleapi.post.exception.ForbiddenPostException;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.moduleapi.post.fixtures.PostChallengeFixtures;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
+import com.trybe.moduleapi.post.fixtures.PostLikeFixtures;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
@@ -44,13 +45,15 @@ class PostServiceTest {
     private PostChallengeRepository postChallengeRepository;
     @Mock
     private ChallengeParticipationRepository participationRepository;
+    @Mock
+    private PostLikeService postLikeService;
 
     @InjectMocks
     private PostService postService;
     
     @Test
-    @DisplayName("포스트 생성 시 생성된 포스트를 응답해준다.")
-    void 포스트_생성_시_생성된_포스트를_응답해준다() {
+    @DisplayName("게시글 생성 시 생성된 게시글를 응답해준다.")
+    void 게시글_생성_시_생성된_게시글를_응답해준다() {
         /* given */
         PostRequest.Create 게시글_생성_요청 = PostFixtures.게시글_생성;
         User 회원 = UserFixtures.회원;
@@ -69,12 +72,13 @@ class PostServiceTest {
         assertEquals(postDetail.content(), PostFixtures.내용);
         assertEquals(postDetail.writer().userId(), UserFixtures.회원_아이디);
         assertEquals(postDetail.writer().nickname(), UserFixtures.회원_닉네임);
+        assertEquals(postDetail.likeCount(), 0);
         assertEquals(postDetail.challenges().size(), 3);
     }
 
     @Test
-    @DisplayName("포스트 생성 시 참여하지 않은 챌린지 ID를 보내면 예외를 터뜨린다.")
-    void 포스트_생성_시_참여하지_않은_챌린지_ID를_보내면_예외를_터뜨린다() {
+    @DisplayName("게시글 생성 시 참여하지 않은 챌린지 ID를 보내면 예외를 터뜨린다.")
+    void 게시글_생성_시_참여하지_않은_챌린지_ID를_보내면_예외를_터뜨린다() {
         /* given */
         PostRequest.Create 게시글_생성_요청 = PostFixtures.게시글_생성;
         User 회원 = UserFixtures.회원;
@@ -91,12 +95,15 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("포스트 단건 조회 시 포스트를 응답해준다.")
-    void 포스트_단건_조회_시_포스트를_응답해준다() {
+    @DisplayName("게시글 단건 조회 시 게시글를 응답해준다.")
+    void 게시글_단건_조회_시_게시글를_응답해준다() {
         /* given */
         Post 게시글 = PostFixtures.게시글;
-        when(postRepository.findById(any())).thenReturn(Optional.of(PostFixtures.게시글));
-        when(postChallengeRepository.findAllByPostId(any())).thenReturn(PostChallengeFixtures.포스트_챌린지_목록);
+        int 좋아요_개수 = PostLikeFixtures.좋아요_개수;
+
+        when(postRepository.findById(any())).thenReturn(Optional.of(게시글));
+        when(postChallengeRepository.findAllByPostId(any())).thenReturn(PostChallengeFixtures.게시글_챌린지_목록);
+        when(postLikeService.count(any())).thenReturn(좋아요_개수);
 
         /* when */
         PostResponse.Detail postDetail = postService.find(1L);
@@ -106,24 +113,25 @@ class PostServiceTest {
         assertEquals(postDetail.content(), 게시글.getContent());
         assertEquals(postDetail.writer().userId(), 게시글.getUser().getUserId());
         assertEquals(postDetail.writer().nickname(), 게시글.getUser().getNickname());
+        assertEquals(postDetail.likeCount(), 좋아요_개수);
         assertEquals(postDetail.challenges().size(), 1);
     }
 
     @Test
-    @DisplayName("존재하지 않는 포스트 단건 조회 시 예외를 터뜨린다.")
-    void 존재하지_않는_포스트_단건_조회_시_예외를_터뜨린다() {
+    @DisplayName("존재하지 않는 게시글 단건 조회 시 예외를 터뜨린다.")
+    void 존재하지_않는_게시글_단건_조회_시_예외를_터뜨린다() {
         /* given */
         when(postRepository.findById(any())).thenReturn(Optional.empty());
 
         /* when, then */
         assertThrows(NotFoundPostException.class, () -> {
             postService.find(1L);
-        }, "존재하지 않는 포스트입니다.");
+        }, "존재하지 않는 게시글입니다.");
     }
 
     @Test
-    @DisplayName("포스트 필터링 조회 시 페이징으로 응답해준다")
-    void 포스트_필터링_조회_시_페이징으로_응답해준다 () {
+    @DisplayName("게시글 필터링 조회 시 페이징으로 응답해준다")
+    void 게시글_필터링_조회_시_페이징으로_응답해준다 () {
         /* given */
         PostRequest.Read 게시글_필터링_조회 = PostFixtures.게시글_필터링_조회;
         Pageable 페이지_요청 = PostFixtures.페이지_요청;
@@ -138,17 +146,19 @@ class PostServiceTest {
 
         /* then */
         assertEquals(response.size(), 페이지_요청.getPageSize());
-        assertEquals(response.totalElements(), PostFixtures.포스트_페이지_응답.totalElements());
+        assertEquals(response.totalElements(), PostFixtures.게시글_페이지_응답.totalElements());
     }
 
     @Test
-    @DisplayName("포스트 수정 시 수정된 포스트를 응답해준다")
-    void 포스트_수정_시_수정된_포스트를_응답해준다() {
+    @DisplayName("게시글 수정 시 수정된 게시글를 응답해준다")
+    void 게시글_수정_시_수정된_게시글를_응답해준다() {
         /* given */
         PostRequest.Update 게시글_수정_요청 = PostFixtures.게시글_수정;
+        int 좋아요_개수 = PostLikeFixtures.좋아요_개수;
 
         when(postRepository.findById(any())).thenReturn(Optional.of(PostFixtures.게시글));
         when(challengeRepository.findAllByIdIn(PostFixtures.수정_챌린지_Ids)).thenReturn(List.of(ChallengeFixtures.챌린지(),ChallengeFixtures.챌린지()));
+        when(postLikeService.count(any())).thenReturn(좋아요_개수);
 
 
         /* when */
@@ -159,11 +169,12 @@ class PostServiceTest {
         assertEquals(postDetail.content(), PostFixtures.수정_내용);
         assertEquals(postDetail.writer().userId(), UserFixtures.회원_아이디);
         assertEquals(postDetail.writer().nickname(), UserFixtures.회원_닉네임);
+        assertEquals(postDetail.likeCount(), 좋아요_개수);
         assertEquals(postDetail.challenges().size(), 2);
     }
     @Test
-    @DisplayName("존재하지 않는 포스트 수정 시 예외를 터뜨린다.")
-    void 존재하지_않는_포스트_수정_시_예외를_터뜨린다() {
+    @DisplayName("존재하지 않는 게시글 수정 시 예외를 터뜨린다.")
+    void 존재하지_않는_게시글_수정_시_예외를_터뜨린다() {
         /* given */
         PostRequest.Update 게시글_수정_요청 = PostFixtures.게시글_수정;
 
@@ -172,12 +183,12 @@ class PostServiceTest {
         /* when, then */
         assertThrows(NotFoundPostException.class, () -> {
             postService.updatePost(UserFixtures.회원,1L, 게시글_수정_요청);
-        }, "존재하지 않는 포스트입니다.");
+        }, "존재하지 않는 게시글입니다.");
     }
 
     @Test
-    @DisplayName("접근권한 없는 포스트 수정 시 예외를 터뜨린다.")
-    void 접근권한_없는_포스트_수정_시_예외를_터뜨린다() {
+    @DisplayName("접근권한 없는 게시글 수정 시 예외를 터뜨린다.")
+    void 접근권한_없는_게시글_수정_시_예외를_터뜨린다() {
         /* given */
         PostRequest.Update 게시글_수정_요청 = PostFixtures.게시글_수정;
 
@@ -198,8 +209,8 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("포스트 삭제 시 포스트를 삭제한다.")
-    void 포스트_삭제_시_포스트를_삭제한다() {
+    @DisplayName("게시글 삭제 시 게시글를 삭제한다.")
+    void 게시글_삭제_시_게시글를_삭제한다() {
         /* given */
         User user = UserFixtures.회원;
         Post post = PostFixtures.게시글;
@@ -214,12 +225,13 @@ class PostServiceTest {
         /* then */
         verify(postRepository, times(1)).deleteById(any());
         verify(postChallengeRepository, times(1)).deleteAllByPostId(any());
+        verify(postLikeService, times(1)).removeLikesByPost(any());
 
     }
 
     @Test
-    @DisplayName("존재하지 않는 포스트 삭제 시 예외를 터뜨린다.")
-    void 존재하지_않는_포스트_삭제_시_예외를_터뜨린다() {
+    @DisplayName("존재하지 않는 게시글 삭제 시 예외를 터뜨린다.")
+    void 존재하지_않는_게시글_삭제_시_예외를_터뜨린다() {
         /* given */
         User newUser = UserFixtures.회원_생성("gunny", "gunny@gunny.com");
 
@@ -228,12 +240,12 @@ class PostServiceTest {
         /* when, then */
         assertThrows(NotFoundPostException.class, () -> {
             postService.delete(newUser,1L);
-        }, "존재하지 않는 포스트입니다.");
+        }, "존재하지 않는 게시글입니다.");
     }
 
     @Test
-    @DisplayName("접근권한 없는 포스트 삭제 시 예외를 터뜨린다.")
-    void 접근권한_없는_포스트_삭제_시_예외를_터뜨린다() {
+    @DisplayName("접근권한 없는 게시글 삭제 시 예외를 터뜨린다.")
+    void 접근권한_없는_게시글_삭제_시_예외를_터뜨린다() {
         /* given */
         User user = spy(UserFixtures.회원_생성("chacha", "chacha@chacha.com"));
         when(user.getId()).thenReturn(100L);
