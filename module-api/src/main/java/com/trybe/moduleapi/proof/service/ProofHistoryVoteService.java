@@ -80,6 +80,7 @@ public class ProofHistoryVoteService {
         ProofHistory proofHistory = getProofHistory(proofHistoryId);
 
         validateProofHistoryOwner(user, true, proofHistory, "인증 기록의 작성자만 투표 결과를 조회할 수 있습니다.");
+        validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대한 투표 결과를 조회할 수 없습니다.");
 
         String approvedCountKey = getRedisKey(PROOF_HISTORY_VOTES_APPROVED_COUNT_KEY, proofHistory.getId());
         String disapprovedCountKey = getRedisKey(PROOF_HISTORY_VOTES_DISAPPROVED_COUNT_KEY, proofHistory.getId());
