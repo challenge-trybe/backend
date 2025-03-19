@@ -6,8 +6,8 @@ public class ProofHistoryVoteResponse {
     ) { }
 
     public record Result(
-            long approvedCount,
-            long disapprovedCount,
-            long nonParticipatedCount
+            int approvedCount,
+            int disapprovedCount,
+            int nonParticipatedCount
     ) { }
 }

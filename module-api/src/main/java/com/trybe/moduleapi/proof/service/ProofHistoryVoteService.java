@@ -16,6 +16,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class ProofHistoryVoteService {
     private final ProofHistoryRepository proofHistoryRepository;
@@ -85,11 +87,8 @@ public class ProofHistoryVoteService {
         String approvedCountKey = getRedisKey(PROOF_HISTORY_VOTES_APPROVED_COUNT_KEY, proofHistory.getId());
         String disapprovedCountKey = getRedisKey(PROOF_HISTORY_VOTES_DISAPPROVED_COUNT_KEY, proofHistory.getId());
 
-        Long approvedCount = redisTemplate.opsForValue().get(approvedCountKey);
-        Long disapprovedCount = redisTemplate.opsForValue().get(disapprovedCountKey);
-
-        approvedCount = approvedCount == null ? 0 : approvedCount;
-        disapprovedCount = disapprovedCount == null ? 0 : disapprovedCount;
+        int approvedCount = Optional.ofNullable(redisTemplate.opsForValue().get(approvedCountKey)).map(Long::intValue).orElse(0);
+        int disapprovedCount = Optional.ofNullable(redisTemplate.opsForValue().get(disapprovedCountKey)).map(Long::intValue).orElse(0);
 
         int participantCount = challengeParticipationRepository.countByChallengeIdAndStatus(proofHistory.getProof().getChallenge().getId(), ParticipationStatus.ACCEPTED) - 1;
 
