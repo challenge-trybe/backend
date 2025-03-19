@@ -39,3 +39,5 @@ out/
 ### ETC ###
 data
 **/application.yml
+
+redis/
