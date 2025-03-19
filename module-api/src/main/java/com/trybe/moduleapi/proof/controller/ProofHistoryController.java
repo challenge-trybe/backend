@@ -28,7 +28,7 @@ public class ProofHistoryController {
         return proofHistoryService.save(userDetails.getUser(),proofId, request);
     }
 
-    @GetMapping("/{proofId}")
+    @GetMapping("/all/{proofId}")
     public PageResponse<ProofHistoryResponse.Summary> findAll(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("proofId") Long proofId,
