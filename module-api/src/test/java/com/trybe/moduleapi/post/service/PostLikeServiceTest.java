@@ -51,16 +51,17 @@ class PostLikeServiceTest {
 
         Long 포스트_ID = PostFixtures.id;
         String postKey = "post:" + 포스트_ID;
+        Long 좋아요_개수 = PostLikeFixtures.좋아요_개수L;
 
         when(postRepository.existsById(포스트_ID)).thenReturn(true);
         when(redisTemplate.opsForZSet().score(userKey, 포스트_ID)).thenReturn(null);
-        when(redisTemplate.opsForSet().size(postKey)).thenReturn(5L);
+        when(redisTemplate.opsForSet().size(postKey)).thenReturn(좋아요_개수);
 
         // when
         PostResponse.Like 응답 = postLikeService.addLike(회원, PostFixtures.id);
 
         // then
-        assertEquals(응답.likeCount(), 6);
+        assertEquals(응답.likeCount(), 좋아요_개수+1);
         assertEquals(응답.isLiked(), true);
     }
 
@@ -88,9 +89,11 @@ class PostLikeServiceTest {
         Long 포스트_ID = PostFixtures.id;
         String postKey = "post:" + 포스트_ID;
 
+        Long 좋아요_개수 = PostLikeFixtures.좋아요_개수L;
+
         when(postRepository.existsById(포스트_ID)).thenReturn(true);
         when(redisTemplate.opsForZSet().score(userKey, 포스트_ID)).thenReturn(1.000);
-        when(redisTemplate.opsForSet().size(postKey)).thenReturn(5L);
+        when(redisTemplate.opsForSet().size(postKey)).thenReturn(좋아요_개수);
 
 
         // when
@@ -99,7 +102,7 @@ class PostLikeServiceTest {
         // then
         verify(redisTemplate.opsForZSet()).remove(eq(userKey), eq(PostFixtures.id));
         verify(redisTemplate.opsForSet()).remove(eq(postKey), eq(회원.getId()));
-        assertEquals(응답.likeCount(), 4);
+        assertEquals(응답.likeCount(), 좋아요_개수-1);
         assertEquals(응답.isLiked(), false);
     }
 
