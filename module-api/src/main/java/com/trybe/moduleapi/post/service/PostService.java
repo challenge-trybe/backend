@@ -13,6 +13,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.entity.PostChallenge;
+import com.trybe.modulecore.post.repository.CommentRepository;
 import com.trybe.modulecore.post.repository.PostChallengeRepository;
 import com.trybe.modulecore.post.repository.PostRepository;
 import com.trybe.modulecore.user.entity.User;
@@ -32,13 +33,15 @@ public class PostService {
     private final ChallengeRepository challengeRepository;
     private final PostChallengeRepository postChallengeRepository;
     private final ChallengeParticipationRepository participationRepository;
+    private final CommentRepository commentRepository;
     private final PostLikeService postLikeService;
 
-    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository, PostLikeService postLikeService) {
+    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository, CommentRepository commentRepository, PostLikeService postLikeService) {
         this.postRepository = postRepository;
         this.challengeRepository = challengeRepository;
         this.postChallengeRepository = postChallengeRepository;
         this.participationRepository = participationRepository;
+        this.commentRepository = commentRepository;
         this.postLikeService = postLikeService;
     }
 
@@ -96,6 +99,7 @@ public class PostService {
 
         postChallengeRepository.deleteAllByPostId(post.getId());
         postLikeService.removeLikesByPost(post.getId());
+        commentRepository.deleteAllByPostId(post.getId());
         postRepository.deleteById(id);
     }
 
