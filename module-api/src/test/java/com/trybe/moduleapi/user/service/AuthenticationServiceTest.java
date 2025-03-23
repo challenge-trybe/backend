@@ -54,6 +54,7 @@ class AuthenticationServiceTest {
         TokenResponse tokenResponse = authenticationService.login(request);
 
         /* then */
+        assertEquals(tokenResponse.getUuid(), UserFixtures.회원.getUuid());
         assertEquals(tokenResponse.getAccessToken(), AuthenticationFixtures.accessToken);
         assertEquals(tokenResponse.getRefreshToken(), AuthenticationFixtures.refreshToken);
     }
@@ -98,8 +99,8 @@ class AuthenticationServiceTest {
         TokenResponse tokenResponse = authenticationService.tokenReissue(AuthenticationFixtures.토큰_재발급_요청);
 
         /* then */
+        assertEquals(tokenResponse.getUuid(), UserFixtures.회원.getUuid());
         assertEquals(tokenResponse.getAccessToken(), AuthenticationFixtures.accessToken);
         assertEquals(tokenResponse.getRefreshToken(), AuthenticationFixtures.refreshToken);
     }
-
 }

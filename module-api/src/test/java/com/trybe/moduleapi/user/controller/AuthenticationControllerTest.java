@@ -87,6 +87,7 @@ class AuthenticationControllerTest {
                        jsonPath("$.userResponse.userId").value(UserFixtures.회원_응답.userId()),
                        jsonPath("$.userResponse.gender").value(UserFixtures.회원_응답.gender().toString()),
                        jsonPath("$.userResponse.birth").value(UserFixtures.회원_응답.birth().toString()),
+                       jsonPath("$.uuid").value(토큰_반환.getUuid().toString()),
                        jsonPath("$.accessToken").value(토큰_반환.getAccessToken()),
                        jsonPath("$.refreshToken").value(토큰_반환.getRefreshToken()))
                .andDo(document(docsPath + "login",
@@ -103,6 +104,7 @@ class AuthenticationControllerTest {
                                        fieldWithPath("userResponse.userId").type(JsonFieldType.STRING).description("아이디"),
                                        fieldWithPath("userResponse.gender").type(JsonFieldType.STRING).description("성별"),
                                        fieldWithPath("userResponse.birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
+                                        fieldWithPath("uuid").description("유저 UUID"),
                                        fieldWithPath("accessToken").description("Access token"),
                                        fieldWithPath("refreshToken").description("Refresh token")
                                )
@@ -171,6 +173,7 @@ class AuthenticationControllerTest {
                        jsonPath("$.userResponse.userId").value(UserFixtures.회원_응답.userId()),
                        jsonPath("$.userResponse.gender").value(UserFixtures.회원_응답.gender().toString()),
                        jsonPath("$.userResponse.birth").value(UserFixtures.회원_응답.birth().toString()),
+                       jsonPath("$.uuid").value(토큰_반환.getUuid().toString()),
                        jsonPath("$.accessToken").value(토큰_반환.getAccessToken()),
                        jsonPath("$.refreshToken").value(토큰_반환.getRefreshToken()))
                .andDo(document(docsPath + "token-reissue",
@@ -186,6 +189,7 @@ class AuthenticationControllerTest {
                                        fieldWithPath("userResponse.userId").type(JsonFieldType.STRING).description("아이디"),
                                        fieldWithPath("userResponse.gender").type(JsonFieldType.STRING).description("성별"),
                                        fieldWithPath("userResponse.birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
+                                       fieldWithPath("uuid").description("유저 UUID"),
                                        fieldWithPath("accessToken").description("Access token"),
                                        fieldWithPath("refreshToken").description("Refresh token")
                                )
