@@ -14,7 +14,7 @@ public class CommentResponse {
             LocalDateTime createdAt
     ){
         public static Detail from(Comment comment){
-            return new Detail(comment.getId(), null, UserResponse.Summary.from(comment.getUser()), comment.getContent(), comment.getCreatedAt());
+            return new Detail(comment.getId(), PostResponse.Summary.from(comment.getPost()), UserResponse.Summary.from(comment.getUser()), comment.getContent(), comment.getCreatedAt());
         }
     }
 
