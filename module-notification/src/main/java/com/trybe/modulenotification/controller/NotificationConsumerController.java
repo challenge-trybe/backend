@@ -1,6 +1,7 @@
 package com.trybe.modulenotification.controller;
 
 import com.trybe.modulenotification.service.EmitterService;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +17,7 @@ public class NotificationConsumerController {
         this.emitterService = emitterService;
     }
 
-    @GetMapping(produces = "text/event-stream")
+    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(@RequestParam(name = "uuid") String uuid) {
         return emitterService.addEmitter(uuid);
     }
