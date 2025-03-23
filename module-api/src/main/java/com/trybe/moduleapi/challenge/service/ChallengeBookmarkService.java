@@ -46,7 +46,7 @@ public class ChallengeBookmarkService {
         String challengeDeletedKey = getRedisKey(CHALLENGE_BOOKMARK_DELETED_KEY, challengeId);
         int count = getChallengeBookmarkCount(challengeId);
 
-        if (!redisTemplate.opsForSet().isMember(challengeKey, user.getId())) {
+        if (!isBookmarked(user.getId(), challengeId)) {
             double score = getCurrentTimeInSeconds();
             redisTemplate.opsForZSet().add(userKey, challengeId, score);
             redisTemplate.opsForSet().add(challengeKey, user.getId());
@@ -68,7 +68,7 @@ public class ChallengeBookmarkService {
         String challengeDeletedKey = getRedisKey(CHALLENGE_BOOKMARK_DELETED_KEY, challengeId);
         int count = getChallengeBookmarkCount(challengeId);
 
-        if (redisTemplate.opsForSet().isMember(challengeKey, user.getId())) {
+        if(isBookmarked(user.getId(), challengeId)) {
             redisTemplate.opsForZSet().remove(userKey, challengeId);
             redisTemplate.opsForSet().remove(challengeKey, user.getId());
             redisTemplate.opsForSet().add(challengeDeletedKey, user.getId());
