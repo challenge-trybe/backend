@@ -30,44 +30,44 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponse.Detail enroll(User user, Long postId, CommentRequest.Enroll request){
+    public CommentResponse.Summary enroll(User user, Long postId, CommentRequest.Enroll request){
         Post post = getPostById(postId);
         Comment comment = request.toEntity(user, post, request.content());
         commentRepository.save(comment);
-        return CommentResponse.Detail.from(comment);
+        return CommentResponse.Summary.from(comment);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<CommentResponse.Detail> findByMyComments(User user, Pageable pageable){
+    public PageResponse<CommentResponse.Detail> findAllByUser(User user, Pageable pageable){
         Page<Comment> comments = commentRepository.findAllByUserId(user.getId(), pageable);
         return new PageResponse<>(comments.map(CommentResponse.Detail::from));
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<CommentResponse.Summary> findAll(Long postId, Pageable pageable){
+    public PageResponse<CommentResponse.Summary> findAllByPost(Long postId, Pageable pageable){
         Post post = getPostById(postId);
         Page<Comment> comments = commentRepository.findAllByPostId(post.getId(), pageable);
         return new PageResponse<>(comments.map(CommentResponse.Summary::from));
     }
 
     @Transactional
-    public CommentResponse.Detail update(User user, Long commentId, CommentRequest.Update request) {
+    public CommentResponse.Summary update(User user, Long commentId, CommentRequest.Update request) {
         Comment comment = getCommentById(commentId);
-        checkLoginUserAndCommentWriter(user, comment);
+        checkLoginUserAndCommentWriter(user, comment, "본인이 작성한 댓글만 수정할 수 있습니다.");
         comment.updateComment(request.content());
-        return CommentResponse.Detail.from(comment);
+        return CommentResponse.Summary.from(comment);
     }
 
     @Transactional
     public void delete(User user, Long commentId){
         Comment comment = getCommentById(commentId);
-        checkLoginUserAndCommentWriter(user, comment);
+        checkLoginUserAndCommentWriter(user, comment, "본인이 작성한 댓글만 삭제할 수 있습니다.");
         commentRepository.deleteById(comment.getId());
     }
 
-    private void checkLoginUserAndCommentWriter(User loginUser, Comment comment) {
+    private void checkLoginUserAndCommentWriter(User loginUser, Comment comment, String message) {
         if (comment.getUser().getId() != loginUser.getId()){
-            throw  new ForbiddenCommentException();
+            throw  new ForbiddenCommentException(message);
         }
     }
 
