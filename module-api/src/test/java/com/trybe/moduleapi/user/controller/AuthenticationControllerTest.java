@@ -1,12 +1,7 @@
 package com.trybe.moduleapi.user.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trybe.moduleapi.auth.CustomUserDetails;
-import com.trybe.moduleapi.auth.CustomUserDetailsService;
-import com.trybe.moduleapi.auth.jwt.JwtUtils;
-import com.trybe.moduleapi.auth.jwt.exception.CustomAccessDeniedHandler;
-import com.trybe.moduleapi.auth.jwt.exception.CustomAuthenticationEntryPoint;
-import com.trybe.moduleapi.config.SecurityConfig;
+import com.trybe.moduleapi.common.ControllerTest;
 import com.trybe.moduleapi.token.request.RefreshTokenRequest;
 import com.trybe.moduleapi.token.response.TokenResponse;
 import com.trybe.moduleapi.user.dto.request.LoginRequest;
@@ -16,11 +11,7 @@ import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.moduleapi.user.service.AuthenticationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -37,34 +28,11 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs(outputDir = "build/generated-snippets")
+
 @WebMvcTest(AuthenticationController.class)
-@Import(SecurityConfig.class)
-class AuthenticationControllerTest {
+class AuthenticationControllerTest extends ControllerTest {
     private String docsPath = "auth-controller-test/";
     private final String invalidBadRequestPath = "invalid/bad-request/";
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
-    private CustomUserDetailsService customUserDetailsService;
-
-    @MockitoBean
-    private JwtUtils jwtUtils;
-
-    @MockitoBean
-    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-
-    @MockitoBean
-    private CustomAccessDeniedHandler customAccessDeniedHandler;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private BCryptPasswordEncoder passwordEncoder;
 
     @MockitoBean
     private AuthenticationService authenticationService;
@@ -83,10 +51,7 @@ class AuthenticationControllerTest {
                .andExpectAll(
                        jsonPath("$.userResponse.id").value(UserFixtures.회원_응답.id()),
                        jsonPath("$.userResponse.nickname").value(UserFixtures.회원_응답.nickname()),
-                       jsonPath("$.userResponse.email").value(UserFixtures.회원_응답.email()),
                        jsonPath("$.userResponse.userId").value(UserFixtures.회원_응답.userId()),
-                       jsonPath("$.userResponse.gender").value(UserFixtures.회원_응답.gender().toString()),
-                       jsonPath("$.userResponse.birth").value(UserFixtures.회원_응답.birth().toString()),
                        jsonPath("$.accessToken").value(토큰_반환.getAccessToken()),
                        jsonPath("$.refreshToken").value(토큰_반환.getRefreshToken()))
                .andDo(document(docsPath + "login",
@@ -99,10 +64,7 @@ class AuthenticationControllerTest {
                                responseFields(
                                        fieldWithPath("userResponse.id").type(JsonFieldType.NUMBER).description("PK"),
                                        fieldWithPath("userResponse.nickname").type(JsonFieldType.STRING).description("닉네임"),
-                                       fieldWithPath("userResponse.email").type(JsonFieldType.STRING).description("이메일"),
                                        fieldWithPath("userResponse.userId").type(JsonFieldType.STRING).description("아이디"),
-                                       fieldWithPath("userResponse.gender").type(JsonFieldType.STRING).description("성별"),
-                                       fieldWithPath("userResponse.birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
                                        fieldWithPath("accessToken").description("Access token"),
                                        fieldWithPath("refreshToken").description("Refresh token")
                                )
@@ -167,10 +129,7 @@ class AuthenticationControllerTest {
                .andExpectAll(
                        jsonPath("$.userResponse.id").value(UserFixtures.회원_응답.id()),
                        jsonPath("$.userResponse.nickname").value(UserFixtures.회원_응답.nickname()),
-                       jsonPath("$.userResponse.email").value(UserFixtures.회원_응답.email()),
                        jsonPath("$.userResponse.userId").value(UserFixtures.회원_응답.userId()),
-                       jsonPath("$.userResponse.gender").value(UserFixtures.회원_응답.gender().toString()),
-                       jsonPath("$.userResponse.birth").value(UserFixtures.회원_응답.birth().toString()),
                        jsonPath("$.accessToken").value(토큰_반환.getAccessToken()),
                        jsonPath("$.refreshToken").value(토큰_반환.getRefreshToken()))
                .andDo(document(docsPath + "token-reissue",
@@ -182,10 +141,7 @@ class AuthenticationControllerTest {
                                responseFields(
                                        fieldWithPath("userResponse.id").type(JsonFieldType.NUMBER).description("PK"),
                                        fieldWithPath("userResponse.nickname").type(JsonFieldType.STRING).description("닉네임"),
-                                       fieldWithPath("userResponse.email").type(JsonFieldType.STRING).description("이메일"),
                                        fieldWithPath("userResponse.userId").type(JsonFieldType.STRING).description("아이디"),
-                                       fieldWithPath("userResponse.gender").type(JsonFieldType.STRING).description("성별"),
-                                       fieldWithPath("userResponse.birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
                                        fieldWithPath("accessToken").description("Access token"),
                                        fieldWithPath("refreshToken").description("Refresh token")
                                )

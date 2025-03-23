@@ -1,13 +1,7 @@
 package com.trybe.moduleapi.user.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trybe.moduleapi.auth.CustomUserDetails;
-import com.trybe.moduleapi.auth.CustomUserDetailsService;
-import com.trybe.moduleapi.auth.jwt.JwtUtils;
-import com.trybe.moduleapi.auth.jwt.exception.CustomAccessDeniedHandler;
-import com.trybe.moduleapi.auth.jwt.exception.CustomAuthenticationEntryPoint;
 import com.trybe.moduleapi.common.ControllerTest;
-import com.trybe.moduleapi.config.SecurityConfig;
 import com.trybe.moduleapi.user.dto.request.UserRequest;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
 import com.trybe.moduleapi.user.exception.DuplicatedUserException;
@@ -18,16 +12,11 @@ import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.moduleapi.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.charset.StandardCharsets;
 
@@ -44,10 +33,8 @@ import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs(outputDir = "build/generated-snippets")
+
 @WebMvcTest(UserController.class)
-@Import(SecurityConfig.class)
 class UserControllerTest  extends ControllerTest {
     private String docsPath = "user-controller-test/";
     private final String invalidBadRequestPath = "invalid/bad-request/";
