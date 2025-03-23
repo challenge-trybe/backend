@@ -26,7 +26,13 @@ dependencies {
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	implementation project(':module-api')
+	implementation(project(':module-api')) {
+		transitive = false
+	}
+
+	implementation(project(':module-core')) {
+		transitive = false
+	}
 }
 
 tasks.named('test') {
