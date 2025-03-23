@@ -39,14 +39,14 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public PageResponse<CommentResponse.Detail> findAllByUser(User user, Pageable pageable){
-        Page<Comment> comments = commentRepository.findAllByUserId(user.getId(), pageable);
+        Page<Comment> comments = commentRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
         return new PageResponse<>(comments.map(CommentResponse.Detail::from));
     }
 
     @Transactional(readOnly = true)
     public PageResponse<CommentResponse.Summary> findAllByPost(Long postId, Pageable pageable){
         Post post = getPostById(postId);
-        Page<Comment> comments = commentRepository.findAllByPostId(post.getId(), pageable);
+        Page<Comment> comments = commentRepository.findAllByPostIdOrderByCreatedAtAsc(post.getId(), pageable);
         return new PageResponse<>(comments.map(CommentResponse.Summary::from));
     }
 
