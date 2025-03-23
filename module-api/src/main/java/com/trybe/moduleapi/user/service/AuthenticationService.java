@@ -62,7 +62,7 @@ public class AuthenticationService {
         Map<String, String> tokenMap = jwtUtils.generateToken(userId, role.getDescription());
         String accessToken = tokenMap.get("accessToken");
         String refreshToken = tokenMap.get("refreshToken");
-        return TokenResponse.from(userResponse,accessToken,refreshToken);
+        return TokenResponse.from(userResponse, user.getUuid(), accessToken, refreshToken);
     }
 
     private User getUserByUserId(String userId){
