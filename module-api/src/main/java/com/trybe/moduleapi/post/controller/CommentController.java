@@ -20,7 +20,7 @@ public class CommentController {
     }
 
     @PostMapping("/posts/{postId}/comments")
-    public CommentResponse.Detail enroll(
+    public CommentResponse.Summary enroll(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("postId") Long postId,
             @Valid @RequestBody CommentRequest.Enroll request){
@@ -28,21 +28,21 @@ public class CommentController {
     }
 
     @GetMapping("/comments/my")
-    public PageResponse<CommentResponse.Detail> findByMyComments(
+    public PageResponse<CommentResponse.Detail> findAllByUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             Pageable pageable){
-        return commentService.findByMyComments(userDetails.getUser(), pageable);
+        return commentService.findAllByUser(userDetails.getUser(), pageable);
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public PageResponse<CommentResponse.Summary> findAll(
+    public PageResponse<CommentResponse.Summary> findAllByPost(
             @PathVariable("postId") Long postId,
             Pageable pageable){
-        return commentService.findAll(postId, pageable);
+        return commentService.findAllByPost(postId, pageable);
     }
 
     @PutMapping("/comments/{commentId}")
-    public CommentResponse.Detail update(
+    public CommentResponse.Summary update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("commentId") Long commentId,
             @Valid @RequestBody CommentRequest.Update request){
