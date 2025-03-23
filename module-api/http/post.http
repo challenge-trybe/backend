@@ -7,7 +7,7 @@ Authorization: {{accessToken}}
   "title": "다 클린코드 도서 챌린지 가입해주세요 ㅜㅜ",
   "content": "이 게시글은 특정 챌린지에 대한 홍보 내용입니다.",
   "category": "PROMOTION",
-  "challengeIds": [1]
+  "challengeIds": []
 }
 
 ### 1.1 게시글 생성 API - 참여하지 않는 챌린지를 넘겼을 때
@@ -37,18 +37,14 @@ Authorization: {{accessToken}}
 ### 2. 게시글 단건조회 API
 GET http://localhost:8080/api/v1/posts/1
 Content-Type: application/json
-Authorization: {{accessToken}}
 
 ### 2.1 게시글 단건조회 API - 존재하지 않는 포스트 조회
 GET http://localhost:8080/api/v1/posts/1000
 Content-Type: application/json
-Authorization: {{accessToken}}
-
 
 ### 3. 게시글 페이징 API
 POST http://localhost:8080/api/v1/posts/search?page=0&size=10
 Content-Type: application/json
-Authorization: {{accessToken}}
 
 {
   "keyword": "도서",

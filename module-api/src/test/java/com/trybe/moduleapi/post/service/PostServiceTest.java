@@ -15,6 +15,7 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.post.entity.Post;
+import com.trybe.modulecore.post.repository.CommentRepository;
 import com.trybe.modulecore.post.repository.PostChallengeRepository;
 import com.trybe.modulecore.post.repository.PostRepository;
 import com.trybe.modulecore.user.entity.User;
@@ -45,6 +46,8 @@ class PostServiceTest {
     private PostChallengeRepository postChallengeRepository;
     @Mock
     private ChallengeParticipationRepository participationRepository;
+    @Mock
+    private CommentRepository commentRepository;
     @Mock
     private PostLikeService postLikeService;
 
@@ -225,6 +228,7 @@ class PostServiceTest {
         /* then */
         verify(postRepository, times(1)).deleteById(any());
         verify(postChallengeRepository, times(1)).deleteAllByPostId(any());
+        verify(commentRepository, times(1)).deleteAllByPostId(any());
         verify(postLikeService, times(1)).removeLikesByPost(any());
 
     }
