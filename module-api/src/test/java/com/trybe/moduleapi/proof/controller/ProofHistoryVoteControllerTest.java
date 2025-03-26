@@ -36,7 +36,6 @@ public class ProofHistoryVoteControllerTest extends ControllerTest {
     private final String endpoint = "/api/v1/proofs/histories/votes";
 
     private final String docsPath = "proof-history-vote-controller-test/";
-    private final String invalidBadRequestPath = "/invalid/bad-request/";
     private final String invalidNotFoundPath = "/invalid/not-found/";
     private final String invalidConflictPath = "/invalid/conflict/";
     private final String invalidForbiddenPath = "/invalid/forbidden/";
@@ -46,7 +45,7 @@ public class ProofHistoryVoteControllerTest extends ControllerTest {
     @DisplayName("정상적인 인증 기록 투표 생성 요청 시 응답코드 200을 반환한다.")
     void 정상적인_인증_기록_투표_생성_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
-        Long proofHistoryId = 1L;
+        Long proofHistoryId = ProofHistoryFixtures.인증_기록_ID;
         boolean approved = 찬성_여부;
 
         when(proofHistoryVoteService.save(any(User.class), eq(proofHistoryId), eq(approved)))
