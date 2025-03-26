@@ -80,7 +80,7 @@ public class ProofHistoryControllerTest extends ControllerTest {
                         parameterWithName("proofId").description("인증 ID")
                 ),
                 requestFields(
-                        fieldWithPath("content").description("인증 기록 내용")
+                        fieldWithPath("content").description("인증 기록 내용 (최대 1,000자)")
                 ),
                 responseFields(
                         fieldWithPath("id").description("인증 기록 ID"),
@@ -405,7 +405,7 @@ public class ProofHistoryControllerTest extends ControllerTest {
                         parameterWithName("proofHistoryId").description("인증 기록 ID")
                 ),
                 requestFields(
-                        fieldWithPath("content").description("인증 기록 내용")
+                        fieldWithPath("content").description("인증 기록 내용 (최대 1,000자)")
                 ),
                 responseFields(
                         fieldWithPath("id").description("인증 기록 ID"),
