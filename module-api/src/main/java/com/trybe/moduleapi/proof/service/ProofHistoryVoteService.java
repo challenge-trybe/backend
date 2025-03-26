@@ -42,7 +42,7 @@ public class ProofHistoryVoteService {
         ProofHistory proofHistory = getProofHistory(proofHistoryId);
 
         validateMemberParticipation(user.getId(), proofHistory.getProof().getChallenge().getId(), "챌린지 멤버만 인증 기록에 대해 투표할 수 있습니다.");
-        validateProofHistoryOwner(user, false, proofHistory, "자기 자신의 인증 기록에 투표할 수 없습니다.");
+        validateProofHistoryOwner(user, false, proofHistory, "자신의 인증 기록에 투표할 수 없습니다.");
         validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대해 투표할 수 없습니다.");
 
         String key = getRedisKey(PROOF_HISTORY_VOTES_KEY, proofHistory.getId());
@@ -67,8 +67,8 @@ public class ProofHistoryVoteService {
     public ProofHistoryVoteResponse.My findMyVote(User user, Long proofHistoryId) {
         ProofHistory proofHistory = getProofHistory(proofHistoryId);
 
-        validateMemberParticipation(user.getId(), proofHistory.getProof().getChallenge().getId(), "챌린지 멤버만 투표 내역을 조회할 수 있습니다.");
-        validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대한 투표 내역을 조회할 수 없습니다.");
+        validateMemberParticipation(user.getId(), proofHistory.getProof().getChallenge().getId(), "챌린지 멤버만 투표 이력을 조회할 수 있습니다.");
+        validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대한 투표 이력을 조회할 수 없습니다.");
 
         String key = getRedisKey(PROOF_HISTORY_VOTES_KEY, proofHistory.getId());
         String userKey = getRedisKey(USER_KEY, user.getId());

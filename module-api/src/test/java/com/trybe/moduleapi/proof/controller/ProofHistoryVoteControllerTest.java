@@ -149,7 +149,7 @@ public class ProofHistoryVoteControllerTest extends ControllerTest {
         boolean approved = 찬성_여부;
 
         when(proofHistoryVoteService.save(any(User.class), eq(proofHistoryId), eq(approved)))
-            .thenThrow(new ForbiddenProofHistoryException("자기 자신의 인증 기록에 투표할 수 없습니다."));
+            .thenThrow(new ForbiddenProofHistoryException("자신의 인증 기록에 투표할 수 없습니다."));
         
         /* when */
         /* then */
@@ -308,7 +308,7 @@ public class ProofHistoryVoteControllerTest extends ControllerTest {
         Long proofHistoryId = ProofHistoryFixtures.인증_기록_ID;
 
         when(proofHistoryVoteService.findMyVote(any(User.class), eq(proofHistoryId)))
-            .thenThrow(new InvalidParticipationStatusActionException("챌린지 멤버만 투표 내역을 조회할 수 있습니다."));
+            .thenThrow(new InvalidParticipationStatusActionException("챌린지 멤버만 투표 이력을 조회할 수 있습니다."));
 
         /* when */
         /* then */
@@ -339,7 +339,7 @@ public class ProofHistoryVoteControllerTest extends ControllerTest {
         Long proofHistoryId = ProofHistoryFixtures.인증_기록_ID;
 
         when(proofHistoryVoteService.findMyVote(any(User.class), eq(proofHistoryId)))
-            .thenThrow(new InvalidProofHistoryStatusException("이미 처리된 인증 기록에 대한 투표 내역을 조회할 수 없습니다."));
+            .thenThrow(new InvalidProofHistoryStatusException("이미 처리된 인증 기록에 대한 투표 이력을 조회할 수 없습니다."));
 
         /* when */
         /* then */
