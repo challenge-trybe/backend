@@ -806,6 +806,109 @@ include::{snippets}/proof-history-controller-test/delete/invalid/not-found/respo
 include::{snippets}/proof-history-controller-test/delete/invalid/forbidden/http-response.adoc[]
 include::{snippets}/proof-history-controller-test/delete/invalid/forbidden/response-fields.adoc[]
 
+
+== 챌린지 인증 기록 투표 API
+
+=== 챌린지 인증 기록 투표 생성
+챌린지 인증 기록에 대한 투표를 생성합니다.
+
+==== 정상 요청
+include::{snippets}/proof-history-vote-controller-test/save/http-request.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/path-parameters.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/query-parameters.adoc[]
+
+- 응답
+include::{snippets}/proof-history-vote-controller-test/save/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 인증 기록)
+존재하지 않는 챌린지 인증 기록 ID로 투표를 생성했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/save/invalid/not-found/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 멤버가 아닌 사용자)
+챌린지 멤버가 아닌 사용자가 투표를 생성했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/save/invalid/forbidden/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (자신의 인증 기록에 투표)
+자신의 인증 기록에 투표를 생성했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/save/invalid/forbidden/self/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/invalid/forbidden/self/response-fields.adoc[]
+
+==== 비정상 요청 (이미 처리된 인증 기록)
+이미 처리된 인증 기록에 투표를 생성했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/save/invalid/conflict/status/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/invalid/conflict/status/response-fields.adoc[]
+
+==== 비정상 요청 (이미 투표한 경우)
+인증 기록에 대해 이미 투표한 경우, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/save/invalid/conflict/duplicated/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/save/invalid/conflict/duplicated/response-fields.adoc[]
+
+=== 챌린지 인증 기록 투표 이력 조회
+챌린지 인증 기록 ID에 대한 챌린지 인증 기록 투표 이력을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/http-request.adoc[]
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 인증 기록)
+존재하지 않는 챌린지 인증 기록 ID로 투표 이력을 조회했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/invalid/not-found/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (챌린지 멤버가 아닌 사용자)
+챌린지 멤버가 아닌 사용자가 투표 이력 조회를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/invalid/forbidden/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (이미 처리된 인증 기록)
+이미 처리된 인증 기록에 대한 투표 이력 조회를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/invalid/conflict/status/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/find-my-vote/invalid/conflict/status/response-fields.adoc[]
+
+=== 챌린지 인증 기록 투표 결과 조회
+챌린지 인증 기록 ID에 대한 챌린지 인증 기록 투표 결과를 조회합니다.
+
+==== 정상 요청
+include::{snippets}/proof-history-vote-controller-test/get-result/http-request.adoc[]
+include::{snippets}/proof-history-vote-controller-test/get-result/path-parameters.adoc[]
+
+- 응답
+include::{snippets}/proof-history-vote-controller-test/get-result/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/get-result/response-fields.adoc[]
+
+==== 비정상 요청 (존재하지 않는 인증 기록)
+존재하지 않는 챌린지 인증 기록 ID로 투표 결과를 조회했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/get-result/invalid/not-found/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/get-result/invalid/not-found/response-fields.adoc[]
+
+==== 비정상 요청 (작성자가 아닌 사용자)
+작성자가 아닌 사용자가 투표 결과 조회를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/get-result/invalid/forbidden/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/get-result/invalid/forbidden/response-fields.adoc[]
+
+==== 비정상 요청 (이미 처리된 인증 기록)
+이미 처리된 인증 기록에 대한 투표 결과 조회를 요청했을 때, 다음과 같은 응답이 반환됩니다.
+
+include::{snippets}/proof-history-vote-controller-test/get-result/invalid/conflict/status/http-response.adoc[]
+include::{snippets}/proof-history-vote-controller-test/get-result/invalid/conflict/status/response-fields.adoc[]
+
 == 게시글
 
 === 게시글 생성 API
