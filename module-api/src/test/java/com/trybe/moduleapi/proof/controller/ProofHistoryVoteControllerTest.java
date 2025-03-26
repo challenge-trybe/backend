@@ -163,7 +163,7 @@ public class ProofHistoryVoteControllerTest extends ControllerTest {
                 jsonPath("$.data").doesNotExist()
         );
         
-        result.andDo(document(docsPath + "save" + invalidConflictPath,
+        result.andDo(document(docsPath + "save" + invalidForbiddenPath + "self",
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("status").description("응답 상태 코드"),
