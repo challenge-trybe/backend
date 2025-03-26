@@ -524,7 +524,7 @@ public class ProofHistoryControllerTest extends ControllerTest {
         ProofHistoryRequest.Update request = 인증_기록_수정_요청;
 
         when(proofHistoryService.update(any(User.class), eq(proofHistoryId), eq(request)))
-                .thenThrow(new InvalidProofHistoryStatusException("인증 기록의 작성자만 수정할 수 있습니다."));
+                .thenThrow(new InvalidProofHistoryStatusException("이미 처리된 인증 기록은 수정할 수 없습니다."));
 
         /* when */
         /* then */
