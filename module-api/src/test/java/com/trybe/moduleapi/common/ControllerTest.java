@@ -34,4 +34,9 @@ public abstract class ControllerTest {
 
     @MockitoBean
     protected CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    protected final String invalidBadRequestPath = "/invalid/bad-request/";
+    protected final String invalidNotFoundPath = "/invalid/not-found/";
+    protected final String invalidForbiddenPath = "/invalid/forbidden/";
+    protected final String invalidConflictPath = "/invalid/conflict/";
 }
