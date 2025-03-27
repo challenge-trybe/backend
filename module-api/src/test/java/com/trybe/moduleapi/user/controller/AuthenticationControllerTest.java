@@ -52,6 +52,7 @@ class AuthenticationControllerTest extends ControllerTest {
                        jsonPath("$.userResponse.id").value(UserFixtures.회원_응답.id()),
                        jsonPath("$.userResponse.nickname").value(UserFixtures.회원_응답.nickname()),
                        jsonPath("$.userResponse.userId").value(UserFixtures.회원_응답.userId()),
+                       jsonPath("$.uuid").value(토큰_반환.getUuid().toString()),
                        jsonPath("$.accessToken").value(토큰_반환.getAccessToken()),
                        jsonPath("$.refreshToken").value(토큰_반환.getRefreshToken()))
                .andDo(document(docsPath + "login",
@@ -65,6 +66,7 @@ class AuthenticationControllerTest extends ControllerTest {
                                        fieldWithPath("userResponse.id").type(JsonFieldType.NUMBER).description("PK"),
                                        fieldWithPath("userResponse.nickname").type(JsonFieldType.STRING).description("닉네임"),
                                        fieldWithPath("userResponse.userId").type(JsonFieldType.STRING).description("아이디"),
+                                       fieldWithPath("uuid").description("유저 UUID"),
                                        fieldWithPath("accessToken").description("Access token"),
                                        fieldWithPath("refreshToken").description("Refresh token")
                                )
@@ -130,6 +132,7 @@ class AuthenticationControllerTest extends ControllerTest {
                        jsonPath("$.userResponse.id").value(UserFixtures.회원_응답.id()),
                        jsonPath("$.userResponse.nickname").value(UserFixtures.회원_응답.nickname()),
                        jsonPath("$.userResponse.userId").value(UserFixtures.회원_응답.userId()),
+                       jsonPath("$.uuid").value(토큰_반환.getUuid().toString()),
                        jsonPath("$.accessToken").value(토큰_반환.getAccessToken()),
                        jsonPath("$.refreshToken").value(토큰_반환.getRefreshToken()))
                .andDo(document(docsPath + "token-reissue",
@@ -142,6 +145,7 @@ class AuthenticationControllerTest extends ControllerTest {
                                        fieldWithPath("userResponse.id").type(JsonFieldType.NUMBER).description("PK"),
                                        fieldWithPath("userResponse.nickname").type(JsonFieldType.STRING).description("닉네임"),
                                        fieldWithPath("userResponse.userId").type(JsonFieldType.STRING).description("아이디"),
+                                       fieldWithPath("uuid").description("유저 UUID"),
                                        fieldWithPath("accessToken").description("Access token"),
                                        fieldWithPath("refreshToken").description("Refresh token")
                                )

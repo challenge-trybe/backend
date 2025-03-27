@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -27,6 +28,9 @@ public class User extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
+
+    @Column(name = "uuid", nullable = false, updatable = false, unique = true)
+    private UUID uuid = UUID.randomUUID();
 
     @Column(name = "user_id",nullable = false, updatable = false )
     private String userId;
