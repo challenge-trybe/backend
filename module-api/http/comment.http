@@ -1,0 +1,46 @@
+### 1. 댓글 등록
+POST http://localhost:8080/api/v1/posts/1/comments
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "content": "저 가입하고 싶은데 질문 몇 개 드려도 되나요?"
+}
+
+### 1.1 댓글 등록 - 유효성 검증 실패 (content가 비어 있음)
+POST http://localhost:8080/api/v1/posts/1/comments
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "content": ""
+}
+
+### 2. 내가 작성한 댓글 목록 조회
+GET http://localhost:8080/api/v1/comments/my?page=0&size=10
+Authorization: {{accessToken}}
+
+### 3. 해당 게시글에 작성된 댓글 목록 조회
+GET http://localhost:8080/api/v1/posts/1/comments?page=0&size=10
+
+### 4. 댓글 수정
+PUT http://localhost:8080/api/v1/comments/1
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "content": "댓글 내용을 수정합니다."
+}
+
+### 4.1 댓글 수정 - 유효성 검증 실패 (content가 비어 있음)
+PUT http://localhost:8080/api/v1/comments/1
+Content-Type: application/json
+Authorization: {{accessToken}}
+
+{
+  "content": ""
+}
+
+### 5. 댓글 삭제
+DELETE http://localhost:8080/api/v1/comments/1
+Authorization: {{accessToken}}

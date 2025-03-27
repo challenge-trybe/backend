@@ -23,10 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
+    private final ChallengeBookmarkService challengeBookmarkService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
+        this.challengeBookmarkService = challengeBookmarkService;
     }
 
     @Transactional
@@ -37,82 +39,98 @@ public class ChallengeService {
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
         challengeParticipationRepository.save(participation);
 
-        return ChallengeResponse.Detail.from(savedChallenge);
+        ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
+        return ChallengeResponse.Detail.from(savedChallenge, 1, bookmark);
     }
 
     @Transactional(readOnly = true)
-    public ChallengeResponse.Detail find(Long id) {
-        // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
+    public ChallengeResponse.Detail find(User user, Long id) {
         Challenge challenge = getChallenge(id);
 
-        return ChallengeResponse.Detail.from(challenge);
+        return createDetail(user, challenge);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<ChallengeResponse.Summary> findAll(ChallengeRequest.Read request, Pageable pageable) {
-        // TODO: Challenge bookmark 정보 추가 반환 (북마크 여부)
+    public PageResponse<ChallengeResponse.Preview> findAll(User user, ChallengeRequest.Read request, Pageable pageable) {
         Page<Challenge> challenges = challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories(), pageable);
 
-        return new PageResponse<>(challenges.map(ChallengeResponse.Summary::from));
+        Page<ChallengeResponse.Preview> challengeSummaries = challenges.map(challenge -> createPreview(user, challenge));
+
+        return new PageResponse<>(challengeSummaries);
     }
 
     @Transactional
     public ChallengeResponse.Detail updateContent(User user, Long id, ChallengeRequest.UpdateContent request) {
         Challenge challenge = getChallenge(id);
-        ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지 정보를 수정할 수 있습니다.");
+        validateLeader(user.getId(), id, "리더만 챌린지 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 정보를 수정할 수 있습니다.");
 
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
-        return ChallengeResponse.Detail.from(challenge);
+        return createDetail(user, challenge);
     }
 
     @Transactional
     public ChallengeResponse.Detail updateProof(User user, Long id, ChallengeRequest.UpdateProof request) {
         Challenge challenge = getChallenge(id);
-        ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지 인증 정보를 수정할 수 있습니다.");
+        validateLeader(user.getId(), id, "리더만 챌린지 인증 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 인증 정보를 수정할 수 있습니다.");
 
         challenge.updateProof(request.proofWay(), request.proofCount());
 
-        return ChallengeResponse.Detail.from(challenge);
+        return createDetail(user, challenge);
     }
 
     @Transactional
     public void delete(User user, Long id) {
         Challenge challenge = getChallenge(id);
-        ChallengeParticipation participation = getParticipation(user.getId(), id);
 
-        validateRole(participation, ChallengeRole.LEADER, "리더만 챌린지를 삭제할 수 있습니다.");
+        validateLeader(user.getId(), id, "리더만 챌린지를 삭제할 수 있습니다.");
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
+        challengeBookmarkService.removeBookmarksByChallenge(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
         challengeRepository.delete(challenge);
     }
 
+    private ChallengeResponse.Detail createDetail(User user, Challenge challenge) {
+        int participantCount = getParticipantCount(challenge.getId());
+        ChallengeResponse.Bookmark bookmark = createBookmark(user, challenge.getId());
+        return ChallengeResponse.Detail.from(challenge, participantCount, bookmark);
+    }
+
+    private ChallengeResponse.Preview createPreview(User user, Challenge challenge) {
+        int participantCount = getParticipantCount(challenge.getId());
+        ChallengeResponse.Bookmark bookmark = createBookmark(user, challenge.getId());
+        return ChallengeResponse.Preview.from(challenge, participantCount, bookmark);
+    }
+
+    private ChallengeResponse.Bookmark createBookmark(User user, Long challengeId) {
+        int bookmarkCount = challengeBookmarkService.getChallengeBookmarkCount(challengeId);
+        Boolean bookmarked = user == null ? null : challengeBookmarkService.isBookmarked(user.getId(), challengeId);
+        return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
+    }
+
     private Challenge getChallenge(Long id) {
         return challengeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundChallengeException());
+                .orElseThrow(NotFoundChallengeException::new);
     }
 
-    private ChallengeParticipation getParticipation(Long userId, Long challengeId) {
-        return challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
-                .orElseThrow(() -> new NotFoundChallengeException());
-    }
-
-    private void validateRole(ChallengeParticipation participation, ChallengeRole role, String message) {
-        if (participation.getRole().isNot(role)) {
-            throw new InvalidChallengeRoleActionException(message);
-        }
+    private int getParticipantCount(Long challengeId) {
+        return challengeParticipationRepository.countByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED);
     }
 
     private void validateChallengeStatus(Challenge challenge, boolean shouldBe, ChallengeStatus status, String message) {
         if ((shouldBe && challenge.getStatus().isNot(status)) || (!shouldBe && challenge.getStatus().is(status))) {
             throw new InvalidChallengeStatusException(message);
+        }
+    }
+
+    private void validateLeader(Long userId, Long challengeId, String message) {
+        if (!challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(userId, challengeId, ChallengeRole.LEADER)) {
+            throw new InvalidChallengeRoleActionException(message);
         }
     }
 }

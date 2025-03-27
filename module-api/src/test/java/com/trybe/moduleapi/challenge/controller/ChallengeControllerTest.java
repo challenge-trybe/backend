@@ -47,7 +47,7 @@ class ChallengeControllerTest extends ControllerTest {
         ChallengeRequest.Create request = ChallengeFixtures.챌린지_생성_요청;
 
         when(challengeService.save(any(User.class), eq(request)))
-                .thenReturn(ChallengeFixtures.챌린지_상세_응답);
+                .thenReturn(ChallengeFixtures.초기_챌린지_상세_응답);
 
         /* when */
         /* then */
@@ -62,10 +62,14 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.startDate").value(request.startDate().toString()),
                 jsonPath("$.endDate").value(request.endDate().toString()),
                 jsonPath("$.status").value(ChallengeFixtures.대기중.toString()),
-                jsonPath("$.capacity").value(request.capacity()),
                 jsonPath("$.category").value(request.category().toString()),
+                jsonPath("$.capacity").value(request.capacity()),
+                jsonPath("$.participantCount").value(ChallengeFixtures.초기_참여자_수),
                 jsonPath("$.proofWay").value(request.proofWay()),
-                jsonPath("$.proofCount").value(request.proofCount())
+                jsonPath("$.proofCount").value(request.proofCount()),
+                jsonPath("$.bookmark").exists(),
+                jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.초기_북마크_수),
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
         );
 
         result.andDo(document(docsPath + "create",
@@ -88,10 +92,14 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("startDate").description("챌린지 시작일"),
                         fieldWithPath("endDate").description("챌린지 종료일"),
                         fieldWithPath("status").description("챌린지 상태"),
-                        fieldWithPath("capacity").description("챌린지 인원"),
                         fieldWithPath("category").description("챌린지 카테고리"),
+                        fieldWithPath("capacity").description("챌린지 인원"),
+                        fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
-                        fieldWithPath("proofCount").description("챌린지 인증 횟수")
+                        fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("bookmark").description("챌린지 북마크 정보"),
+                        fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
+                        fieldWithPath("bookmark.bookmarked").description("북마크 여부")
                 )));
     }
 
@@ -147,12 +155,13 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("정상적인 챌린지 단일 조회 요청 시 응답코드 200을 반환한다.")
     void 정상적인_챌린지_단일_조회_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.챌린지_ID;
 
-        when(challengeService.find(challengeId))
+        when(challengeService.find(any(User.class), eq(challengeId)))
                 .thenReturn(ChallengeFixtures.챌린지_상세_응답);
 
         /* when */
@@ -166,10 +175,14 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.startDate").value(ChallengeFixtures.챌린지_상세_응답.startDate().toString()),
                 jsonPath("$.endDate").value(ChallengeFixtures.챌린지_상세_응답.endDate().toString()),
                 jsonPath("$.status").value(ChallengeFixtures.대기중.toString()),
-                jsonPath("$.capacity").value(ChallengeFixtures.챌린지_상세_응답.capacity()),
                 jsonPath("$.category").value(ChallengeFixtures.챌린지_상세_응답.category().toString()),
+                jsonPath("$.capacity").value(ChallengeFixtures.챌린지_상세_응답.capacity()),
+                jsonPath("$.participantCount").value(ChallengeFixtures.참여자_수),
                 jsonPath("$.proofWay").value(ChallengeFixtures.챌린지_상세_응답.proofWay()),
-                jsonPath("$.proofCount").value(ChallengeFixtures.챌린지_상세_응답.proofCount())
+                jsonPath("$.proofCount").value(ChallengeFixtures.챌린지_상세_응답.proofCount()),
+                jsonPath("$.bookmark").exists(),
+                jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
         );
 
         result.andDo(document(docsPath + "find",
@@ -183,20 +196,25 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("startDate").description("챌린지 시작일"),
                         fieldWithPath("endDate").description("챌린지 종료일"),
                         fieldWithPath("status").description("챌린지 상태"),
-                        fieldWithPath("capacity").description("챌린지 인원"),
                         fieldWithPath("category").description("챌린지 카테고리"),
+                        fieldWithPath("capacity").description("챌린지 인원"),
+                        fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
-                        fieldWithPath("proofCount").description("챌린지 인증 횟수")
+                        fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("bookmark").description("챌린지 북마크 정보"),
+                        fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
+                        fieldWithPath("bookmark.bookmarked").description("북마크 여부")
                 )));
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("존재하지 않는 챌린지 단일 조회 요청 시 응답코드 404을 반환한다.")
     void 존재하지_않는_챌린지_단일_조회_요청_시_응답코드_404을_반환한다 () throws Exception {
         /* given */
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).find(challengeId);
+        doThrow(new NotFoundChallengeException()).when(challengeService).find(any(User.class), eq(challengeId));
 
         /* when */
         /* then */
@@ -219,13 +237,14 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("정상적인 챌린지 필터링 조회 요청 시 응답코드 200을 반환한다.")
     void 정상적인_챌린지_필터링_조회_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
         ChallengeRequest.Read request = ChallengeFixtures.챌린지_조회_요청;
 
-        when(challengeService.findAll(request, ChallengeFixtures.페이지_요청))
-                .thenReturn(ChallengeFixtures.챌린지_페이지_응답);
+        when(challengeService.findAll(any(User.class), eq(request), eq(ChallengeFixtures.페이지_요청)))
+                .thenReturn(ChallengeFixtures.챌린지_미리보기_페이지_응답);
 
         /* when */
         /* then */
@@ -256,8 +275,12 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("content[].title").description("챌린지 제목"),
                         fieldWithPath("content[].description").description("챌린지 설명"),
                         fieldWithPath("content[].status").description("챌린지 상태"),
-                        fieldWithPath("content[].capacity").description("챌린지 인원"),
                         fieldWithPath("content[].category").description("챌린지 카테고리"),
+                        fieldWithPath("content[].capacity").description("챌린지 인원"),
+                        fieldWithPath("content[].participantCount").description("챌린지 참여자 수"),
+                        fieldWithPath("content[].bookmark").description("챌린지 북마크 정보"),
+                        fieldWithPath("content[].bookmark.bookmarkCount").description("챌린지 북마크 수"),
+                        fieldWithPath("content[].bookmark.bookmarked").description("북마크 여부"),
                         fieldWithPath("totalPages").description("총 페이지 수"),
                         fieldWithPath("totalElements").description("총 요소 수"),
                         fieldWithPath("size").description("페이지 크기"),
@@ -267,6 +290,7 @@ class ChallengeControllerTest extends ControllerTest {
     }
 
     @Test
+    @WithCustomMockUser
     @DisplayName("비정상적인 챌린지 필터링 조회 요청 시 응답코드 400을 반환한다.")
     void 비정상적인_챌린지_필터링_조회_요청_시_응답코드_400을_반환한다 () throws Exception {
         /* given */
@@ -321,10 +345,14 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.startDate").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.startDate().toString()),
                 jsonPath("$.endDate").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.endDate().toString()),
                 jsonPath("$.status").value(ChallengeFixtures.대기중.toString()),
-                jsonPath("$.capacity").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.capacity()),
                 jsonPath("$.category").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.category().toString()),
+                jsonPath("$.capacity").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.capacity()),
+                jsonPath("$.participantCount").value(ChallengeFixtures.참여자_수),
                 jsonPath("$.proofWay").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.proofWay()),
-                jsonPath("$.proofCount").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.proofCount())
+                jsonPath("$.proofCount").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.proofCount()),
+                jsonPath("$.bookmark").exists(),
+                jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
         );
 
         result.andDo(document(docsPath + "update-content",
@@ -346,10 +374,14 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("startDate").description("챌린지 시작일"),
                         fieldWithPath("endDate").description("챌린지 종료일"),
                         fieldWithPath("status").description("챌린지 상태"),
-                        fieldWithPath("capacity").description("챌린지 인원"),
                         fieldWithPath("category").description("챌린지 카테고리"),
+                        fieldWithPath("capacity").description("챌린지 인원"),
+                        fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
-                        fieldWithPath("proofCount").description("챌린지 인증 횟수")
+                        fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("bookmark").description("챌린지 북마크 정보"),
+                        fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
+                        fieldWithPath("bookmark.bookmarked").description("북마크 여부")
                 )));
     }
 
@@ -524,10 +556,14 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.startDate").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.startDate().toString()),
                 jsonPath("$.endDate").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.endDate().toString()),
                 jsonPath("$.status").value(ChallengeFixtures.대기중.toString()),
-                jsonPath("$.capacity").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.capacity()),
                 jsonPath("$.category").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.category().toString()),
+                jsonPath("$.capacity").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.capacity()),
+                jsonPath("$.participantCount").value(ChallengeFixtures.참여자_수),
                 jsonPath("$.proofWay").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.proofWay()),
-                jsonPath("$.proofCount").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.proofCount())
+                jsonPath("$.proofCount").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.proofCount()),
+                jsonPath("$.bookmark").exists(),
+                jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
         );
 
         result.andDo(document(docsPath + "update-proof",
@@ -545,10 +581,14 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("startDate").description("챌린지 시작일"),
                         fieldWithPath("endDate").description("챌린지 종료일"),
                         fieldWithPath("status").description("챌린지 상태"),
-                        fieldWithPath("capacity").description("챌린지 인원"),
                         fieldWithPath("category").description("챌린지 카테고리"),
+                        fieldWithPath("capacity").description("챌린지 인원"),
+                        fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
-                        fieldWithPath("proofCount").description("챌린지 인증 횟수")
+                        fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("bookmark").description("챌린지 북마크 정보"),
+                        fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
+                        fieldWithPath("bookmark.bookmarked").description("북마크 여부")
                 )));
     }
 
