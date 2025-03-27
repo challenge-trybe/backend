@@ -34,10 +34,6 @@ class ChallengeControllerTest extends ControllerTest {
     private String endpoint = "/api/v1/challenges";
 
     private String docsPath = "challenge-controller-test/";
-    private final String invalidBadRequestPath = "invalid/bad-request/";
-    private final String invalidNotFoundPath = "invalid/not-found/";
-    private final String invalidForbiddenPath = "invalid/forbidden/";
-    private final String invalidConflictPath = "invalid/conflict/";
 
     @Test
     @WithCustomMockUser
@@ -69,7 +65,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.proofCount").value(request.proofCount()),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.초기_북마크_수),
-                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_거짓)
         );
 
         result.andDo(document(docsPath + "create",
@@ -182,7 +178,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.proofCount").value(ChallengeFixtures.챌린지_상세_응답.proofCount()),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
-                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_참)
         );
 
         result.andDo(document(docsPath + "find",
@@ -352,7 +348,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.proofCount").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.proofCount()),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
-                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_참)
         );
 
         result.andDo(document(docsPath + "update-content",
@@ -563,7 +559,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.proofCount").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.proofCount()),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
-                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부)
+                jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_참)
         );
 
         result.andDo(document(docsPath + "update-proof",
