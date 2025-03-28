@@ -49,6 +49,13 @@ public class CommentFixtures {
             댓글_작성일
     );
 
+    public static final CommentResponse.Summary 댓글_수정_요약 = new CommentResponse.Summary(
+            Id,
+            UserFixtures.요약_회원_응답,
+            수정_내용,
+            댓글_작성일
+    );
+
     public static final CommentResponse.Detail 댓글_상세 = new CommentResponse.Detail(
             Id,
             PostFixtures.게시글_요약_응답,
