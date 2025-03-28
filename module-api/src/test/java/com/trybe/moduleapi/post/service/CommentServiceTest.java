@@ -22,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -61,7 +60,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("존재하지 않는 게시글에 댓글을 작성 시 예외를 반환한다.")
-    void 존재하지_않는_게시글에_댓글_작성_시_예외를_반환한다() {
+    void 존재하지_않는_게시글에_댓글을_작성_시_예외를_반환한다() {
         Long 게시글_ID = PostFixtures.id;
         User 회원 = UserFixtures.회원;
         CommentRequest.Enroll 댓글_등록 = CommentFixtures.댓글_등록;
@@ -108,7 +107,7 @@ class CommentServiceTest {
     }
 
     @Test
-    @DisplayName("접근 권한이 없는 댓글 수정 시 예외를 반환한다.")
+    @DisplayName("접근권한이 없는 댓글 수정 시 예외를 반환한다.")
     void 접근권한이_없는_댓글_수정_시_예외를_반환한다 () {
         /* given */
         Long 댓글_ID = CommentFixtures.Id;
@@ -129,7 +128,7 @@ class CommentServiceTest {
 
     @Test
     @DisplayName("댓글 삭제 시 댓글을 삭제한다.")
-    void 댓글_식제_시_댓글을_삭제한다 () {
+    void 댓글_삭제_시_댓글을_삭제한다 () {
         /* given */
         Long 댓글_ID = CommentFixtures.Id;
         Post 게시글 = PostFixtures.게시글;
@@ -176,12 +175,6 @@ class CommentServiceTest {
         /* when, then */
         assertThrows(ForbiddenCommentException.class, () -> commentService.delete(회원, 댓글_ID), "본인이 작성한 댓글만 삭제할 수 있습니다.");
     }
-    @Transactional(readOnly = true)
-    public PageResponse<CommentResponse.Detail> findAllByUser(User user, Pageable pageable){
-        Page<Comment> comments = commentRepository.findAllByUserIdOrderByCreatedAtDesc(user.getId(), pageable);
-        return new PageResponse<>(comments.map(CommentResponse.Detail::from));
-    }
-
 
     @Test
     @DisplayName("내가 작성한 댓글 목록 조회 시 최신순으로 반환한다.")
