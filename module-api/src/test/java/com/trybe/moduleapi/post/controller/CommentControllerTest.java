@@ -105,12 +105,41 @@ class CommentControllerTest extends ControllerTest {
                                        fieldWithPath("content").description("댓글 내용")
                                ),
                                responseFields(
-                                       fieldWithPath("status").description("HTTP 상태 코드"),
+                                       fieldWithPath("status").description("응답 코드"),
                                        fieldWithPath("message").description("에러 메시지"),
                                        fieldWithPath("data.content").description("댓글 내용 필드에 대한 유효성 오류 메시지")
                                )
                ));
-        
+    }
+
+    @Test
+    @WithCustomMockUser
+    @DisplayName("존재하지 않는 게시글에 대한 댓글 작성 시 404을 반환한다.")
+    void 존재하지_않는_게시글에_대한_댓글_작성_시_404을_반환한다 () throws Exception {
+        /* given */
+        CommentRequest.Enroll 댓글_등록 = CommentFixtures.댓글_등록;
+        doThrow(new NotFoundPostException()).when(commentService).enroll(any(User.class), eq(999L), any(CommentRequest.Enroll.class));
+
+        /* when */
+        mockMvc.perform(post("/api/v1/posts/{postId}/comments", 999L)
+                                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
+                                .content(objectMapper.writeValueAsString(댓글_등록)))
+               .andExpect(status().isNotFound())
+               .andExpectAll(
+                       jsonPath("$.status").value(404),
+                       jsonPath("$.message").exists(),
+                       jsonPath("$.data").doesNotExist()
+               )
+               .andDo(document(docsPath + "add" + invalidNotFoundPath,
+                               preprocessRequest(prettyPrint()),
+                               preprocessResponse(prettyPrint()),
+                               pathParameters(parameterWithName("postId").description("존재하지 않는 게시글 ID")),
+                               responseFields(
+                                       fieldWithPath("status").description("응답 코드"),
+                                       fieldWithPath("message").description("에러 메시지"),
+                                       fieldWithPath("data").description("에러 데이터").optional()
+                               )
+               ));
     }
     
     @Test
@@ -176,11 +205,16 @@ class CommentControllerTest extends ControllerTest {
         mockMvc.perform(get("/api/v1/posts/{postId}/comments", 1L))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.content").isArray())
-               .andExpect(jsonPath("$.totalPages").value(1))
-               .andExpect(jsonPath("$.totalElements").value(3))
-               .andExpect(jsonPath("$.size").value(10))
-               .andExpect(jsonPath("$.number").value(0))
-               .andExpect(jsonPath("$.last").value(true))
+               .andExpect(jsonPath("$.content[0].id").value(게시글에달린댓글페이지응답.content().get(0).id()))
+               .andExpect(jsonPath("$.content[0].content").value(게시글에달린댓글페이지응답.content().get(0).content()))
+               .andExpect(jsonPath("$.content[0].writer.id").value(게시글에달린댓글페이지응답.content().get(0).writer().id()))
+               .andExpect(jsonPath("$.content[0].writer.userId").value(게시글에달린댓글페이지응답.content().get(0).writer().userId()))
+               .andExpect(jsonPath("$.content[0].writer.nickname").value(게시글에달린댓글페이지응답.content().get(0).writer().nickname()))
+               .andExpect(jsonPath("$.totalPages").value(게시글에달린댓글페이지응답.totalPages()))
+               .andExpect(jsonPath("$.totalElements").value(게시글에달린댓글페이지응답.totalElements()))
+               .andExpect(jsonPath("$.size").value(게시글에달린댓글페이지응답.size()))
+               .andExpect(jsonPath("$.number").value(게시글에달린댓글페이지응답.number()))
+               .andExpect(jsonPath("$.last").value(게시글에달린댓글페이지응답.last()))
                .andDo(document(docsPath + "find",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -201,7 +235,7 @@ class CommentControllerTest extends ControllerTest {
                                )
                ));
     }
-    
+
     @Test
     @DisplayName("존재하지 않는 게시글에 대한 댓글 목록 조회 시 404을 반환한다.")
     void 존재하지_않는_게시글에_대한_댓글_목록_조회_시_404을_반환한다 () throws Exception {
@@ -221,12 +255,11 @@ class CommentControllerTest extends ControllerTest {
                                preprocessResponse(prettyPrint()),
                                pathParameters(parameterWithName("postId").description("존재하지 않는 게시글 ID")),
                                responseFields(
-                                       fieldWithPath("status").description("HTTP 상태 코드"),
+                                       fieldWithPath("status").description("응답 코드"),
                                        fieldWithPath("message").description("에러 메시지"),
                                        fieldWithPath("data").description("에러 데이터").optional()
                                )
                ));
-        
     }
     
     @Test
@@ -235,7 +268,7 @@ class CommentControllerTest extends ControllerTest {
     void 정상적인_댓글_수정_시_200을_반환한다() throws Exception {
         /* given */
         CommentRequest.Update 댓글_수정_요청 = CommentFixtures.댓글_수정;
-        CommentResponse.Summary 댓글_수정_응답 = CommentFixtures.댓글_요약;
+        CommentResponse.Summary 댓글_수정_응답 = CommentFixtures.댓글_수정_요약;
         when(commentService.update(any(User.class), any(Long.class), any(CommentRequest.Update.class))).thenReturn(댓글_수정_응답);
 
         /* when */
@@ -293,12 +326,11 @@ class CommentControllerTest extends ControllerTest {
                                        fieldWithPath("content").description("댓글 내용")
                                ),
                                responseFields(
-                                       fieldWithPath("status").description("HTTP 상태 코드"),
+                                       fieldWithPath("status").description("응답 코드"),
                                        fieldWithPath("message").description("에러 메시지"),
                                        fieldWithPath("data.content").description("댓글 내용 필드에 대한 유효성 오류 메시지")
                                )
                ));
-        
     }
 
     @Test
@@ -328,7 +360,7 @@ class CommentControllerTest extends ControllerTest {
                                        fieldWithPath("content").description("댓글 내용")
                                ),
                                responseFields(
-                                       fieldWithPath("status").description("HTTP 상태 코드"),
+                                       fieldWithPath("status").description("응답 코드"),
                                        fieldWithPath("message").description("에러 메시지"),
                                        fieldWithPath("data").description("에러 데이터").optional()
                                )
@@ -360,7 +392,7 @@ class CommentControllerTest extends ControllerTest {
                                preprocessResponse(prettyPrint()),
                                pathParameters(parameterWithName("commentId").description("댓글 ID")),
                                responseFields(
-                                       fieldWithPath("status").description("HTTP 상태 코드"),
+                                       fieldWithPath("status").description("응답 코드"),
                                        fieldWithPath("message").description("에러 메시지"),
                                        fieldWithPath("data").description("에러")
                                )
@@ -369,8 +401,8 @@ class CommentControllerTest extends ControllerTest {
 
     @Test
     @WithCustomMockUser
-    @DisplayName("존재하는 게시글에 대한 댓글 삭제 요청 시 200을 반환한다.")
-    void 존재하는_게시글에_대한_댓글_삭제_요청_시_200을_반환한다() throws Exception {
+    @DisplayName("정상적인 댓글 삭제 요청 시 200을 반환한다.")
+    void 정상적인_댓글_삭제_요청_시_200을_반환한다() throws Exception {
         /* given */
         doNothing().when(commentService).delete(any(User.class), eq(1L));
 
@@ -387,10 +419,10 @@ class CommentControllerTest extends ControllerTest {
 
     @Test
     @WithCustomMockUser
-    @DisplayName("존재하지 않는 게시글에 대한 댓글 삭제 요청 시 404을 반환한다.")
-    void 존재하지_않는_게시글에_대한_댓글_삭제_요청_시_404을_반환한다() throws Exception {
+    @DisplayName("존재하지 않는 댓글에 대한 삭제 요청 시 404을 반환한다.")
+    void 존재하지_않는_댓글에_대한_삭제_요청_시_404을_반환한다() throws Exception {
         /* given */
-        doThrow(new NotFoundPostException()).when(commentService).delete(any(User.class), eq(999L));
+        doThrow(new NotFoundCommentException()).when(commentService).delete(any(User.class), eq(999L));
 
         /* when */
         mockMvc.perform(delete("/api/v1/comments/{commentId}", 999L)
@@ -406,7 +438,7 @@ class CommentControllerTest extends ControllerTest {
                                preprocessResponse(prettyPrint()),
                                pathParameters(parameterWithName("commentId").description("댓글 ID")),
                                responseFields(
-                                       fieldWithPath("status").description("HTTP 상태 코드"),
+                                       fieldWithPath("status").description("응답 코드"),
                                        fieldWithPath("message").description("에러 메시지"),
                                        fieldWithPath("data").description("에러 데이터").optional()
                                )
@@ -434,7 +466,7 @@ class CommentControllerTest extends ControllerTest {
                                preprocessResponse(prettyPrint()),
                                pathParameters(parameterWithName("commentId").description("댓글 ID")),
                                responseFields(
-                                       fieldWithPath("status").description("HTTP 상태 코드"),
+                                       fieldWithPath("status").description("응답 코드"),
                                        fieldWithPath("message").description("에러 메시지"),
                                        fieldWithPath("data").description("에러 데이터").optional()
                                )
