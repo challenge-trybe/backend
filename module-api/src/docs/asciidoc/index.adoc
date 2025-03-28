@@ -813,7 +813,133 @@ include::{snippets}/post-controller-test/update/invalid/forbidden/http-request.a
 include::{snippets}/post-controller-test/update/invalid/forbidden/http-response.adoc[]
 include::{snippets}/post-controller-test/update/invalid/forbidden/response-fields.adoc[]
 
----
+
+== 댓글
+
+=== 댓글 작성 API
+
+게시글에 댓글을 작성합니다.
+
+==== 정상 요청
+include::{snippets}/comment-controller-test/add/path-parameters.adoc[]
+include::{snippets}/comment-controller-test/add/http-request.adoc[]
+include::{snippets}/comment-controller-test/add/request-fields.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/add/http-response.adoc[]
+include::{snippets}/comment-controller-test/add/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+유효성 검증에 실패하는 댓글 작성 시 다음과 같이 반환합니다.
+
+include::{snippets}/comment-controller-test/add/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/add/invalid/bad-request/http-response.adoc[]
+include::{snippets}/comment-controller-test/add/invalid/bad-request/response-fields.adoc[]
+
+=== 댓글 조회 API (게시글에 대한 댓글)
+
+게시글에 달린 댓글을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/comment-controller-test/find/path-parameters.adoc[]
+include::{snippets}/comment-controller-test/find/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/find/http-response.adoc[]
+include::{snippets}/comment-controller-test/find/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+존재하지 않는 게시글에 대한 댓글 목록 조회 시 다음과 같이 반환합니다.
+
+include::{snippets}/comment-controller-test/find/invalid/not-found/path-parameters.adoc[]
+include::{snippets}/comment-controller-test/find/invalid/not-found/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/find/invalid/not-found/http-response.adoc[]
+include::{snippets}/comment-controller-test/find/invalid/not-found/response-fields.adoc[]
+
+=== 댓글 조회 API (본인이 작성한 댓글)
+
+내가 작성한 댓글을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/comment-controller-test/my/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/my/http-response.adoc[]
+include::{snippets}/comment-controller-test/my/response-fields.adoc[]
+
+=== 댓글 수정 API
+게시글에 댓글을 수정합니다.
+
+==== 정상 요청
+include::{snippets}/comment-controller-test/update/path-parameters.adoc[]
+include::{snippets}/comment-controller-test/update/http-request.adoc[]
+include::{snippets}/comment-controller-test/update/request-fields.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/update/http-response.adoc[]
+include::{snippets}/comment-controller-test/update/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+유효성 검증에 실패하는 댓글 수정 요청 시 다음과 같이 반환합니다.
+
+include::{snippets}/comment-controller-test/update/invalid/bad-request/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/update/invalid/bad-request/http-response.adoc[]
+include::{snippets}/comment-controller-test/update/invalid/bad-request/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+존재하지 않는 댓글 수정 요청 시 다음과 같이 반환합니다.
+
+include::{snippets}/comment-controller-test/update/invalid/not-found/path-parameters.adoc[]
+include::{snippets}/comment-controller-test/update/invalid/not-found/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/update/invalid/not-found/http-response.adoc[]
+include::{snippets}/comment-controller-test/update/invalid/not-found/response-fields.adoc[]
+
+==== 접근권한 불가 요청
+본인이 작성하지 않은 댓글 수정 요청 시 다음과 같이 반환합니다.
+
+include::{snippets}/comment-controller-test/update/invalid/forbidden/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/update/invalid/forbidden/http-response.adoc[]
+include::{snippets}/comment-controller-test/update/invalid/forbidden/response-fields.adoc[]
+
+=== 댓글 삭제 API
+게시글에 댓글을 삭제합니다.
+
+==== 정상 요청
+include::{snippets}/comment-controller-test/delete/path-parameters.adoc[]
+include::{snippets}/comment-controller-test/delete/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/delete/http-response.adoc[]
+include::{snippets}/comment-controller-test/delete/response-fields.adoc[]
+
+==== 비정상 요청 (잘못된 요청)
+존재하지 않는 댓글 삭제 요청 시 다음과 같이 반환합니다.
+
+include::{snippets}/comment-controller-test/delete/invalid/not-found/path-parameters.adoc[]
+include::{snippets}/comment-controller-test/delete/invalid/not-found/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/delete/invalid/not-found/http-response.adoc[]
+include::{snippets}/comment-controller-test/delete/invalid/not-found/response-fields.adoc[]
+
+==== 접근권한 불가 요청
+본인이 작성하지 않은 댓글 삭제 요청 시 다음과 같이 반환합니다.
+
+include::{snippets}/comment-controller-test/delete/invalid/forbidden/http-request.adoc[]
+
+- 응답
+include::{snippets}/comment-controller-test/delete/invalid/forbidden/http-response.adoc[]
+include::{snippets}/comment-controller-test/delete/invalid/forbidden/response-fields.adoc[]
 
 == 좋아요
 
