@@ -1,4 +1,4 @@
-package com.trybe.modulecore.challenge.repository;
+package com.trybe.modulecore.challenge.repository.bookmark;
 
 import com.trybe.modulecore.challenge.entity.ChallengeBookmark;
 import org.springframework.data.jpa.repository.JpaRepository;
