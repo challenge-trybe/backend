@@ -1,4 +1,4 @@
-package com.trybe.modulecore.post.repository;
+package com.trybe.modulecore.utils;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 
