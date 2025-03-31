@@ -1,0 +1,9 @@
+### 1. 추천 챌린지 목록 조회
+POST http://localhost:8082/api/v1/recommendation/challenges
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "categories": ["SAVING", "LIFE"],
+  "keywords": ["주식", "산책"]
+}
