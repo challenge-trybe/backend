@@ -13,6 +13,7 @@ import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,12 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
-    private final ChallengeBookmarkService challengeBookmarkService;
+    private final ChallengeBookmarkCache challengeBookmarkCache;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
-        this.challengeBookmarkService = challengeBookmarkService;
+        this.challengeBookmarkCache = challengeBookmarkCache;
     }
 
     @Transactional
@@ -90,7 +91,7 @@ public class ChallengeService {
         validateLeader(user.getId(), id, "리더만 챌린지를 삭제할 수 있습니다.");
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
-        challengeBookmarkService.removeBookmarksByChallenge(id);
+        challengeBookmarkCache.removeBookmarksByChallenge(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
         challengeRepository.delete(challenge);
     }
@@ -108,8 +109,8 @@ public class ChallengeService {
     }
 
     private ChallengeResponse.Bookmark createBookmark(User user, Long challengeId) {
-        int bookmarkCount = challengeBookmarkService.getChallengeBookmarkCount(challengeId);
-        Boolean bookmarked = user == null ? null : challengeBookmarkService.isBookmarked(user.getId(), challengeId);
+        int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challengeId);
+        Boolean bookmarked = user == null ? null : challengeBookmarkCache.isBookmarked(user.getId(), challengeId);
         return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
     }
 

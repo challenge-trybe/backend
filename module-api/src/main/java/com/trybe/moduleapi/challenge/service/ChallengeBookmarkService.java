@@ -7,11 +7,11 @@ import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,36 +22,22 @@ import java.util.stream.Collectors;
 public class ChallengeBookmarkService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
-    private final RedisTemplate<String, Long> redisTemplate;
+    private final ChallengeBookmarkCache challengeBookmarkCache;
 
-    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, RedisTemplate<String, Long> redisTemplate) {
+    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
-        this.redisTemplate = redisTemplate;
+        this.challengeBookmarkCache = challengeBookmarkCache;
     }
-
-    private final String BOOKMARK_SUFFIX = ":bookmark";
-    private final String USER_KEY = "user:%d" + BOOKMARK_SUFFIX;
-    private final String CHALLENGE_BOOKMARK_KEY = "challenge:%d" + BOOKMARK_SUFFIX;
-    private final String CHALLENGE_BOOKMARK_COUNT_KEY = CHALLENGE_BOOKMARK_KEY + ":count";
-    private final String CHALLENGE_BOOKMARK_DELETED_KEY = CHALLENGE_BOOKMARK_KEY + ":deleted";
 
     @Transactional
     public ChallengeResponse.Bookmark addBookmark(User user, Long challengeId) {
         validateExistChallenge(challengeId);
 
-        String userKey = getRedisKey(USER_KEY, user.getId());
-        String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
-        String challengeCountKey = getRedisKey(CHALLENGE_BOOKMARK_COUNT_KEY, challengeId);
-        String challengeDeletedKey = getRedisKey(CHALLENGE_BOOKMARK_DELETED_KEY, challengeId);
-        int count = getChallengeBookmarkCount(challengeId);
+        int count = challengeBookmarkCache.getBookmarkCount(challengeId);
 
-        if (!isBookmarked(user.getId(), challengeId)) {
-            double score = getCurrentTimeInSeconds();
-            redisTemplate.opsForZSet().add(userKey, challengeId, score);
-            redisTemplate.opsForSet().add(challengeKey, user.getId());
-            redisTemplate.opsForSet().remove(challengeDeletedKey, user.getId());
-            redisTemplate.opsForValue().increment(challengeCountKey, 1L);
+        if (!challengeBookmarkCache.isBookmarked(user.getId(), challengeId)) {
+            challengeBookmarkCache.addBookmark(user.getId(), challengeId);
             count++;
         }
 
@@ -62,17 +48,10 @@ public class ChallengeBookmarkService {
     public ChallengeResponse.Bookmark removeBookmark(User user, Long challengeId) {
         validateExistChallenge(challengeId);
 
-        String userKey = getRedisKey(USER_KEY, user.getId());
-        String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
-        String challengeCountKey = getRedisKey(CHALLENGE_BOOKMARK_COUNT_KEY, challengeId);
-        String challengeDeletedKey = getRedisKey(CHALLENGE_BOOKMARK_DELETED_KEY, challengeId);
-        int count = getChallengeBookmarkCount(challengeId);
+        int count = challengeBookmarkCache.getBookmarkCount(challengeId);
 
-        if(isBookmarked(user.getId(), challengeId)) {
-            redisTemplate.opsForZSet().remove(userKey, challengeId);
-            redisTemplate.opsForSet().remove(challengeKey, user.getId());
-            redisTemplate.opsForSet().add(challengeDeletedKey, user.getId());
-            redisTemplate.opsForValue().decrement(challengeCountKey, 1L);
+        if (challengeBookmarkCache.isBookmarked(user.getId(), challengeId)) {
+            challengeBookmarkCache.removeBookmark(user.getId(), challengeId);
             count--;
         }
 
@@ -81,12 +60,10 @@ public class ChallengeBookmarkService {
 
     @Transactional(readOnly = true)
     public PageResponse<ChallengeResponse.Preview> getMyBookmarkedChallenges(User user, Pageable pageable) {
-        String userKey = getRedisKey(USER_KEY, user.getId());
-
         int start = pageable.getPageNumber() * pageable.getPageSize();
         int end = start + pageable.getPageSize() - 1;
 
-        Set<Long> challengeIds = Optional.ofNullable(redisTemplate.opsForZSet().reverseRange(userKey, start, end)).orElse(Collections.emptySet());
+        Set<Long> challengeIds = challengeBookmarkCache.getBookmarkedChallenges(user.getId(), start, end);
 
         List<Challenge> challenges = challengeIds.isEmpty()
                 ? Collections.emptyList()
@@ -95,41 +72,17 @@ public class ChallengeBookmarkService {
         List<ChallengeResponse.Preview> challengeSummaries = sortChallenges(challenges, challengeIds).stream()
                 .map(challenge -> {
                     int participantCount = challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED);
-                    ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(getChallengeBookmarkCount(challenge.getId()), true);
+                    int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challenge.getId());
+
+                    ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(bookmarkCount, true);
                     return ChallengeResponse.Preview.from(challenge, participantCount, bookmark);
                 })
                 .collect(Collectors.toList());
 
-        Page<ChallengeResponse.Preview> challengePage = new PageImpl<>(challengeSummaries, pageable, getUserBookmarkCount(user.getId()));
+        int totalElements = challengeBookmarkCache.getUserBookmarkCount(user.getId());
+        Page<ChallengeResponse.Preview> challengePage = new PageImpl<>(challengeSummaries, pageable, totalElements);
 
         return new PageResponse<>(challengePage);
-    }
-
-    public boolean isBookmarked(Long userId, Long challengeId) {
-        String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
-        return redisTemplate.opsForSet().isMember(challengeKey, userId);
-    }
-
-    public int getChallengeBookmarkCount(Long challengeId) {
-        String challengeCountKey = getRedisKey(CHALLENGE_BOOKMARK_COUNT_KEY, challengeId);
-        Long count = redisTemplate.opsForValue().get(challengeCountKey);
-
-        return count == null ? 0 : count.intValue();
-    }
-
-    public void removeBookmarksByChallenge(Long challengeId) {
-        String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
-        String challengeCountKey = getRedisKey(CHALLENGE_BOOKMARK_COUNT_KEY, challengeId);
-        String challengeDeletedKey = getRedisKey(CHALLENGE_BOOKMARK_DELETED_KEY, challengeId);
-
-        Set<Long> userIds = Optional.ofNullable(redisTemplate.opsForSet().members(challengeKey)).orElse(Collections.emptySet());
-
-        userIds.forEach(userId -> {
-            String userKey = getRedisKey(USER_KEY, userId);
-            redisTemplate.opsForZSet().remove(userKey, challengeId);
-        });
-
-        redisTemplate.delete(List.of(challengeKey, challengeCountKey, challengeDeletedKey));
     }
 
     private List<Challenge> sortChallenges(List<Challenge> challenges, Set<Long> challengeIds) {
@@ -145,20 +98,5 @@ public class ChallengeBookmarkService {
         if (!challengeRepository.existsById(challengeId)) {
             throw new NotFoundChallengeException();
         }
-    }
-
-    private int getUserBookmarkCount(Long userId) {
-        String userKey = getRedisKey(USER_KEY, userId);
-        Long count = redisTemplate.opsForZSet().size(userKey);
-
-        return count == null ? 0 : count.intValue();
-    }
-
-    private String getRedisKey(String key, Long id) {
-        return String.format(key, id);
-    }
-
-    private double getCurrentTimeInSeconds() {
-        return System.currentTimeMillis() / 1000.0;
     }
 }
