@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
+public interface ChallengeRepository extends JpaRepository<Challenge, Long>, ChallengeCustomRepository {
     Page<Challenge> findAllByStatusInAndCategoryIn(List<ChallengeStatus> statuses, List<ChallengeCategory> categories, Pageable pageable);
     List<Challenge> findAllByStatusAndStartDate(ChallengeStatus status, LocalDate startDate);
     List<Challenge> findAllByStatusAndEndDate(ChallengeStatus status, LocalDate endDate);
