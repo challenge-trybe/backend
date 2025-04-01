@@ -39,5 +39,6 @@ out/
 ### ETC ###
 data
 **/application.yml
+**/application-core.yml
 
 redis/

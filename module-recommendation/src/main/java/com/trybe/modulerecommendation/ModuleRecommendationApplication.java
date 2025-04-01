@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ModuleRecommendationApplication {
 
 	public static void main(String[] args) {
+		System.setProperty("spring.config.name", "application,application-core");
 		SpringApplication.run(ModuleRecommendationApplication.class, args);
 	}
 
