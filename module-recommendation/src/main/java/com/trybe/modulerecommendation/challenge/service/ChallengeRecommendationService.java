@@ -9,7 +9,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class ChallengeRecommendationService {
@@ -27,13 +27,40 @@ public class ChallengeRecommendationService {
     private static final int MAX_LIMIT = 40;
 
     public List<ChallengeResponse.Preview> getChallengeRecommendations(ChallengeRecommendationRequest request) {
-        List<Challenge> challenges = challengeRepository.getByCategoriesOrKeywords(request.categories(), request.keywords(), MAX_LIMIT);
+        List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(request.categories(), request.keywords(), MAX_LIMIT);
+        LinkedHashSet<Challenge> challengeSet = new LinkedHashSet<>(recommendations);
+
+        int remaining = MIN_LIMIT - challengeSet.size();
+        Iterator<Challenge> topChallenges = getMostBookmarkedChallenges(remaining).iterator();
+        Iterator<Challenge> recentChallenges = getRecentChallenges(remaining).iterator();
+
+        while(challengeSet.size() < MIN_LIMIT) {
+            if (topChallenges.hasNext()) challengeSet.add(topChallenges.next());
+            if (challengeSet.size() < MIN_LIMIT && recentChallenges.hasNext()) challengeSet.add(recentChallenges.next());
+            if (!topChallenges.hasNext() && !recentChallenges.hasNext()) break;
+        }
+
+        List<Challenge> challenges = new ArrayList<>(challengeSet);
+        if (challenges.size() > MAX_LIMIT) {
+            challenges = challenges.subList(0, MAX_LIMIT);
+        }
+
+        Collections.shuffle(challenges);
 
         List<ChallengeResponse.Preview> challengePreviews = challenges.stream()
                 .map(challenge -> createPreview(request.userId(), challenge))
                 .toList();
 
         return challengePreviews;
+    }
+
+    private List<Challenge> getMostBookmarkedChallenges(int count) {
+        Set<Long> challengeIds = challengeBookmarkCache.getMostBookmarkedChallenges(count);
+        return challengeRepository.findAllByIdIn(challengeIds);
+    }
+
+    private List<Challenge> getRecentChallenges(int count) {
+        return challengeRepository.findTopByOrderByCreatedAtDesc(count);
     }
 
     private ChallengeResponse.Preview createPreview(Long userId, Challenge challenge) {
