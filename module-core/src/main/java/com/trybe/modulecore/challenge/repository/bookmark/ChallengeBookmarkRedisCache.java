@@ -66,7 +66,15 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
     @Override
     public Set<Long> getBookmarkedChallenges(Long userId, int start, int end) {
         String userKey = getRedisKey(USER_KEY, userId);
-        return Optional.ofNullable(redisTemplate.opsForZSet().reverseRange(userKey, start, end)).orElse(Collections.emptySet());
+
+        return Optional.ofNullable(redisTemplate.opsForZSet().reverseRange(userKey, start, end))
+                .orElse(Collections.emptySet());
+    }
+
+    @Override
+    public Set<Long> getMostBookmarkedChallenges(int count) {
+        return Optional.ofNullable(redisTemplate.opsForZSet().reverseRange(CHALLENGE_BOOKMARK_COUNT_KEY, 0, count - 1))
+                .orElse(Collections.emptySet());
     }
 
     @Override
