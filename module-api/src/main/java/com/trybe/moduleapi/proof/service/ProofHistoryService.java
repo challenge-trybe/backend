@@ -42,7 +42,7 @@ public class ProofHistoryService {
 
         validateMemberParticipation(user.getId(), proof.getChallenge().getId(), "멤버만 인증 기록을 등록할 수 있습니다.");
         validateDate(proof);
-        validateDuplicateProofHistory(proof, user);
+        validateDuplicateProofHistory(proof.getId(), user.getId());
 
         ProofHistory savedProofHistory = proofHistoryRepository.save(request.toEntity(proof, user, request.content()));
         return ProofHistoryResponse.Summary.from(savedProofHistory);
@@ -113,8 +113,8 @@ public class ProofHistoryService {
         }
     }
 
-    private void validateDuplicateProofHistory(Proof proof, User user) {
-        if (proofHistoryRepository.existsByProofAndUser(proof, user)) {
+    private void validateDuplicateProofHistory(Long proofId, Long userId) {
+        if (proofHistoryRepository.existsByProofIdAndUserId(proofId, userId)) {
             throw new DuplicatedProofHistoryException();
         }
     }
