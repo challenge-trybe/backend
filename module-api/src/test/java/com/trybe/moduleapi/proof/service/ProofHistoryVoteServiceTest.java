@@ -154,7 +154,7 @@ public class ProofHistoryVoteServiceTest {
         Long userId = UserFixtures.회원_PK;
         User user = spy(UserFixtures.회원);
         boolean approved = true;
-        String approvedValue = approved ? "APPROVED" : "DISAPPROVED";
+        String approvedValue = approved ? "approved" : "disapproved";
 
         when(user.getId()).thenReturn(userId);
         when(proofHistoryRepository.findById(proofHistoryId))
