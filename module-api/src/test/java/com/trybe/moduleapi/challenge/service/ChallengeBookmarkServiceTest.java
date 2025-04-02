@@ -10,6 +10,7 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,9 @@ class ChallengeBookmarkServiceTest {
     @Mock
     private ChallengeBookmarkCache challengeBookmarkCache;
 
+    @Mock
+    private ChallengePreferenceCache challengePreferenceCache;
+
     @Test
     @DisplayName("챌린지 북마크 추가 시 북마크 정보를 반환한다.")
     void 챌린지_북마크_추가_시_북마크_정보를_반환한다 () {
@@ -51,8 +56,8 @@ class ChallengeBookmarkServiceTest {
         User user = spy(UserFixtures.회원);
 
         when(user.getId()).thenReturn(userId);
-        when(challengeRepository.existsById(challengeId))
-                .thenReturn(true);
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.ofNullable(ChallengeFixtures.진행중인_챌린지));
         when(challengeBookmarkCache.getBookmarkCount(challengeId))
                 .thenReturn(북마크_수);
         when(challengeBookmarkCache.isBookmarked(userId, challengeId))
@@ -77,8 +82,8 @@ class ChallengeBookmarkServiceTest {
         User user = spy(UserFixtures.회원);
 
         when(user.getId()).thenReturn(userId);
-        when(challengeRepository.existsById(challengeId))
-                .thenReturn(true);
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.ofNullable(ChallengeFixtures.진행중인_챌린지));
         when(challengeBookmarkCache.getBookmarkCount(challengeId))
                 .thenReturn(북마크_수);
         when(challengeBookmarkCache.isBookmarked(userId, challengeId))
@@ -100,8 +105,8 @@ class ChallengeBookmarkServiceTest {
         /* given */
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
 
-        when(challengeRepository.existsById(challengeId))
-                .thenReturn(false);
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.empty());
 
         /* when */
         /* then */

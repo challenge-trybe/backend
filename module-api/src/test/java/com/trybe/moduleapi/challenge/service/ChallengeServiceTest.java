@@ -15,6 +15,7 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +45,9 @@ class ChallengeServiceTest {
     @Mock
     private ChallengeBookmarkCache challengeBookmarkCache;
 
+    @Mock
+    private ChallengePreferenceCache challengePreferenceCache;
+
     @Test
     @DisplayName("챌린지 생성 시 저장된 챌린지 정보를 반환한다.")
     void 챌린지_생성_시_저장된_챌린지_정보를_반환한다 () {
@@ -63,6 +67,8 @@ class ChallengeServiceTest {
         assertEquals(초기_참여자_수, response.participantCount());
         assertEquals(초기_북마크_수, response.bookmark().bookmarkCount());
         assertEquals(false, response.bookmark().bookmarked());
+
+        verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
     }
 
     @Test
