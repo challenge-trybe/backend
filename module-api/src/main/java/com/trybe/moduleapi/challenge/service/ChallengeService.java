@@ -1,5 +1,7 @@
 package com.trybe.moduleapi.challenge.service;
 
+import com.trybe.moduleapi.challenge.client.ChallengeRecommendationClient;
+import com.trybe.moduleapi.challenge.dto.ChallengeRecommendationRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
@@ -8,6 +10,7 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRol
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
+import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
@@ -21,19 +24,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengePreferenceCache challengePreferenceCache;
+    private final ChallengeRecommendationClient challengeRecommendationClient;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeRecommendationClient challengeRecommendationClient) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengePreferenceCache = challengePreferenceCache;
+        this.challengeRecommendationClient = challengeRecommendationClient;
     }
+
+    private static final int RECOMMENDATION_CATEGORY_COUNT = 3;
+    private static final int RECOMMENDATION_KEYWORD_COUNT = 10;
 
     @Transactional
     public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
@@ -62,6 +72,14 @@ public class ChallengeService {
         Page<ChallengeResponse.Preview> challengeSummaries = challenges.map(challenge -> createPreview(user, challenge));
 
         return new PageResponse<>(challengeSummaries);
+    }
+
+    public List<ChallengeResponse.Preview> getRecommendations(User user) {
+        List<ChallengeCategory> categories = challengePreferenceCache.getPreferenceCategories(user.getId(), RECOMMENDATION_CATEGORY_COUNT);
+        List<String> keywords = challengePreferenceCache.getPreferenceKeywords(user.getId(), RECOMMENDATION_KEYWORD_COUNT);
+
+        ChallengeRecommendationRequest request = new ChallengeRecommendationRequest(user.getId(), categories, keywords);
+        return challengeRecommendationClient.getChallengeRecommendations(request);
     }
 
     @Transactional
