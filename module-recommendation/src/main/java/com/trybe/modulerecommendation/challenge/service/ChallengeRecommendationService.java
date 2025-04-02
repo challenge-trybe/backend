@@ -32,10 +32,8 @@ public class ChallengeRecommendationService {
         List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(request.categories(), request.keywords(), MAX_LIMIT);
         LinkedHashSet<Challenge> challengeSet = new LinkedHashSet<>(recommendations);
 
-        int remaining = MIN_LIMIT - challengeSet.size();
-
-        challengeSet.addAll(getMostBookmarkedChallenges(remaining));
-        challengeSet.addAll(getRecentChallenges(remaining));
+        challengeSet.addAll(getMostBookmarkedChallenges(MIN_LIMIT));
+        challengeSet.addAll(getRecentChallenges(MIN_LIMIT));
 
         List<Challenge> challenges = new ArrayList<>(challengeSet);
         if (challenges.size() > MAX_LIMIT) {
