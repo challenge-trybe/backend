@@ -19,6 +19,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,14 +33,14 @@ public class ChallengeService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengePreferenceCache challengePreferenceCache;
-    private final ChallengeRecommendationClient challengeRecommendationClient;
+    private final ChallengeRecommendationClientService challengeRecommendationClientService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeRecommendationClient challengeRecommendationClient) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeRecommendationClientService challengeRecommendationClientService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengePreferenceCache = challengePreferenceCache;
-        this.challengeRecommendationClient = challengeRecommendationClient;
+        this.challengeRecommendationClientService = challengeRecommendationClientService;
     }
 
     private static final int RECOMMENDATION_CATEGORY_COUNT = 3;
@@ -79,7 +80,7 @@ public class ChallengeService {
         List<String> keywords = challengePreferenceCache.getPreferenceKeywords(user.getId(), RECOMMENDATION_KEYWORD_COUNT);
 
         ChallengeRecommendationRequest request = new ChallengeRecommendationRequest(user.getId(), categories, keywords);
-        return challengeRecommendationClient.getChallengeRecommendations(request);
+        return challengeRecommendationClientService.getChallengeRecommendations(request);
     }
 
     @Transactional
