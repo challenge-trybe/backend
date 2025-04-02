@@ -8,6 +8,7 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,21 +24,24 @@ public class ChallengeBookmarkService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
+    private final ChallengePreferenceCache challengePreferenceCache;
 
-    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache) {
+    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
+        this.challengePreferenceCache = challengePreferenceCache;
     }
 
     @Transactional
     public ChallengeResponse.Bookmark addBookmark(User user, Long challengeId) {
-        validateExistChallenge(challengeId);
+        Challenge challenge = getChallenge(challengeId);
 
         int count = challengeBookmarkCache.getBookmarkCount(challengeId);
 
         if (!challengeBookmarkCache.isBookmarked(user.getId(), challengeId)) {
             challengeBookmarkCache.addBookmark(user.getId(), challengeId);
+            challengePreferenceCache.addPreference(user.getId(), challenge);
             count++;
         }
 
@@ -98,5 +102,10 @@ public class ChallengeBookmarkService {
         if (!challengeRepository.existsById(challengeId)) {
             throw new NotFoundChallengeException();
         }
+    }
+
+    private Challenge getChallenge(Long challengeId) {
+        return challengeRepository.findById(challengeId)
+                .orElseThrow(NotFoundChallengeException::new);
     }
 }

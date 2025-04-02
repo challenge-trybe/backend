@@ -11,6 +11,7 @@ import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,10 +22,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChallengeParticipationService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeRepository challengeRepository;
+    private final ChallengePreferenceCache challengePreferenceCache;
 
-    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository) {
+    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository, ChallengePreferenceCache challengePreferenceCache) {
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeRepository = challengeRepository;
+        this.challengePreferenceCache = challengePreferenceCache;
     }
 
     private static final int MAX_PENDING_PARTICIPATIONS = 20;
@@ -40,6 +43,7 @@ public class ChallengeParticipationService {
 
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
+        challengePreferenceCache.addPreference(user.getId(), challenge);
 
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
