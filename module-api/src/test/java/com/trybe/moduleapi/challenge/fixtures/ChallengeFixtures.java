@@ -196,6 +196,8 @@ public class ChallengeFixtures {
     public static final PageResponse<ChallengeResponse.Summary> 챌린지_페이지_응답 = new PageResponse<>(챌린지_페이지.map(ChallengeResponse.Summary::from));
     public static final PageResponse<ChallengeResponse.Preview> 챌린지_미리보기_페이지_응답 = new PageResponse<>(챌린지_페이지.map(challenge -> 챌린지_미리보기_응답_생성(challenge, 참여자_수, 북마크_수, 북마크_여부_참)));
 
+    public static final List<ChallengeResponse.Preview> 챌린지_추천_목록_응답 = List.of(챌린지_미리보기_로그인_응답, 챌린지_미리보기_로그인_응답, 챌린지_미리보기_로그인_응답);
+
     private static ChallengeResponse.Detail 챌린지_상세_응답_생성(Challenge challenge, int participantCount, int bookmarkCount, boolean Bookmarked) {
         return new ChallengeResponse.Detail(
                 챌린지_ID,

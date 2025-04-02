@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.challenge.service;
 
+import com.trybe.moduleapi.challenge.client.ChallengeRecommendationClient;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
@@ -16,6 +17,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
+import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures.*;
@@ -47,6 +50,9 @@ class ChallengeServiceTest {
 
     @Mock
     private ChallengePreferenceCache challengePreferenceCache;
+
+    @Mock
+    private ChallengeRecommendationClient challengeRecommendationClient;
 
     @Test
     @DisplayName("챌린지 생성 시 저장된 챌린지 정보를 반환한다.")
@@ -155,6 +161,24 @@ class ChallengeServiceTest {
 
         /* then */
         assertEquals(챌린지_페이지_응답.totalElements(), response.totalElements());
+    }
+
+    @Test
+    @DisplayName("챌린지 추천 목록 조회 시 추천된 챌린지 정보를 반환한다.")
+    void 챌린지_추천_목록_조회_시_추천된_챌린지_정보를_반환한다 () {
+        /* given */
+        User user = spy(UserFixtures.회원);
+        Long userId = UserFixtures.회원_PK;
+
+        when(user.getId()).thenReturn(userId);
+        when(challengeRecommendationClient.getChallengeRecommendations(any()))
+                .thenReturn(챌린지_추천_목록_응답);
+
+        /* when */
+        List<ChallengeResponse.Preview> response = challengeService.getRecommendations(user);
+
+        /* then */
+        assertEquals(챌린지_추천_목록_응답.size(), response.size());
     }
 
     @Test

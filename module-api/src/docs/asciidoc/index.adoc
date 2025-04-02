@@ -249,6 +249,16 @@ include::{snippets}/challenge-controller-test/search/invalid/bad-request/http-re
 include::{snippets}/challenge-controller-test/search/invalid/bad-request/http-response.adoc[]
 include::{snippets}/challenge-controller-test/search/invalid/bad-request/response-fields.adoc[]
 
+=== 챌린지 추천 목록 조회
+유저 선호도에 따른 추천 챌린지 목록을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-controller-test/recommendations/http-request.adoc[]
+
+- 응답
+include::{snippets}/challenge-controller-test/recommendations/http-response.adoc[]
+include::{snippets}/challenge-controller-test/recommendations/response-fields.adoc[]
+
 ---
 
 === 챌린지 내용 수정
