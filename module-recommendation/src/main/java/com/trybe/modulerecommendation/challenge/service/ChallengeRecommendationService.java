@@ -7,6 +7,8 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -31,14 +33,9 @@ public class ChallengeRecommendationService {
         LinkedHashSet<Challenge> challengeSet = new LinkedHashSet<>(recommendations);
 
         int remaining = MIN_LIMIT - challengeSet.size();
-        Iterator<Challenge> topChallenges = getMostBookmarkedChallenges(remaining).iterator();
-        Iterator<Challenge> recentChallenges = getRecentChallenges(remaining).iterator();
 
-        while(challengeSet.size() < MIN_LIMIT) {
-            if (topChallenges.hasNext()) challengeSet.add(topChallenges.next());
-            if (challengeSet.size() < MIN_LIMIT && recentChallenges.hasNext()) challengeSet.add(recentChallenges.next());
-            if (!topChallenges.hasNext() && !recentChallenges.hasNext()) break;
-        }
+        challengeSet.addAll(getMostBookmarkedChallenges(remaining));
+        challengeSet.addAll(getRecentChallenges(remaining));
 
         List<Challenge> challenges = new ArrayList<>(challengeSet);
         if (challenges.size() > MAX_LIMIT) {
@@ -60,7 +57,8 @@ public class ChallengeRecommendationService {
     }
 
     private List<Challenge> getRecentChallenges(int count) {
-        return challengeRepository.findTopByOrderByCreatedAtDesc(count);
+        Pageable pageable = PageRequest.of(0, count);
+        return challengeRepository.findAllTopByOrderByCreatedAtDesc(pageable);
     }
 
     private ChallengeResponse.Preview createPreview(Long userId, Challenge challenge) {

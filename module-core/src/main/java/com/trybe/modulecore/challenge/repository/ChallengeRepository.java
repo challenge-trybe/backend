@@ -18,5 +18,5 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long>, Cha
     List<Challenge> findAllByStatusAndStartDate(ChallengeStatus status, LocalDate startDate);
     List<Challenge> findAllByStatusAndEndDate(ChallengeStatus status, LocalDate endDate);
     List<Challenge> findAllByIdIn(Set<Long> id);
-    List<Challenge> findTopByOrderByCreatedAtDesc(int count);
+    List<Challenge> findAllTopByOrderByCreatedAtDesc(Pageable pageable);
 }
