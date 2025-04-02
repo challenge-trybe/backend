@@ -1,6 +1,5 @@
 package com.trybe.moduleapi.challenge.service;
 
-import com.trybe.moduleapi.challenge.client.ChallengeRecommendationClient;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
@@ -52,7 +51,7 @@ class ChallengeServiceTest {
     private ChallengePreferenceCache challengePreferenceCache;
 
     @Mock
-    private ChallengeRecommendationClient challengeRecommendationClient;
+    private ChallengeRecommendationClientService challengeRecommendationClientService;
 
     @Test
     @DisplayName("챌린지 생성 시 저장된 챌린지 정보를 반환한다.")
@@ -171,7 +170,7 @@ class ChallengeServiceTest {
         Long userId = UserFixtures.회원_PK;
 
         when(user.getId()).thenReturn(userId);
-        when(challengeRecommendationClient.getChallengeRecommendations(any()))
+        when(challengeRecommendationClientService.getChallengeRecommendations(any()))
                 .thenReturn(챌린지_추천_목록_응답);
 
         /* when */
