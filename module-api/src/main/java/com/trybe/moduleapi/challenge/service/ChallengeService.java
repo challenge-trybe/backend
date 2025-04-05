@@ -5,6 +5,7 @@ import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
+import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
@@ -24,11 +25,13 @@ public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkService challengeBookmarkService;
+    private final ChatService chatService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService, ChatService chatService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkService = challengeBookmarkService;
+        this.chatService = chatService;
     }
 
     @Transactional
@@ -40,6 +43,8 @@ public class ChallengeService {
         challengeParticipationRepository.save(participation);
 
         ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
+
+        chatService.create(savedChallenge);
         return ChallengeResponse.Detail.from(savedChallenge, 1, bookmark);
     }
 
@@ -91,6 +96,7 @@ public class ChallengeService {
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
         challengeBookmarkService.removeBookmarksByChallenge(id);
+        chatService.delete(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
         challengeRepository.delete(challenge);
     }
