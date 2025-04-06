@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class ChatResponse {
     public record Message(
             Long id,
-            UserResponse.Summary sendUser,
+            UserResponse.Summary sender,
             String message,
             MessageType messageType,
             LocalDateTime createdAt
@@ -20,14 +20,6 @@ public class ChatResponse {
                 summary = UserResponse.Summary.from(message.getUser());
             }
             return new Message(message.getId(), summary, message.getMessage(), message.getMessageType(), message.getCreatedAt());
-        }
-    }
-
-    public record SystemMessage(
-            String message
-    ){
-        public static SystemMessage from(ChatMessage message){
-            return new SystemMessage(message.getMessage());
         }
     }
 }

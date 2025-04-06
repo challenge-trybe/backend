@@ -71,7 +71,7 @@ public class ChatService {
         String message = createEnterMessage(user.getUserId());
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.ENTER);
         chatMessageRepository.save(chatMessage);
-        ChatResponse.SystemMessage enterMessage = ChatResponse.SystemMessage.from(chatMessage);
+        ChatResponse.Message enterMessage = ChatResponse.Message.from(chatMessage);
         messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, enterMessage);
     }
 
@@ -80,7 +80,7 @@ public class ChatService {
         String message = createExitMessage(user.getUserId());
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.EXIT);
         chatMessageRepository.save(chatMessage);
-        ChatResponse.SystemMessage enterMessage = ChatResponse.SystemMessage.from(chatMessage);
+        ChatResponse.Message enterMessage = ChatResponse.Message.from(chatMessage);
         messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, enterMessage);
     }
 
