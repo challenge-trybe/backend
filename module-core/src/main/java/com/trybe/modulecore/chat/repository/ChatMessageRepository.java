@@ -20,5 +20,5 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     @Query("SELECT MAX(m.id) FROM ChatMessage m WHERE m.chatRoom.id = :chatRoomId")
     Long findLatestIdByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
-    ChatMessage findByChatRoomIdAndUserIdAndMessageType(Long userId, Long chatRommId, MessageType messageType);
+    ChatMessage findByChatRoomIdAndUserIdAndMessageType(Long userId, Long chatRoomId, MessageType messageType);
 }
