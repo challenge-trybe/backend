@@ -36,6 +36,7 @@ public class ChatService {
 
     public static final String CHAT_DESTINATION_PREFIX = "/sub/chat/challenges/";
     public static final String ENTER_MESSAGE = "[ %s ] 님이 입장하였습니다.";
+    public static final String EXIT_MESSAGE = "[ %s ] 님이 퇴장하였습니다.";
     public static final String CHALLENGE_START_MESSAGE = "[ %s ] 챌린지가 시작되었습니다.";
 
     public void create(Challenge challenge){
@@ -69,6 +70,15 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
         String message = createEnterMessage(user.getUserId());
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.ENTER);
+        chatMessageRepository.save(chatMessage);
+        ChatResponse.SystemMessage enterMessage = ChatResponse.SystemMessage.from(chatMessage);
+        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, enterMessage);
+    }
+
+    public void exit(User user, Long challengeId){
+        ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
+        String message = createExitMessage(user.getUserId());
+        ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.EXIT);
         chatMessageRepository.save(chatMessage);
         ChatResponse.SystemMessage enterMessage = ChatResponse.SystemMessage.from(chatMessage);
         messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, enterMessage);
@@ -121,6 +131,10 @@ public class ChatService {
 
     private String createEnterMessage(String userId) {
         return String.format(ENTER_MESSAGE, userId);
+    }
+
+    private String createExitMessage(String userId) {
+        return String.format(EXIT_MESSAGE, userId);
     }
 
     private String createChallengeStartMessage(String challengeTitle) {

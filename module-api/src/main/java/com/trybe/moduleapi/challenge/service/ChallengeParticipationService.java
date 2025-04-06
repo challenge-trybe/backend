@@ -90,6 +90,7 @@ public class ChallengeParticipationService {
         validateRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
 
         participation.updateStatus(ParticipationStatus.DISABLED);
+        chatService.exit(user, challengeId);
     }
 
     @Transactional
