@@ -37,13 +37,15 @@ public class ChatService {
     public static final String CHAT_DESTINATION_PREFIX = "/sub/chat/challenges/";
     public static final String ENTER_MESSAGE = "[ %s ] 님이 입장하였습니다.";
     public static final String EXIT_MESSAGE = "[ %s ] 님이 퇴장하였습니다.";
+    public static final String CHALLENGE_INIT_MESSAGE = "[ %s ] 챌린지 단체 채팅방입니다";
     public static final String CHALLENGE_START_MESSAGE = "[ %s ] 챌린지가 시작되었습니다.";
+    public static final String CHALLENGE_CLOSED_MESSAGE = "[ %s ] 챌린지가 종료되었습니다.";
 
     public void create(Challenge challenge){
         ChatRoom chatRoom = new ChatRoom(challenge);
         chatRoomRepository.save(chatRoom);
-        String challengeStartMessage = createChallengeStartMessage(challenge.getTitle());
-        ChatMessage chatMessage = createChatMessage(chatRoom, null, challengeStartMessage, MessageType.SYSTEM);
+        String challengeInitMessage = createChallengeInitMessage(challenge.getTitle());
+        ChatMessage chatMessage = createChatMessage(chatRoom, null, challengeInitMessage, MessageType.SYSTEM);
         chatMessageRepository.save(chatMessage);
     }
 
@@ -137,7 +139,23 @@ public class ChatService {
         return String.format(EXIT_MESSAGE, userId);
     }
 
-    private String createChallengeStartMessage(String challengeTitle) {
-        return String.format(CHALLENGE_START_MESSAGE, challengeTitle);
+    private String createChallengeInitMessage(String challengeTitle) {
+        return String.format(CHALLENGE_INIT_MESSAGE, challengeTitle);
+    }
+
+    public void challengeStartMessage(Challenge challenge) {
+        String message = String.format(CHALLENGE_START_MESSAGE, challenge.getTitle());
+        ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challenge.getId());
+        ChatMessage chatMessage = createChatMessage(chatRoom, null, message, MessageType.SYSTEM);
+        ChatResponse.Message startMessage = ChatResponse.Message.from(chatMessage);
+        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challenge.getId(), startMessage);
+    }
+
+    public void challengeClosedMessage(Challenge challenge) {
+        String message = String.format(CHALLENGE_CLOSED_MESSAGE, challenge.getTitle());
+        ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challenge.getId());
+        ChatMessage chatMessage = createChatMessage(chatRoom, null, message, MessageType.SYSTEM);
+        ChatResponse.Message closedMessage = ChatResponse.Message.from(chatMessage);
+        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challenge.getId(), closedMessage);
     }
 }
