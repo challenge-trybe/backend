@@ -4,13 +4,12 @@ import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.chat.dto.ChatRequest;
 import com.trybe.moduleapi.chat.dto.ChatResponse;
 import com.trybe.moduleapi.chat.service.ChatService;
+import com.trybe.moduleapi.common.dto.CursorResponse;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/chats")
@@ -30,7 +29,7 @@ public class ChatController {
     }
 
     @GetMapping("/{challengeId}")
-    public List<ChatResponse.Message> findAll(
+    public CursorResponse<ChatResponse.Message> findAll(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("challengeId") Long challengeId,
             @RequestParam(value = "cursor", required = false) Long cursorId

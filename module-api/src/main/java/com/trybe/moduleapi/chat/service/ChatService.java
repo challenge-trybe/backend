@@ -4,6 +4,7 @@ import com.trybe.moduleapi.challenge.exception.participation.NotFoundChallengePa
 import com.trybe.moduleapi.chat.dto.ChatRequest;
 import com.trybe.moduleapi.chat.dto.ChatResponse;
 import com.trybe.moduleapi.chat.exception.NotFoundChatRoomException;
+import com.trybe.moduleapi.common.dto.CursorResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.chat.entity.ChatMessage;
@@ -12,6 +13,7 @@ import com.trybe.modulecore.chat.enums.MessageType;
 import com.trybe.modulecore.chat.repository.ChatMessageRepository;
 import com.trybe.modulecore.chat.repository.ChatRoomRepository;
 import com.trybe.modulecore.user.entity.User;
+import org.springframework.data.domain.Limit;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +43,8 @@ public class ChatService {
     public static final String CHALLENGE_START_MESSAGE = "[ %s ] 챌린지가 시작되었습니다.";
     public static final String CHALLENGE_CLOSED_MESSAGE = "[ %s ] 챌린지가 종료되었습니다.";
 
+    private static final int MESSAGE_LIMIT_SIZE = 20;
+
     public void create(Challenge challenge){
         ChatRoom chatRoom = new ChatRoom(challenge);
         chatRoomRepository.save(chatRoom);
@@ -50,7 +54,7 @@ public class ChatService {
     }
 
     @Transactional(readOnly = true)
-    public List<ChatResponse.Message> findMessages(User user, Long challengeId, Long cursorId){
+    public CursorResponse<ChatResponse.Message> findMessages(User user, Long challengeId, Long cursorId){
         validateExistsChatRoom(challengeId);
         validateExistsUserInChatRoom(challengeId, user, "챌린지에 참여한 회원이 아닙니다.");
 
@@ -61,11 +65,17 @@ public class ChatService {
         cursorId = (cursorId == null) ? latestId + 1 : cursorId;
         LocalDateTime enterTime = (enterMessage != null) ? enterMessage.getCreatedAt() : LocalDateTime.of(1970, 1, 1, 0, 0);
 
-        List<ChatMessage> messages = chatMessageRepository.findMessagesByCursorId(challengeId, cursorId, enterTime);
+        List<ChatMessage> messages = chatMessageRepository.findMessagesByCursorId(challengeId, cursorId, enterTime, Limit.of(MESSAGE_LIMIT_SIZE+1));
+
+        boolean hasNext = messages.size() > MESSAGE_LIMIT_SIZE;
+        messages = hasNext ? messages.subList(0, MESSAGE_LIMIT_SIZE) : messages;
+
+        Long nextCursor = hasNext ?  messages.get(messages.size() - 1).getId() : null;
+
         List<ChatResponse.Message> messagesResponse = messages.stream()
                                                               .map(ChatResponse.Message::from)
                                                               .collect(Collectors.toList());
-        return messagesResponse;
+        return CursorResponse.of(messagesResponse, nextCursor, messagesResponse.size(), hasNext);
     }
 
     public void enter(User user, Long challengeId){
