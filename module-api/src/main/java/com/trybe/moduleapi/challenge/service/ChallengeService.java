@@ -41,10 +41,9 @@ public class ChallengeService {
 
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
         challengeParticipationRepository.save(participation);
+        chatService.create(savedChallenge);
 
         ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
-
-        chatService.create(savedChallenge);
         return ChallengeResponse.Detail.from(savedChallenge, 1, bookmark);
     }
 
@@ -96,8 +95,8 @@ public class ChallengeService {
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
         challengeBookmarkService.removeBookmarksByChallenge(id);
-        chatService.delete(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
+        chatService.delete(id);
         challengeRepository.delete(challenge);
     }
 
