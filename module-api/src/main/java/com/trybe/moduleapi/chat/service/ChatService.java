@@ -91,11 +91,11 @@ public class ChatService {
     }
 
     @Transactional
-    public void sendMessage(Long challengeId, User sendUser, ChatRequest.Send request){
-        validateExistsUserInChatRoom(challengeId, sendUser, "챌린지에 참여한 회원만 메시지를 보낼 수 있습니다.");
+    public void sendMessage(Long challengeId, User sender, ChatRequest.Send request){
+        validateExistsUserInChatRoom(challengeId, sender, "챌린지에 참여한 회원만 메시지를 보낼 수 있습니다.");
 
         ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
-        ChatMessage chatMessage = request.toEntity(chatRoom, sendUser, request.message());
+        ChatMessage chatMessage = request.toEntity(chatRoom, sender);
         chatMessageRepository.save(chatMessage);
         ChatResponse.Message message = ChatResponse.Message.from(chatMessage);
 
