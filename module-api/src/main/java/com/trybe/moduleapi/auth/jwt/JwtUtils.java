@@ -1,7 +1,7 @@
 package com.trybe.moduleapi.auth.jwt;
 
-import com.trybe.modulecore.token.repository.RefreshTokenRepository;
 import com.trybe.modulecore.token.entity.RefreshToken;
+import com.trybe.modulecore.token.repository.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -85,5 +85,12 @@ public class JwtUtils {
                    .build()
                    .parseClaimsJws(token)
                    .getBody();
+    }
+
+    public String extractToken(String authorization){
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            return authorization.split(" ")[1];
+        }
+        return null;
     }
 }

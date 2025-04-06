@@ -32,7 +32,8 @@ public class WebSocketAuthenticationHandler implements ChannelInterceptor {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         if (accessor.getCommand() == StompCommand.CONNECT) {
-            String token = extractToken(accessor);
+            String authorization = accessor.getFirstNativeHeader("Authorization");
+            String token = jwtUtils.extractToken(authorization);
             if (token == null || !jwtUtils.validateToken(token)) {
                 throw new WebSocketAccessDeniedException();
             }
@@ -41,13 +42,5 @@ public class WebSocketAuthenticationHandler implements ChannelInterceptor {
             accessor.setUser(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
         }
         return message;
-    }
-
-    private String extractToken(StompHeaderAccessor accessor){
-        String authorization = accessor.getFirstNativeHeader("Authorization");
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            return authorization.split(" ")[1];
-        }
-        return null;
     }
 }
