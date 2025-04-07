@@ -92,8 +92,8 @@ public class ChatService {
         String message = createExitMessage(user.getNickname());
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.EXIT);
         chatMessageRepository.save(chatMessage);
-        ChatResponse.Message enterMessage = ChatResponse.Message.from(chatMessage);
-        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, enterMessage);
+        ChatResponse.Message exitMessage = ChatResponse.Message.from(chatMessage);
+        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, exitMessage);
     }
 
     public void delete(Long challengeId) {
