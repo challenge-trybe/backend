@@ -4,12 +4,12 @@ Authorization: {{accessToken}}
 Content-Type: application/json
 
 {
-  "title": "키워드1 키워드2",
+  "title": "클린코드 도서 읽기",
   "description": "클린코드 책을 일주일에 한 챕터씩 읽은 후 리뷰하기",
   "startDate": "2025-04-07",
   "endDate": "2025-06-01",
   "capacity": 5,
-  "category": "SAVING",
+  "category": "STUDY",
   "proofWay": "읽은 내용을 정리해서 공유",
   "proofCount": 17
 }
