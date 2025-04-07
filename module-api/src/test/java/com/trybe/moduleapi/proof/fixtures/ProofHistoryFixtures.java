@@ -28,7 +28,7 @@ public class ProofHistoryFixtures {
     public static final ProofHistoryStatus 인증_기록_성공_상태 = ProofHistoryStatus.PASSED;
     public static final ProofHistoryStatus 인증_기록_실패_상태 = ProofHistoryStatus.FAILED;
 
-    public static final LocalDateTime 인증_기록_생성_시간 = LocalDateTime.now();
+    public static final LocalDateTime 인증_기록_생성_시간 = LocalDateTime.now().withNano(0);
 
     /* Request DTO */
     public static final ProofHistoryRequest.Create 인증_기록_생성_요청 = new ProofHistoryRequest.Create(인증_기록_내용);
