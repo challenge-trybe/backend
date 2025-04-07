@@ -46,12 +46,21 @@ public class ChatService {
 
     private static final int MESSAGE_LIMIT_SIZE = 20;
 
-    public void create(Challenge challenge){
-        ChatRoom chatRoom = new ChatRoom(challenge);
-        chatRoomRepository.save(chatRoom);
-        String challengeInitMessage = createChallengeInitMessage(challenge.getTitle());
-        ChatMessage chatMessage = createChatMessage(chatRoom, null, challengeInitMessage, MessageType.SYSTEM);
+    @Transactional
+    public void sendMessage(Long challengeId, User sender, ChatRequest.Send request){
+        validateExistsUserInChatRoom(challengeId, sender, "챌린지에 참여한 회원만 메시지를 보낼 수 있습니다.");
+
+        ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
+        ChatMessage chatMessage = request.toEntity(chatRoom, sender);
         chatMessageRepository.save(chatMessage);
+        ChatResponse.Message message = ChatResponse.Message.from(chatMessage);
+
+        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, message);
+
+        /**
+         * TODO
+         * 해당 채팅방 유저들에게 채팅 도착 SSE 알림 전송
+         */
     }
 
     @Transactional(readOnly = true)
@@ -79,6 +88,14 @@ public class ChatService {
         return CursorResponse.of(messagesResponse, nextCursor, messagesResponse.size(), hasNext);
     }
 
+    public void create(Challenge challenge){
+        ChatRoom chatRoom = new ChatRoom(challenge);
+        chatRoomRepository.save(chatRoom);
+        String challengeInitMessage = createChallengeInitMessage(challenge.getTitle());
+        ChatMessage chatMessage = createChatMessage(chatRoom, null, challengeInitMessage, MessageType.SYSTEM);
+        chatMessageRepository.save(chatMessage);
+    }
+
     public void enter(User user, Long challengeId){
         ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
         String message = createEnterMessage(user.getNickname());
@@ -101,23 +118,6 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
         chatMessageRepository.deleteByChatRoomId(chatRoom.getId());
         chatRoomRepository.deleteById(chatRoom.getId());
-    }
-
-    @Transactional
-    public void sendMessage(Long challengeId, User sender, ChatRequest.Send request){
-        validateExistsUserInChatRoom(challengeId, sender, "챌린지에 참여한 회원만 메시지를 보낼 수 있습니다.");
-
-        ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
-        ChatMessage chatMessage = request.toEntity(chatRoom, sender);
-        chatMessageRepository.save(chatMessage);
-        ChatResponse.Message message = ChatResponse.Message.from(chatMessage);
-
-        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, message);
-
-        /**
-         * TODO
-         * 해당 채팅방 유저들에게 채팅 도착 SSE 알림 전송
-         */
     }
 
     private ChatMessage createChatMessage(ChatRoom chatRoom, User user, String message, MessageType messageType){
