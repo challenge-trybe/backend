@@ -75,6 +75,7 @@ public class ChallengeService {
         return new PageResponse<>(challengeSummaries);
     }
 
+    @Transactional(readOnly = true)
     public List<ChallengeResponse.Preview> getRecommendations(User user) {
         List<ChallengeCategory> categories = challengePreferenceCache.getPreferenceCategories(user.getId(), RECOMMENDATION_CATEGORY_COUNT);
         List<String> keywords = challengePreferenceCache.getPreferenceKeywords(user.getId(), RECOMMENDATION_KEYWORD_COUNT);
