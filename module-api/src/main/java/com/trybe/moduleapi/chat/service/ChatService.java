@@ -80,7 +80,7 @@ public class ChatService {
 
     public void enter(User user, Long challengeId){
         ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
-        String message = createEnterMessage(user.getUserId());
+        String message = createEnterMessage(user.getNickname());
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.ENTER);
         chatMessageRepository.save(chatMessage);
         ChatResponse.Message enterMessage = ChatResponse.Message.from(chatMessage);
@@ -89,7 +89,7 @@ public class ChatService {
 
     public void exit(User user, Long challengeId){
         ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challengeId);
-        String message = createExitMessage(user.getUserId());
+        String message = createExitMessage(user.getNickname());
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.EXIT);
         chatMessageRepository.save(chatMessage);
         ChatResponse.Message enterMessage = ChatResponse.Message.from(chatMessage);
@@ -141,12 +141,12 @@ public class ChatService {
         }
     }
 
-    private String createEnterMessage(String userId) {
-        return String.format(ENTER_MESSAGE, userId);
+    private String createEnterMessage(String nickname) {
+        return String.format(ENTER_MESSAGE, nickname);
     }
 
-    private String createExitMessage(String userId) {
-        return String.format(EXIT_MESSAGE, userId);
+    private String createExitMessage(String nickname) {
+        return String.format(EXIT_MESSAGE, nickname);
     }
 
     private String createChallengeInitMessage(String challengeTitle) {
