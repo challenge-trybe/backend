@@ -31,6 +31,8 @@ public class ChallengeParticipationFixtures {
 
     public static final int 챌린지_참여_대기_최대_수 = 20;
 
+    public static final LocalDateTime 챌린지_참여_신청_일시 = LocalDateTime.now().withNano(0);
+
     /* Request DTO */
     public static ChallengeParticipationRequest.Confirm 챌린지_참여_처리_요청 = new ChallengeParticipationRequest.Confirm(챌린지_참여_수락_상태);
     public static ChallengeParticipationRequest.Confirm 잘못된_챌린지_참여_처리_요청 = new ChallengeParticipationRequest.Confirm(챌린지_참여_탈퇴_상태);
@@ -61,19 +63,19 @@ public class ChallengeParticipationFixtures {
 
     /* Response DTO */
     public static ChallengeParticipationResponse.Detail 챌린지_참여_상세_응답() {
-        return new ChallengeParticipationResponse.Detail(ChallengeFixtures.챌린지_요약_응답, 챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_멤버_역할, 챌린지_참여_대기_상태, LocalDateTime.now());
+        return new ChallengeParticipationResponse.Detail(ChallengeFixtures.챌린지_요약_응답, 챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_멤버_역할, 챌린지_참여_대기_상태, 챌린지_참여_신청_일시);
     }
 
     public static ChallengeParticipationResponse.Detail 챌린지_수락된_참여_상세_응답() {
-        return new ChallengeParticipationResponse.Detail(ChallengeFixtures.챌린지_요약_응답, 챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_멤버_역할, 챌린지_참여_수락_상태, LocalDateTime.now());
+        return new ChallengeParticipationResponse.Detail(ChallengeFixtures.챌린지_요약_응답, 챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_멤버_역할, 챌린지_참여_수락_상태, 챌린지_참여_신청_일시);
     }
 
     public static ChallengeParticipationResponse.Summary 챌린지_참여_요약_리더() {
-        return new ChallengeParticipationResponse.Summary(챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_리더_역할, 챌린지_참여_수락_상태, LocalDateTime.now());
+        return new ChallengeParticipationResponse.Summary(챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_리더_역할, 챌린지_참여_수락_상태, 챌린지_참여_신청_일시);
     }
 
     public static ChallengeParticipationResponse.Summary 챌린지_참여_요약_멤버() {
-        return new ChallengeParticipationResponse.Summary(챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_멤버_역할, 챌린지_참여_수락_상태, LocalDateTime.now());
+        return new ChallengeParticipationResponse.Summary(챌린지_참여_ID, UserFixtures.요약_회원_응답, 챌린지_멤버_역할, 챌린지_참여_수락_상태, 챌린지_참여_신청_일시);
     }
 
     public static PageResponse<ChallengeParticipationResponse.Detail> 나의_참여_중인_챌린지_목록_페이지_응답 = new PageResponse<>(나의_참여_중인_챌린지_목록_페이지.map(ChallengeParticipationResponse.Detail::from));
