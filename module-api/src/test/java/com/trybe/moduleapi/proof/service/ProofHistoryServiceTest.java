@@ -59,7 +59,7 @@ public class ProofHistoryServiceTest {
                 .thenReturn(Optional.of(오늘_인증));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(any(), any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(true);
-        when(proofHistoryRepository.existsByProofAndUser(any(Proof.class), any(User.class)))
+        when(proofHistoryRepository.existsByProofIdAndUserId(any(), any()))
                 .thenReturn(false);
         when(proofHistoryRepository.save(any(ProofHistory.class)))
                 .thenReturn(proofHistory);
@@ -134,7 +134,7 @@ public class ProofHistoryServiceTest {
                 .thenReturn(Optional.of(오늘_인증));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(any(), any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(true);
-        when(proofHistoryRepository.existsByProofAndUser(any(Proof.class), any(User.class)))
+        when(proofHistoryRepository.existsByProofIdAndUserId(any(), any()))
                 .thenReturn(true);
 
         /* when */
