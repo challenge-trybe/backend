@@ -1,12 +1,13 @@
 package com.trybe.modulerecommendation.challenge.service;
 
-import com.trybe.moduleapi.challenge.dto.ChallengeRecommendationRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
+import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,18 +19,25 @@ public class ChallengeRecommendationService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
+    private final ChallengePreferenceCache challengePreferenceCache;
 
-    public ChallengeRecommendationService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache) {
+    public ChallengeRecommendationService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
+        this.challengePreferenceCache = challengePreferenceCache;
     }
 
     private static final int MIN_LIMIT = 20;
     private static final int MAX_LIMIT = 40;
+    private static final int RECOMMENDATION_CATEGORY_COUNT = 3;
+    private static final int RECOMMENDATION_KEYWORD_COUNT = 10;
 
-    public List<ChallengeResponse.Preview> getChallengeRecommendations(ChallengeRecommendationRequest request) {
-        List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(request.categories(), request.keywords(), MAX_LIMIT);
+    public List<ChallengeResponse.Preview> getChallengeRecommendations(Long userId) {
+        List<ChallengeCategory> categories = challengePreferenceCache.getPreferenceCategories(userId, RECOMMENDATION_CATEGORY_COUNT);
+        List<String> keywords = challengePreferenceCache.getPreferenceKeywords(userId, RECOMMENDATION_KEYWORD_COUNT);
+
+        List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(categories, keywords, MAX_LIMIT);
         LinkedHashSet<Challenge> challengeSet = new LinkedHashSet<>(recommendations);
 
         challengeSet.addAll(getMostBookmarkedChallenges(MIN_LIMIT));
@@ -43,7 +51,7 @@ public class ChallengeRecommendationService {
         Collections.shuffle(challenges);
 
         List<ChallengeResponse.Preview> challengePreviews = challenges.stream()
-                .map(challenge -> createPreview(request.userId(), challenge))
+                .map(challenge -> createPreview(userId, challenge))
                 .toList();
 
         return challengePreviews;

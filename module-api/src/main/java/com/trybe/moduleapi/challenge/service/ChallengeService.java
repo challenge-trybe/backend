@@ -1,7 +1,5 @@
 package com.trybe.moduleapi.challenge.service;
 
-import com.trybe.moduleapi.challenge.client.ChallengeRecommendationClient;
-import com.trybe.moduleapi.challenge.dto.ChallengeRecommendationRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
@@ -10,7 +8,6 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRol
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
-import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
@@ -19,7 +16,6 @@ import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
-import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,9 +38,6 @@ public class ChallengeService {
         this.challengePreferenceCache = challengePreferenceCache;
         this.challengeRecommendationClientService = challengeRecommendationClientService;
     }
-
-    private static final int RECOMMENDATION_CATEGORY_COUNT = 3;
-    private static final int RECOMMENDATION_KEYWORD_COUNT = 10;
 
     @Transactional
     public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
@@ -77,11 +70,7 @@ public class ChallengeService {
 
     @Transactional(readOnly = true)
     public List<ChallengeResponse.Preview> getRecommendations(User user) {
-        List<ChallengeCategory> categories = challengePreferenceCache.getPreferenceCategories(user.getId(), RECOMMENDATION_CATEGORY_COUNT);
-        List<String> keywords = challengePreferenceCache.getPreferenceKeywords(user.getId(), RECOMMENDATION_KEYWORD_COUNT);
-
-        ChallengeRecommendationRequest request = new ChallengeRecommendationRequest(user.getId(), categories, keywords);
-        return challengeRecommendationClientService.getChallengeRecommendations(request);
+        return challengeRecommendationClientService.getChallengeRecommendations(user.getId());
     }
 
     @Transactional

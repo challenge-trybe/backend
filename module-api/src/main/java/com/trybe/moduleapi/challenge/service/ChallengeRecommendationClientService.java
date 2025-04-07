@@ -1,7 +1,6 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.client.ChallengeRecommendationClient;
-import com.trybe.moduleapi.challenge.dto.ChallengeRecommendationRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
@@ -28,16 +27,16 @@ public class ChallengeRecommendationClientService {
     private static final int MIN_LIMIT = 20;
 
     @CircuitBreaker(name = "challengeRecommendation", fallbackMethod = "fallbackGetChallengeRecommendations")
-    public List<ChallengeResponse.Preview> getChallengeRecommendations(ChallengeRecommendationRequest request) {
-        return challengeRecommendationClient.getChallengeRecommendations(request);
+    public List<ChallengeResponse.Preview> getChallengeRecommendations(Long userId) {
+        return challengeRecommendationClient.getChallengeRecommendations(userId);
     }
 
-    public List<ChallengeResponse.Preview> fallbackGetChallengeRecommendations(ChallengeRecommendationRequest request, Throwable throwable) {
+    public List<ChallengeResponse.Preview> fallbackGetChallengeRecommendations(Long userId, Throwable throwable) {
         List<Challenge> recommendations = getMostBookmarkedChallenges(MIN_LIMIT);
 
         Collections.shuffle(recommendations);
         return recommendations.stream()
-                .map(challenge -> createPreview(request.userId(), challenge))
+                .map(challenge -> createPreview(userId, challenge))
                 .toList();
     }
 
