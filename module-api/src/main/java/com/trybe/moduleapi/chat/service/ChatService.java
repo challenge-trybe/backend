@@ -6,6 +6,7 @@ import com.trybe.moduleapi.chat.dto.ChatResponse;
 import com.trybe.moduleapi.chat.exception.NotFoundChatRoomException;
 import com.trybe.moduleapi.common.dto.CursorResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
+import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.chat.entity.ChatMessage;
 import com.trybe.modulecore.chat.entity.ChatRoom;
@@ -136,7 +137,7 @@ public class ChatService {
 
     private void validateExistsUserInChatRoom(Long challengeId, User user, String message){
         Long userId = user.getId();
-        if (!challengeParticipationRepository.existsByUserIdAndChallengeId(userId, challengeId)) {
+        if (!challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(userId, challengeId, ParticipationStatus.ACCEPTED)) {
             throw new NotFoundChallengeParticipationException(message);
         }
     }
