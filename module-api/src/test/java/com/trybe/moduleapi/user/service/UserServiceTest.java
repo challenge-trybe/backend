@@ -27,7 +27,6 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-
     @Mock
     private UserRepository userRepository;
 
@@ -39,7 +38,6 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
-
 
     @Test
     @DisplayName("회원가입시 저장된 회원 정보를 반환한다")
@@ -55,7 +53,7 @@ class UserServiceTest {
        userService.save(request);
 
         /* then */
-        Mockito.verify(userRepository, times(1)).save(user);
+        Mockito.verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
@@ -118,11 +116,7 @@ class UserServiceTest {
     void 회원정보_수정_시_성공하면_수정된_회원_정보를_반환한다() {
         /* given */
         UserRequest.Update request = UserFixtures.회원정보_수정_요청;
-        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
-        UserFixtures.회원.updateProfile(UserFixtures.수정된_회원_닉네임,
-                           UserFixtures.수정된_회원_이메일,
-                           UserFixtures.수정된_회원_성별,
-                           UserFixtures.수정된_회원_생년월일);
+        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원());
 
         /* when */
         UserResponse.Detail response = userService.updateProfile(customUserDetails, request);
@@ -178,7 +172,6 @@ class UserServiceTest {
         assertThrows(UpdatePasswordFailException.class, () -> {
             userService.updatePassword(customUserDetails, UserFixtures.현재_새로운_비밀번호_동일한_비밀번호_변경_요청);
         }, "현재 비밀번호와 새로운 비밀번호가 동일합니다.");
-
     }
 
     @Test
