@@ -41,13 +41,10 @@ public class UserFixtures {
 
     public static final String 권한 = Role.ROLE_USER.getDescription();
 
-    public static User 회원 = User.builder()
-                                .userId(회원_아이디)
-                                .email(회원_이메일)
-                                .nickname(회원_닉네임)
-                                .gender(회원_성별)
-                                .birth(회원_생년월일)
-                                .build();
+    public static User 회원 = 회원_생성(회원_아이디, 회원_이메일);
+    public static User 회원() {
+        return 회원_생성(회원_아이디, 회원_이메일);
+    }
 
     public static User 회원_생성(String userId, String email) {
         return User.builder()

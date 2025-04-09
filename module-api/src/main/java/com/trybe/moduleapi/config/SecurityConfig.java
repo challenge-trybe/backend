@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/posts/{id}").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/posts/search").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/posts/{postId}/comments").permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/ws-connection")).permitAll()
                 .anyRequest()
                 .authenticated());
 

@@ -13,4 +13,5 @@ import java.util.List;
 public interface ProofHistoryRepository extends JpaRepository<ProofHistory, Long> {
     Page<ProofHistory> findAllByProofId(Long proofId, Pageable pageable);
     List<ProofHistory> findAllByProof_Date(LocalDate date);
+    boolean existsByProofIdAndUserId(Long proofId, Long userId);
 }

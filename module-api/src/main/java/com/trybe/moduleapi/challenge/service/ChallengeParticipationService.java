@@ -3,6 +3,7 @@ package com.trybe.moduleapi.challenge.service;
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.challenge.exception.*;
 import com.trybe.moduleapi.challenge.exception.participation.*;
+import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
@@ -23,11 +24,13 @@ public class ChallengeParticipationService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeRepository challengeRepository;
     private final ChallengePreferenceCache challengePreferenceCache;
-
-    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository, ChallengePreferenceCache challengePreferenceCache) {
+    private final ChatService chatService;
+  
+    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository, ChallengePreferenceCache challengePreferenceCache, ChatService chatService) {
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeRepository = challengeRepository;
         this.challengePreferenceCache = challengePreferenceCache;
+        this.chatService = chatService;
     }
 
     private static final int MAX_PENDING_PARTICIPATIONS = 20;
@@ -80,7 +83,7 @@ public class ChallengeParticipationService {
         validateStatus(participation, status);
 
         participation.updateStatus(status);
-
+        chatService.enter(participation.getUser(), participation.getChallenge().getId());
         return ChallengeParticipationResponse.Detail.from(participation);
     }
 
@@ -91,6 +94,7 @@ public class ChallengeParticipationService {
         validateRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
 
         participation.updateStatus(ParticipationStatus.DISABLED);
+        chatService.exit(user, challengeId);
     }
 
     @Transactional

@@ -25,7 +25,7 @@ public class ProofFixtures {
     public static final ProofRequest.Create 잘못된_날짜_인증_생성_요청 = new ProofRequest.Create(ChallengeFixtures.챌린지_ID, 잘못된_인증_날짜);
 
     /* Entity */
-    private static final Proof 인증_생성(LocalDate date, int round) {
+    public static final Proof 인증_생성(LocalDate date, int round) {
         return new Proof(ChallengeFixtures.진행중인_챌린지, date, round);
     }
 

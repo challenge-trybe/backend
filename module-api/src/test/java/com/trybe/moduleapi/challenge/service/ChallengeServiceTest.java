@@ -6,6 +6,7 @@ import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeParticipationFixtures;
+import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.entity.Challenge;
@@ -53,14 +54,18 @@ class ChallengeServiceTest {
     @Mock
     private ChallengeRecommendationClientService challengeRecommendationClientService;
 
+    @Mock
+    private ChatService chatService;
+
     @Test
     @DisplayName("챌린지 생성 시 저장된 챌린지 정보를 반환한다.")
     void 챌린지_생성_시_저장된_챌린지_정보를_반환한다 () {
         /* given */
         ChallengeRequest.Create request = 챌린지_생성_요청;
+        Challenge 챌린지 = 챌린지();
 
         when(challengeRepository.save(any(Challenge.class)))
-                .thenReturn(챌린지());
+                .thenReturn(챌린지);
         when(challengeParticipationRepository.save(any(ChallengeParticipation.class)))
                 .thenReturn(ChallengeParticipationFixtures.챌린지_리더_참여());
 
@@ -68,7 +73,8 @@ class ChallengeServiceTest {
         ChallengeResponse.Detail response = challengeService.save(UserFixtures.회원, request);
 
         /* then */
-        verifyChallengeResponse(챌린지(), response);
+        verifyChallengeResponse(챌린지, response);
+        verify(chatService, times(1)).create(챌린지);
         assertEquals(초기_참여자_수, response.participantCount());
         assertEquals(초기_북마크_수, response.bookmark().bookmarkCount());
         assertEquals(false, response.bookmark().bookmarked());
@@ -346,6 +352,7 @@ class ChallengeServiceTest {
                 .thenReturn(true);
 
         doNothing().when(challengeRepository).delete(any(Challenge.class));
+        doNothing().when(chatService).delete(challengeId);
         doNothing().when(challengeParticipationRepository).deleteAllByChallengeId(challengeId);
         doNothing().when(challengeBookmarkCache).removeBookmarksByChallenge(challengeId);
 
@@ -354,6 +361,7 @@ class ChallengeServiceTest {
         challengeService.delete(UserFixtures.회원, challengeId);
 
         verify(challengeRepository, atLeastOnce()).delete(any(Challenge.class));
+        verify(chatService, atLeastOnce()).delete(challengeId);
         verify(challengeParticipationRepository, atLeastOnce()).deleteAllByChallengeId(challengeId);
         verify(challengeBookmarkCache, atLeastOnce()).removeBookmarksByChallenge(challengeId);
     }
