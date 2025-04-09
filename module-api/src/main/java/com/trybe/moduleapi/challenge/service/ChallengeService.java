@@ -14,23 +14,31 @@ import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
-    private final ChallengeBookmarkService challengeBookmarkService;
+    private final ChallengeBookmarkCache challengeBookmarkCache;
+    private final ChallengePreferenceCache challengePreferenceCache;
+    private final ChallengeRecommendationClientService challengeRecommendationClientService;
     private final ChatService chatService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService, ChatService chatService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
-        this.challengeBookmarkService = challengeBookmarkService;
+        this.challengeBookmarkCache = challengeBookmarkCache;
+        this.challengePreferenceCache = challengePreferenceCache;
+        this.challengeRecommendationClientService = challengeRecommendationClientService;
         this.chatService = chatService;
     }
 
@@ -41,6 +49,7 @@ public class ChallengeService {
 
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
         challengeParticipationRepository.save(participation);
+        challengePreferenceCache.addPreference(user.getId(), savedChallenge);
         chatService.create(savedChallenge);
 
         ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
@@ -61,6 +70,11 @@ public class ChallengeService {
         Page<ChallengeResponse.Preview> challengeSummaries = challenges.map(challenge -> createPreview(user, challenge));
 
         return new PageResponse<>(challengeSummaries);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChallengeResponse.Preview> getRecommendations(User user) {
+        return challengeRecommendationClientService.getChallengeRecommendations(user.getId());
     }
 
     @Transactional
@@ -94,7 +108,7 @@ public class ChallengeService {
         validateLeader(user.getId(), id, "리더만 챌린지를 삭제할 수 있습니다.");
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
-        challengeBookmarkService.removeBookmarksByChallenge(id);
+        challengeBookmarkCache.removeBookmarksByChallenge(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
         chatService.delete(id);
         challengeRepository.delete(challenge);
@@ -113,8 +127,8 @@ public class ChallengeService {
     }
 
     private ChallengeResponse.Bookmark createBookmark(User user, Long challengeId) {
-        int bookmarkCount = challengeBookmarkService.getChallengeBookmarkCount(challengeId);
-        Boolean bookmarked = user == null ? null : challengeBookmarkService.isBookmarked(user.getId(), challengeId);
+        int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challengeId);
+        Boolean bookmarked = user == null ? null : challengeBookmarkCache.isBookmarked(user.getId(), challengeId);
         return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
     }
 

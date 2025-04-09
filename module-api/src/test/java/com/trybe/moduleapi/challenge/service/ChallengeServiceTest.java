@@ -15,6 +15,9 @@ import com.trybe.modulecore.challenge.enums.ChallengeRole;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
+import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures.*;
@@ -42,7 +46,13 @@ class ChallengeServiceTest {
     private ChallengeParticipationRepository challengeParticipationRepository;
 
     @Mock
-    private ChallengeBookmarkService challengeBookmarkService;
+    private ChallengeBookmarkCache challengeBookmarkCache;
+
+    @Mock
+    private ChallengePreferenceCache challengePreferenceCache;
+
+    @Mock
+    private ChallengeRecommendationClientService challengeRecommendationClientService;
 
     @Mock
     private ChatService chatService;
@@ -68,6 +78,8 @@ class ChallengeServiceTest {
         assertEquals(초기_참여자_수, response.participantCount());
         assertEquals(초기_북마크_수, response.bookmark().bookmarkCount());
         assertEquals(false, response.bookmark().bookmarked());
+
+        verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
     }
 
     @Test
@@ -81,9 +93,9 @@ class ChallengeServiceTest {
                 .thenReturn(Optional.of(challenge));
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(참여자_수);
-        when(challengeBookmarkService.getChallengeBookmarkCount(any()))
+        when(challengeBookmarkCache.getBookmarkCount(any()))
                 .thenReturn(북마크_수);
-        when(challengeBookmarkService.isBookmarked(any(), any()))
+        when(challengeBookmarkCache.isBookmarked(any(), any()))
                 .thenReturn(false);
 
         /* when */
@@ -107,7 +119,7 @@ class ChallengeServiceTest {
                 .thenReturn(Optional.of(challenge));
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(참여자_수);
-        when(challengeBookmarkService.getChallengeBookmarkCount(any()))
+        when(challengeBookmarkCache.getBookmarkCount(any()))
                 .thenReturn(북마크_수);
 
         /* when */
@@ -144,9 +156,9 @@ class ChallengeServiceTest {
                 .thenReturn(챌린지_페이지);
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(참여자_수);
-        when(challengeBookmarkService.getChallengeBookmarkCount(any()))
+        when(challengeBookmarkCache.getBookmarkCount(any()))
                 .thenReturn(북마크_수);
-        when(challengeBookmarkService.isBookmarked(any(), any()))
+        when(challengeBookmarkCache.isBookmarked(any(), any()))
                 .thenReturn(false);
 
         /* when */
@@ -154,6 +166,24 @@ class ChallengeServiceTest {
 
         /* then */
         assertEquals(챌린지_페이지_응답.totalElements(), response.totalElements());
+    }
+
+    @Test
+    @DisplayName("챌린지 추천 목록 조회 시 추천된 챌린지 정보를 반환한다.")
+    void 챌린지_추천_목록_조회_시_추천된_챌린지_정보를_반환한다 () {
+        /* given */
+        User user = spy(UserFixtures.회원);
+        Long userId = UserFixtures.회원_PK;
+
+        when(user.getId()).thenReturn(userId);
+        when(challengeRecommendationClientService.getChallengeRecommendations(any()))
+                .thenReturn(챌린지_추천_목록_응답);
+
+        /* when */
+        List<ChallengeResponse.Preview> response = challengeService.getRecommendations(user);
+
+        /* then */
+        assertEquals(챌린지_추천_목록_응답.size(), response.size());
     }
 
     @Test
@@ -169,9 +199,9 @@ class ChallengeServiceTest {
                 .thenReturn(true);
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(참여자_수);
-        when(challengeBookmarkService.getChallengeBookmarkCount(any()))
+        when(challengeBookmarkCache.getBookmarkCount(any()))
                 .thenReturn(북마크_수);
-        when(challengeBookmarkService.isBookmarked(any(), any()))
+        when(challengeBookmarkCache.isBookmarked(any(), any()))
                 .thenReturn(false);
 
         /* when */
@@ -246,9 +276,9 @@ class ChallengeServiceTest {
                 .thenReturn(true);
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(참여자_수);
-        when(challengeBookmarkService.getChallengeBookmarkCount(any()))
+        when(challengeBookmarkCache.getBookmarkCount(any()))
                 .thenReturn(북마크_수);
-        when(challengeBookmarkService.isBookmarked(any(), any()))
+        when(challengeBookmarkCache.isBookmarked(any(), any()))
                 .thenReturn(false);
 
         /* when */
@@ -324,7 +354,7 @@ class ChallengeServiceTest {
         doNothing().when(challengeRepository).delete(any(Challenge.class));
         doNothing().when(chatService).delete(challengeId);
         doNothing().when(challengeParticipationRepository).deleteAllByChallengeId(challengeId);
-        doNothing().when(challengeBookmarkService).removeBookmarksByChallenge(challengeId);
+        doNothing().when(challengeBookmarkCache).removeBookmarksByChallenge(challengeId);
 
         /* when */
         /* then */
@@ -333,7 +363,7 @@ class ChallengeServiceTest {
         verify(challengeRepository, atLeastOnce()).delete(any(Challenge.class));
         verify(chatService, atLeastOnce()).delete(challengeId);
         verify(challengeParticipationRepository, atLeastOnce()).deleteAllByChallengeId(challengeId);
-        verify(challengeBookmarkService, atLeastOnce()).removeBookmarksByChallenge(challengeId);
+        verify(challengeBookmarkCache, atLeastOnce()).removeBookmarksByChallenge(challengeId);
     }
 
     @Test

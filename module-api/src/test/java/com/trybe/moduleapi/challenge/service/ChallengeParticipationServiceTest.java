@@ -13,6 +13,7 @@ import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class ChallengeParticipationServiceTest {
     @Mock
     private ChallengeRepository challengeRepository;
 
+    @Mock
+    private ChallengePreferenceCache challengePreferenceCache;
+  
     @Mock
     private ChatService chatService;
 
@@ -72,6 +76,8 @@ class ChallengeParticipationServiceTest {
         verifyChallengeParticipationResponse(participation, result);
         verifyChallengeResponseSummary(challenge, result.challenge());
         verifyUserResponse(멤버, result.user());
+
+        verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
     }
 
     @Test

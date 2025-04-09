@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/challenges")
 public class ChallengeController {
@@ -47,6 +49,13 @@ public class ChallengeController {
     ) {
         User user = userDetails == null ? null : userDetails.getUser();
         return challengeService.findAll(user, request, pageable);
+    }
+
+    @GetMapping("/recommendations")
+    public List<ChallengeResponse.Preview> getRecommendations(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return challengeService.getRecommendations(userDetails.getUser());
     }
 
     @PutMapping("/{id}/content")

@@ -35,10 +35,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-### ETC ###
-data
-**/application.yml
-**/application-core.yml
-
-redis/
