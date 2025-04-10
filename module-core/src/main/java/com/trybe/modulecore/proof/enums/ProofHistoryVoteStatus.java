@@ -16,9 +16,15 @@ public enum ProofHistoryVoteStatus {
         return approved ? APPROVED : DISAPPROVED;
     }
 
-    public static Boolean toBoolean(String value) {
-        if (APPROVED.getValue().equals(value)) return true;
-        if (DISAPPROVED.getValue().equals(value)) return false;
-        return null;
+    public static ProofHistoryVoteStatus fromValue(String value) {
+        return switch (value) {
+            case "approved" -> APPROVED;
+            case "disapproved" -> DISAPPROVED;
+            default -> null;
+        };
+    }
+
+    public boolean toBoolean() {
+        return this == APPROVED;
     }
 }

@@ -17,6 +17,8 @@ import com.trybe.modulecore.user.entity.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class ProofHistoryVoteService {
     private final ProofHistoryRepository proofHistoryRepository;
@@ -53,8 +55,9 @@ public class ProofHistoryVoteService {
         validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록에 대한 투표 이력을 조회할 수 없습니다.");
 
         String vote = proofHistoryVoteCache.findUserVote(userId, proofHistoryId);
+        Boolean voteStatus = vote == null ? null : ProofHistoryVoteStatus.fromValue(vote).toBoolean();
 
-        return new ProofHistoryVoteResponse.My(ProofHistoryVoteStatus.toBoolean(vote));
+        return new ProofHistoryVoteResponse.My(voteStatus);
     }
 
     @Transactional(readOnly = true)
