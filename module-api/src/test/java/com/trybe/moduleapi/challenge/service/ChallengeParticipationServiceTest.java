@@ -6,6 +6,7 @@ import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.*;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
+import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
@@ -38,6 +39,9 @@ class ChallengeParticipationServiceTest {
 
     @Mock
     private ChallengeRepository challengeRepository;
+
+    @Mock
+    private ChatService chatService;
 
     private Long 멤버_ID = 1L;
     private Long 다른_멤버_ID = 2L;
@@ -260,6 +264,7 @@ class ChallengeParticipationServiceTest {
 
         /* then */
         verifyChallengeParticipationResponse(챌린지_멤버_참여(), result);
+        verify(chatService, times(1)).enter(any(), any());
     }
     
     @Test

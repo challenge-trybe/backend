@@ -5,6 +5,7 @@ import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
+import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
@@ -24,11 +25,13 @@ public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkService challengeBookmarkService;
+    private final ChatService chatService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkService challengeBookmarkService, ChatService chatService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkService = challengeBookmarkService;
+        this.chatService = chatService;
     }
 
     @Transactional
@@ -38,6 +41,7 @@ public class ChallengeService {
 
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
         challengeParticipationRepository.save(participation);
+        chatService.create(savedChallenge);
 
         ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
         return ChallengeResponse.Detail.from(savedChallenge, 1, bookmark);
@@ -92,6 +96,7 @@ public class ChallengeService {
 
         challengeBookmarkService.removeBookmarksByChallenge(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
+        chatService.delete(id);
         challengeRepository.delete(challenge);
     }
 
