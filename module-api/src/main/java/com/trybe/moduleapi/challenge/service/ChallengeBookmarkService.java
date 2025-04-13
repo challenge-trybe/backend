@@ -3,11 +3,13 @@ package com.trybe.moduleapi.challenge.service;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.utils.DateUtils;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.popular.PopularChallengeCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -25,13 +27,17 @@ public class ChallengeBookmarkService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengePreferenceCache challengePreferenceCache;
+    private final PopularChallengeCache popularChallengeCache;
 
-    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache) {
+    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, PopularChallengeCache popularChallengeCache) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengePreferenceCache = challengePreferenceCache;
+        this.popularChallengeCache = popularChallengeCache;
     }
+
+    private static final int BOOKMARK_POPULAR_SCORE = 10;
 
     @Transactional
     public ChallengeResponse.Bookmark addBookmark(User user, Long challengeId) {
@@ -42,6 +48,7 @@ public class ChallengeBookmarkService {
         if (!challengeBookmarkCache.isBookmarked(user.getId(), challengeId)) {
             challengeBookmarkCache.addBookmark(user.getId(), challengeId);
             challengePreferenceCache.addPreference(user.getId(), challenge);
+            popularChallengeCache.increaseScore(challengeId, BOOKMARK_POPULAR_SCORE, DateUtils.getToday());
             count++;
         }
 
@@ -56,6 +63,7 @@ public class ChallengeBookmarkService {
 
         if (challengeBookmarkCache.isBookmarked(user.getId(), challengeId)) {
             challengeBookmarkCache.removeBookmark(user.getId(), challengeId);
+            popularChallengeCache.decreaseScore(challengeId, BOOKMARK_POPULAR_SCORE, DateUtils.getToday());
             count--;
         }
 
