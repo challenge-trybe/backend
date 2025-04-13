@@ -17,11 +17,13 @@ public class ChallengeRecommendationClientService {
     private final ChallengeRecommendationClient challengeRecommendationClient;
     private final ChallengeRepository challengeRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
+    private final PopularChallengeService popularChallengeService;
 
-    public ChallengeRecommendationClientService(ChallengeRecommendationClient challengeRecommendationClient, ChallengeRepository challengeRepository, ChallengeBookmarkCache challengeBookmarkCache) {
+    public ChallengeRecommendationClientService(ChallengeRecommendationClient challengeRecommendationClient, ChallengeRepository challengeRepository, ChallengeBookmarkCache challengeBookmarkCache, PopularChallengeService popularChallengeService) {
         this.challengeRecommendationClient = challengeRecommendationClient;
         this.challengeRepository = challengeRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
+        this.popularChallengeService = popularChallengeService;
     }
 
     private static final int MIN_LIMIT = 20;
@@ -32,17 +34,12 @@ public class ChallengeRecommendationClientService {
     }
 
     public List<ChallengeResponse.Preview> fallbackGetChallengeRecommendations(Long userId, Throwable throwable) {
-        List<Challenge> recommendations = getMostBookmarkedChallenges(MIN_LIMIT);
+        List<Challenge> challenges = popularChallengeService.getTopPopularChallenges(MIN_LIMIT);
 
-        Collections.shuffle(recommendations);
-        return recommendations.stream()
+        Collections.shuffle(challenges);
+        return challenges.stream()
                 .map(challenge -> createPreview(userId, challenge))
                 .toList();
-    }
-
-    private List<Challenge> getMostBookmarkedChallenges(int count) {
-        Set<Long> challengeIds = challengeBookmarkCache.getMostBookmarkedChallenges(count);
-        return challengeRepository.findAllByIdIn(challengeIds);
     }
 
     private ChallengeResponse.Preview createPreview(Long userId, Challenge challenge) {
