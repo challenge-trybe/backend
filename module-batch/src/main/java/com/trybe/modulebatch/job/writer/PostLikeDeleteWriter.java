@@ -9,7 +9,7 @@ import java.util.List;
 
 @Component
 public class PostLikeDeleteWriter extends PostLikeWriter {
-    private final String POST_LIKE_DELETE_KEY = "post:%d:liked:deleted";
+    private final String POST_LIKE_DELETE_KEY = "post:%d:liked:users:deleted";
     private final PostLikeRepository postLikeRepository;
 
     public PostLikeDeleteWriter(RedisTemplate<String, Long> redisTemplate, PostLikeRepository postLikeRepository) {
@@ -25,5 +25,10 @@ public class PostLikeDeleteWriter extends PostLikeWriter {
     @Override
     protected String getPostRedisKey() {
         return POST_LIKE_DELETE_KEY;
+    }
+
+    @Override
+    protected boolean shouldDeleteRedisKey() {
+        return true;
     }
 }

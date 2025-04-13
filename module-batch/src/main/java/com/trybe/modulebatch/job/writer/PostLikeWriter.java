@@ -16,15 +16,20 @@ public abstract class PostLikeWriter implements ItemWriter<PostLike> {
 
     protected abstract void dataBaseExecution(List<PostLike> postLikes);
     protected abstract String getPostRedisKey();
-
+    protected boolean shouldDeleteRedisKey() {
+        return true;
+    }
     @Override
     public void write(Chunk<? extends PostLike> chunk) throws Exception {
         List<PostLike> postLikes = (List<PostLike>) chunk.getItems();
         dataBaseExecution(postLikes);
-        List<String> postKeys = postLikes.stream()
-                                         .map(postLike -> String.format(getPostRedisKey(), postLike.getPostId()))
-                                         .distinct()
-                                         .toList();
-        redisTemplate.delete(postKeys);
+
+        if (shouldDeleteRedisKey()) {
+            List<String> postKeys = postLikes.stream()
+                                             .map(postLike -> String.format(getPostRedisKey(), postLike.getPostId()))
+                                             .distinct()
+                                             .toList();
+            redisTemplate.delete(postKeys);
+        }
     }
 }
