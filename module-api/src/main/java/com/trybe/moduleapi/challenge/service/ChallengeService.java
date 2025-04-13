@@ -65,7 +65,7 @@ public class ChallengeService {
 
     @Transactional(readOnly = true)
     public PageResponse<ChallengeResponse.Preview> findAll(User user, ChallengeRequest.Read request, Pageable pageable) {
-        Page<Challenge> challenges = challengeRepository.getFilteredChallenges(request.keyword(), request.categories(), request.statuses(), pageable);
+        Page<Challenge> challenges = challengeRepository.getFilteredChallenges(request.keyword(), request.statuses(), request.categories(), pageable);
 
         Page<ChallengeResponse.Preview> challengeSummaries = challenges.map(challenge -> createPreview(user, challenge));
 

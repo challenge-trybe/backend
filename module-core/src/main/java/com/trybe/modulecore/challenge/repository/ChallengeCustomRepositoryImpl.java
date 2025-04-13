@@ -27,12 +27,12 @@ public class ChallengeCustomRepositoryImpl implements ChallengeCustomRepository 
     }
 
     @Override
-    public Page<Challenge> getFilteredChallenges(String keyword, List<ChallengeCategory> categories, List<ChallengeStatus> statuses, Pageable pageable) {
+    public Page<Challenge> getFilteredChallenges(String keyword, List<ChallengeStatus> statuses, List<ChallengeCategory> categories, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
         builder.and(titleOrDescriptionContains(keyword))
-                .and(categoryIn(categories))
-                .and(statusIn(statuses));
+                .and(statusIn(statuses))
+                .and(categoryIn(categories));
 
         QueryResults<Challenge> challenges = jpaQueryFactory
                 .selectFrom(challenge)

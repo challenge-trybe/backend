@@ -9,6 +9,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ChallengeCustomRepository {
-    Page<Challenge> getFilteredChallenges(String keyword, List<ChallengeCategory> categories, List<ChallengeStatus> statuses, Pageable pageable);
+    Page<Challenge> getFilteredChallenges(String keyword, List<ChallengeStatus> statuses, List<ChallengeCategory> categories, Pageable pageable);
     List<Challenge> getRecommendedChallenges(List<ChallengeCategory> categories, List<String> keywords, int limit);
 }
