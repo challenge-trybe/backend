@@ -22,8 +22,8 @@ public class PostLikeCustomRepositoryImpl implements PostLikeCustomRepository{
 
     @Override
     public void bulkInsert(List<PostLike> postLikes) {
-            String sql = "INSERT INTO post_likes (user_id, post_id, created_at) VALUES (?, ?, ?)";
-            jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+        String sql = "INSERT IGNORE INTO post_likes (user_id, post_id, created_at) VALUES (?, ?, ?)";
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
                     PostLike like = postLikes.get(i);
