@@ -9,16 +9,11 @@ public class PostLikeDeleteReader extends PostLikeReader {
         super(redisTemplate);
     }
 
-    private final String REDIS_SCAN_PATTERN = "post:*:liked:deleted";
-    private final String POST_LIKE_KEY = "post:%d:liked:deleted";
+    private final String REDIS_SCAN_PATTERN = "post:*:liked:users:deleted";
 
     @Override
     protected String getRedisScanPattern() {
         return REDIS_SCAN_PATTERN;
     }
 
-    @Override
-    protected String getPostRedisKey() {
-        return POST_LIKE_KEY;
-    }
 }

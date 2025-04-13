@@ -27,7 +27,6 @@ public abstract class PostLikeReader implements ItemReader<PostLike> {
     }
 
     protected abstract String getRedisScanPattern();
-    protected abstract String getPostRedisKey();
 
     @Override
     public PostLike read() {
@@ -62,16 +61,11 @@ public abstract class PostLikeReader implements ItemReader<PostLike> {
     private void getNextUserIds() {
         String key = cursor.next();
         currentPostId = extractPostId(key);
-        String postKey = createPostKey(currentPostId);
-        Set<Long> userIds = redisTemplate.opsForSet().members(postKey);
+        Set<Long> userIds = redisTemplate.opsForSet().members(key);
         currentUserIds = userIds != null ? userIds.iterator() : Collections.emptyIterator();
     }
 
     private Long extractPostId(String productKey) {
         return Long.parseLong(productKey.split(":")[1]);
-    }
-
-    private String createPostKey(Long postId){
-        return String.format(getPostRedisKey(), postId);
     }
 }
