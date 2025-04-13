@@ -5,7 +5,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 public class PopularChallengeRedisCache implements PopularChallengeCache {
@@ -35,15 +36,12 @@ public class PopularChallengeRedisCache implements PopularChallengeCache {
     }
 
     @Override
-    public List<Long> getTopPopularChallenges(LocalDate date, int count) {
+    public Set<Long> getTopPopularChallenges(LocalDate date, int count) {
         String formattedDate = getFormattedDate(date);
         String key = getRedisKey(POPULAR_CHALLENGES_KEY, formattedDate);
 
-        Set<Long> challengeIds = redisTemplate.opsForZSet().reverseRange(key, 0, count - 1);
-
-        return challengeIds == null
-                ? List.of()
-                : challengeIds.stream().toList();
+        return Optional.ofNullable(redisTemplate.opsForZSet().reverseRange(key, 0, count - 1))
+                .orElse(Collections.emptySet());
     }
 
     private String getRedisKey(String key, String date) {
