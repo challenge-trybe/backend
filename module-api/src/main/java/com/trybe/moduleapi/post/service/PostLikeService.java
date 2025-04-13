@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostLikeService {
-    private final String POST_LIKE_SUFFIX = ":liked";
+    private final String POST_LIKE_SUFFIX = ":liked:posts";
     private final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX;
     private final String POST_REDIS_KEY = "post:%d" + POST_LIKE_SUFFIX;
     private final String POST_LIKE_DELETE_KEY = POST_REDIS_KEY + ":deleted";
