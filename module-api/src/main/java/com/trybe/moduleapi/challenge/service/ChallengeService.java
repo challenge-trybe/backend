@@ -7,6 +7,7 @@ import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.utils.DateUtils;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
@@ -55,7 +56,6 @@ public class ChallengeService {
     }
 
     private static final int POPULAR_CHALLENGE_COUNT = 5;
-    private static final int INITIALIZE_HOUR = 4;
 
     @Transactional
     public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
@@ -93,7 +93,7 @@ public class ChallengeService {
 
     @Transactional(readOnly = true)
     public List<ChallengeResponse.Preview> getPopular(User user) {
-        LocalDate targetDate = getToday().minusDays(1);
+        LocalDate targetDate = DateUtils.getToday().minusDays(1);
 
         Set<Long> challengeIds = popularChallengeCache.getTopPopularChallenges(targetDate, POPULAR_CHALLENGE_COUNT);
         List<Challenge> challenges = challengeIds.isEmpty()
@@ -190,17 +190,7 @@ public class ChallengeService {
     private void handleView(Long userId, Long challengeId) {
         if (!challengeViewCache.hasViewed(userId, challengeId)) {
             challengeViewCache.recordView(userId, challengeId);
-            popularChallengeCache.increaseScore(challengeId, 1, getToday());
-        }
-    }
-
-    private LocalDate getToday() {
-        LocalDateTime now = LocalDateTime.now();
-
-        if (now.getHour() < INITIALIZE_HOUR) {
-            return now.minusDays(1).toLocalDate();
-        } else {
-            return now.toLocalDate();
+            popularChallengeCache.increaseScore(challengeId, 1, DateUtils.getToday());
         }
     }
 
