@@ -152,7 +152,7 @@ class ChallengeServiceTest {
         /* given */
         ChallengeRequest.Read request = 챌린지_조회_요청;
 
-        when(challengeRepository.findAllByStatusInAndCategoryIn(request.statuses(), request.categories(), 페이지_요청))
+        when(challengeRepository.getFilteredChallenges(request.keyword(), request.statuses(), request.categories(), 페이지_요청))
                 .thenReturn(챌린지_페이지);
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(참여자_수);
