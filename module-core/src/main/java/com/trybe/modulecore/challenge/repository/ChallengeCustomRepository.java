@@ -10,5 +10,5 @@ import java.util.List;
 
 public interface ChallengeCustomRepository {
     Page<Challenge> getFilteredChallenges(String keyword, List<ChallengeCategory> categories, List<ChallengeStatus> statuses, Pageable pageable);
-    List<Challenge> getByCategoriesOrKeywords(List<ChallengeCategory> categories, List<String> keywords, int limit);
+    List<Challenge> getRecommendedChallenges(List<ChallengeCategory> categories, List<String> keywords, int limit);
 }

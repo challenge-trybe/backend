@@ -37,7 +37,7 @@ public class ChallengeRecommendationService {
         List<ChallengeCategory> categories = challengePreferenceCache.getPreferenceCategories(userId, RECOMMENDATION_CATEGORY_COUNT);
         List<String> keywords = challengePreferenceCache.getPreferenceKeywords(userId, RECOMMENDATION_KEYWORD_COUNT);
 
-        List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(categories, keywords, MAX_LIMIT);
+        List<Challenge> recommendations = challengeRepository.getRecommendedChallenges(categories, keywords, MAX_LIMIT);
         LinkedHashSet<Challenge> challengeSet = new LinkedHashSet<>(recommendations);
 
         challengeSet.addAll(getMostBookmarkedChallenges(MIN_LIMIT));

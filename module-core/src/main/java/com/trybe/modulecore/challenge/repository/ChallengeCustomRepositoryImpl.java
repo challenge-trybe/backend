@@ -49,17 +49,13 @@ public class ChallengeCustomRepositoryImpl implements ChallengeCustomRepository 
     }
 
     @Override
-    public List<Challenge> getByCategoriesOrKeywords(List<ChallengeCategory> categories, List<String> keywords, int limit) {
+    public List<Challenge> getRecommendedChallenges(List<ChallengeCategory> categories, List<String> keywords, int limit) {
         return jpaQueryFactory.select(challenge)
                 .from(challenge)
-                .where(categoryInOrTitleContains(categories, keywords))
+                .where(categoryIn(categories).or(titleContains(keywords)))
                 .orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
                 .limit(limit)
                 .fetch();
-    }
-
-    private BooleanBuilder categoryInOrTitleContains(List<ChallengeCategory> categories, List<String> keywords) {
-        return categoryIn(categories).or(titleContains(keywords));
     }
 
     private BooleanBuilder titleContains(List<String> keywords) {
