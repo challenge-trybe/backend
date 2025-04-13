@@ -52,7 +52,7 @@ class PostLikeBatchJobConfigTest {
 
     private void insertPostLikeTestData() {
         for (long postId = 1; postId <= 3; postId++) {
-            String postKey = String.format("post:%d:liked", postId);
+            String postKey = String.format("post:%d:liked:users", postId);
             String deleteKey = postKey + ":deleted";
 
             Set<Long> userIds = new HashSet<>();
