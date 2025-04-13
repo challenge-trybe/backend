@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class PostLikeService {
-    private final String POST_LIKE_SUFFIX = ":liked:posts";
-    private final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX;
-    private final String POST_REDIS_KEY = "post:%d" + POST_LIKE_SUFFIX;
+    private final String POST_LIKE_SUFFIX = ":liked";
+    private final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX + ":posts";
+    private final String POST_REDIS_KEY = "post:%d" + POST_LIKE_SUFFIX + ":users";
     private final String POST_LIKE_DELETE_KEY = POST_REDIS_KEY + ":deleted";
     private final RedisTemplate<String, Long> redisTemplate;
     private final PostRepository postRepository;

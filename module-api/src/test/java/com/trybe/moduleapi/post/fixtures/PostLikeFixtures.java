@@ -12,9 +12,9 @@ public class PostLikeFixtures {
     public static final int 좋아요_개수 = 10;
     public static final Long 좋아요_개수L = 20L;
 
-    private static final String POST_LIKE_SUFFIX = ":liked:posts";
-    private static final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX;
-    private static final String POST_REDIS_KEY = "post:%d" + POST_LIKE_SUFFIX;
+    private static final String POST_LIKE_SUFFIX = ":liked";
+    private static final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX + ":posts";
+    private static final String POST_REDIS_KEY = "post:%d" + POST_LIKE_SUFFIX + ":users";
     private static final String POST_LIKE_DELETE_KEY = POST_REDIS_KEY + ":deleted";
     public static String createUserKey(Long userId) {
         return String.format(USER_REDIS_KEY, userId);
