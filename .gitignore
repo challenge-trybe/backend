@@ -38,6 +38,7 @@ out/
 
 ### ETC ###
 data
+jenkins
 **/application.yml
 **/application-core.yml
 
