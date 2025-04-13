@@ -15,14 +15,22 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.popular.PopularChallengeCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
+import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ChallengeService {
@@ -30,17 +38,24 @@ public class ChallengeService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengePreferenceCache challengePreferenceCache;
+    private final PopularChallengeCache popularChallengeCache;
+    private final ChallengeViewCache challengeViewCache;
     private final ChallengeRecommendationClientService challengeRecommendationClientService;
     private final ChatService chatService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, PopularChallengeCache popularChallengeCache, ChallengeViewCache challengeViewCache, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengePreferenceCache = challengePreferenceCache;
+        this.popularChallengeCache = popularChallengeCache;
+        this.challengeViewCache = challengeViewCache;
         this.challengeRecommendationClientService = challengeRecommendationClientService;
         this.chatService = chatService;
     }
+
+    private static final int POPULAR_CHALLENGE_COUNT = 5;
+    private static final int INITIALIZE_HOUR = 4;
 
     @Transactional
     public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
@@ -60,6 +75,10 @@ public class ChallengeService {
     public ChallengeResponse.Detail find(User user, Long id) {
         Challenge challenge = getChallenge(id);
 
+        if (user != null) {
+            handleView(user.getId(), challenge.getId());
+        }
+
         return createDetail(user, challenge);
     }
 
@@ -70,6 +89,21 @@ public class ChallengeService {
         Page<ChallengeResponse.Preview> challengeSummaries = challenges.map(challenge -> createPreview(user, challenge));
 
         return new PageResponse<>(challengeSummaries);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChallengeResponse.Preview> getPopular(User user) {
+        LocalDate targetDate = getToday().minusDays(1);
+
+        Set<Long> challengeIds = popularChallengeCache.getTopPopularChallenges(targetDate, POPULAR_CHALLENGE_COUNT);
+        List<Challenge> challenges = challengeIds.isEmpty()
+                ? Collections.emptyList()
+                : challengeRepository.findAllByIdIn(challengeIds);
+        List<Challenge> sortedChallenges = sortChallenges(challenges, challengeIds);
+
+        return sortedChallenges.stream()
+                .map(challenge -> createPreview(user, challenge))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -151,5 +185,31 @@ public class ChallengeService {
         if (!challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(userId, challengeId, ChallengeRole.LEADER)) {
             throw new InvalidChallengeRoleActionException(message);
         }
+    }
+
+    private void handleView(Long userId, Long challengeId) {
+        if (!challengeViewCache.hasViewed(userId, challengeId)) {
+            challengeViewCache.recordView(userId, challengeId);
+            popularChallengeCache.increaseScore(challengeId, 1, getToday());
+        }
+    }
+
+    private LocalDate getToday() {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.getHour() < INITIALIZE_HOUR) {
+            return now.minusDays(1).toLocalDate();
+        } else {
+            return now.toLocalDate();
+        }
+    }
+
+    private List<Challenge> sortChallenges(List<Challenge> challenges, Set<Long> challengeIds) {
+        Map<Long, Challenge> challengeMap = challenges.stream()
+                .collect(Collectors.toMap(Challenge::getId, challenge -> challenge));
+
+        return challengeIds.stream()
+                .map(challengeMap::get)
+                .collect(Collectors.toList());
     }
 }
