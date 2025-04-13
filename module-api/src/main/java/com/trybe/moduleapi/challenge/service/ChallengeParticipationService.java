@@ -5,6 +5,7 @@ import com.trybe.moduleapi.challenge.exception.*;
 import com.trybe.moduleapi.challenge.exception.participation.*;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.utils.DateUtils;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
@@ -12,6 +13,7 @@ import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.challenge.repository.popular.PopularChallengeCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -24,16 +26,19 @@ public class ChallengeParticipationService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeRepository challengeRepository;
     private final ChallengePreferenceCache challengePreferenceCache;
+    private final PopularChallengeCache popularChallengeCache;
     private final ChatService chatService;
-  
-    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository, ChallengePreferenceCache challengePreferenceCache, ChatService chatService) {
+
+    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository, ChallengePreferenceCache challengePreferenceCache, PopularChallengeCache popularChallengeCache, ChatService chatService) {
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeRepository = challengeRepository;
         this.challengePreferenceCache = challengePreferenceCache;
+        this.popularChallengeCache = popularChallengeCache;
         this.chatService = chatService;
     }
 
     private static final int MAX_PENDING_PARTICIPATIONS = 20;
+    private static final int PARTICIPATION_POPULAR_SCORE = 15;
 
     @Transactional
     public ChallengeParticipationResponse.Detail join(User user, Long challengeId) {
@@ -47,6 +52,7 @@ public class ChallengeParticipationService {
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
         challengePreferenceCache.addPreference(user.getId(), challenge);
+        popularChallengeCache.increaseScore(challengeId, PARTICIPATION_POPULAR_SCORE, DateUtils.getToday());
 
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
@@ -104,6 +110,7 @@ public class ChallengeParticipationService {
         validateParticipationUser(participation, user.getId());
         validateParticipationStatus(participation, ParticipationStatus.PENDING);
 
+        popularChallengeCache.decreaseScore(participation.getChallenge().getId(), PARTICIPATION_POPULAR_SCORE, DateUtils.getToday());
         challengeParticipationRepository.delete(participation);
     }
 
