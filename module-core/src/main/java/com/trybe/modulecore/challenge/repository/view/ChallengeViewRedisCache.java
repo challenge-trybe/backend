@@ -1,9 +1,11 @@
 package com.trybe.modulecore.challenge.repository.view;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 
+@Repository
 public class ChallengeViewRedisCache implements ChallengeViewCache {
     private final RedisTemplate<String, Long> redisTemplate;
 

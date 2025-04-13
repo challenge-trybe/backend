@@ -1,6 +1,7 @@
 package com.trybe.modulecore.challenge.repository.popular;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+@Repository
 public class PopularChallengeRedisCache implements PopularChallengeCache {
     private final RedisTemplate<String, Long> redisTemplate;
 
