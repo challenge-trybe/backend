@@ -43,6 +43,9 @@ class ChallengeParticipationServiceTest {
 
     @Mock
     private ChallengePreferenceCache challengePreferenceCache;
+
+    @Mock
+    private PopularChallengeService popularChallengeService;
   
     @Mock
     private ChatService chatService;
@@ -78,6 +81,7 @@ class ChallengeParticipationServiceTest {
         verifyUserResponse(멤버, result.user());
 
         verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
+        verify(popularChallengeService, times(1)).increasePopularity(any(), anyInt());
     }
 
     @Test
@@ -440,9 +444,11 @@ class ChallengeParticipationServiceTest {
                 .thenReturn(Optional.of(챌린지_참여(member, ChallengeFixtures.챌린지(), 챌린지_멤버_역할, 챌린지_참여_대기_상태)));
 
         /* when */
-        /* then */
         challengeParticipationService.cancel(member, participationId);
+
+        /* then */
         verify(challengeParticipationRepository, atLeastOnce()).delete(any(ChallengeParticipation.class));
+        verify(popularChallengeService, times(1)).decreasePopularity(any(), anyInt());
     }
 
     @Test
