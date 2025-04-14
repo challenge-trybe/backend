@@ -17,6 +17,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
+import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,12 @@ class ChallengeServiceTest {
 
     @Mock
     private ChallengePreferenceCache challengePreferenceCache;
+
+    @Mock
+    private ChallengeViewCache challengeViewCache;
+
+    @Mock
+    private PopularChallengeService popularChallengeService;
 
     @Mock
     private ChallengeRecommendationClientService challengeRecommendationClientService;
@@ -106,6 +113,40 @@ class ChallengeServiceTest {
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
         assertEquals(false, response.bookmark().bookmarked());
+
+        verify(challengeViewCache, times(1)).recordView(any(), any());
+        verify(popularChallengeService, times(1)).increasePopularity(any(), anyInt());
+    }
+
+    @Test
+    @DisplayName("챌린지 단일 조회 시 일정 시간 이내 조회 기록이 존재하는 경우 조회 처리를 하지 않고 챌린지 정보를 반환한다")
+    void 챌린지_단일_조회_시_일정_시간_이내_조회_기록이_존재하는_경우_조회_처리를_하지_않고_챌린지_정보를_반환한다 () {
+        /* given */
+        Long challengeId = 챌린지_ID;
+        Challenge challenge = 챌린지();
+
+        when(challengeRepository.findById(challengeId))
+                .thenReturn(Optional.of(challenge));
+        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
+                .thenReturn(참여자_수);
+        when(challengeBookmarkCache.getBookmarkCount(any()))
+                .thenReturn(북마크_수);
+        when(challengeBookmarkCache.isBookmarked(any(), any()))
+                .thenReturn(false);
+        when(challengeViewCache.hasViewed(any(), any()))
+                .thenReturn(true);
+
+        /* when */
+        ChallengeResponse.Detail response = challengeService.find(UserFixtures.회원, challengeId);
+
+        /* then */
+        verifyChallengeResponse(challenge, response);
+        assertEquals(참여자_수, response.participantCount());
+        assertEquals(북마크_수, response.bookmark().bookmarkCount());
+        assertEquals(false, response.bookmark().bookmarked());
+
+        verify(challengeViewCache, never()).recordView(any(), any());
+        verify(popularChallengeService, never()).increasePopularity(any(), anyInt());
     }
 
     @Test
@@ -166,6 +207,30 @@ class ChallengeServiceTest {
 
         /* then */
         assertEquals(챌린지_페이지_응답.totalElements(), response.totalElements());
+    }
+
+    @Test
+    @DisplayName("챌린지 인기 목록 조회 시 하루 전의 인기 챌린지 정보를 반환한다.")
+    void 챌린지_인기_목록_조회_시_하루_전의_인기_챌린지_정보를_반환한다 () {
+        /* given */
+        User user = spy(UserFixtures.회원);
+        Long userId = UserFixtures.회원_PK;
+
+        when(user.getId()).thenReturn(userId);
+        when(popularChallengeService.getTopPopularChallenges(anyInt()))
+                .thenReturn(챌린지_목록);
+        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
+                .thenReturn(참여자_수);
+        when(challengeBookmarkCache.getBookmarkCount(any()))
+                .thenReturn(북마크_수);
+        when(challengeBookmarkCache.isBookmarked(any(), any()))
+                .thenReturn(false);
+
+        /* when */
+        List<ChallengeResponse.Preview> response = challengeService.getPopular(user);
+
+        /* then */
+        assertEquals(챌린지_목록.size(), response.size());
     }
 
     @Test
