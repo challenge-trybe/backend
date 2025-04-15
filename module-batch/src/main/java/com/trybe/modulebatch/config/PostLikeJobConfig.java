@@ -39,13 +39,13 @@ public class PostLikeJobConfig {
     @Bean
     public Job postLikeBulkUpdateJob() {
         return new JobBuilder("postLikeJob", jobRepository)
-                .start(PostLikeInsertStep())
-                .next(PostLikeDeleteStep())
+                .start(postLikeInsertStep())
+                .next(postLikeDeleteStep())
                 .build();
     }
 
     @Bean
-    public Step PostLikeInsertStep() {
+    public Step postLikeInsertStep() {
         return new StepBuilder("postLikeInsertStep", jobRepository)
                 .chunk(CHUNK_SIZE, platformTransactionManager)
                 .reader(postLikeInsertReader)
@@ -54,7 +54,7 @@ public class PostLikeJobConfig {
     }
 
     @Bean
-    public Step PostLikeDeleteStep() {
+    public Step postLikeDeleteStep() {
         return new StepBuilder("postLikeDeleteStep", jobRepository)
                 .chunk(CHUNK_SIZE, platformTransactionManager)
                 .reader(postLikeDeleteReader)
