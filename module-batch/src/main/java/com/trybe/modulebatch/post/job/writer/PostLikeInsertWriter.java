@@ -1,4 +1,4 @@
-package com.trybe.modulebatch.job.writer;
+package com.trybe.modulebatch.post.job.writer;
 
 import com.trybe.modulecore.post.entity.PostLike;
 import com.trybe.modulecore.post.repository.PostLikeRepository;
@@ -8,27 +8,27 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PostLikeDeleteWriter extends PostLikeWriter {
-    private final String POST_LIKE_DELETE_KEY = "post:%d:liked:users:deleted";
+public class PostLikeInsertWriter extends PostLikeWriter {
+    private final String POST_LIKE_KEY = "post:%d:liked:users";
     private final PostLikeRepository postLikeRepository;
 
-    public PostLikeDeleteWriter(RedisTemplate<String, Long> redisTemplate, PostLikeRepository postLikeRepository) {
+    public PostLikeInsertWriter(RedisTemplate<String, Long> redisTemplate, PostLikeRepository postLikeRepository) {
         super(redisTemplate);
         this.postLikeRepository = postLikeRepository;
     }
 
     @Override
     protected void dataBaseExecution(List<PostLike> postLikes) {
-        postLikeRepository.bulkDelete(postLikes);
+        postLikeRepository.bulkInsert(postLikes);
     }
 
     @Override
     protected String getPostRedisKey() {
-        return POST_LIKE_DELETE_KEY;
+        return POST_LIKE_KEY;
     }
 
     @Override
     protected boolean shouldDeleteRedisKey() {
-        return true;
+        return false;
     }
 }

@@ -1,4 +1,4 @@
-package com.trybe.modulebatch.job.writer;
+package com.trybe.modulebatch.post.job.writer;
 
 import com.trybe.modulecore.post.entity.PostLike;
 import org.springframework.batch.item.Chunk;

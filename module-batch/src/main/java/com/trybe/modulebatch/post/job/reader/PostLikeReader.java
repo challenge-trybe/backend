@@ -1,6 +1,6 @@
-package com.trybe.modulebatch.job.reader;
+package com.trybe.modulebatch.post.job.reader;
 
-import com.trybe.modulebatch.config.PostLikeJobConfig;
+import com.trybe.modulebatch.post.config.PostLikeJobConfig;
 import com.trybe.modulecore.post.entity.PostLike;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.data.redis.core.Cursor;
