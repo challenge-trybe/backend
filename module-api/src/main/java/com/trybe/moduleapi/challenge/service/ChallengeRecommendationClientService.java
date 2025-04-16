@@ -53,7 +53,7 @@ public class ChallengeRecommendationClientService {
 
     private ChallengeResponse.Bookmark createBookmark(Long userId, Long challengeId) {
         int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challengeId);
-        Boolean bookmarked = challengeBookmarkCache.isBookmarked(userId, challengeId);
+        Boolean bookmarked = userId == null ? null : challengeBookmarkCache.isBookmarked(userId, challengeId);
         return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
     }
 }
