@@ -21,13 +21,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,10 +45,12 @@ class PostLikeServiceTest {
         mockingRedisTemplate();
 
         User 회원 = UserFixtures.회원;
-        String userKey = "user:" + 회원.getId();
+        String userKey = PostLikeFixtures.createUserKey(회원.getId());
 
         Long 포스트_ID = PostFixtures.id;
-        String postKey = "post:" + 포스트_ID;
+        String postKey = PostLikeFixtures.createPostKey(포스트_ID);
+        String deleteKey = PostLikeFixtures.createDeletedKey(포스트_ID);
+
         Long 좋아요_개수 = PostLikeFixtures.좋아요_개수L;
 
         when(postRepository.existsById(포스트_ID)).thenReturn(true);
@@ -63,6 +63,7 @@ class PostLikeServiceTest {
         // then
         assertEquals(응답.likeCount(), 좋아요_개수+1);
         assertEquals(응답.isLiked(), true);
+        verify(redisTemplate.opsForSet()).remove(eq(deleteKey), eq(회원.getId()));
     }
 
     @Test
@@ -84,10 +85,11 @@ class PostLikeServiceTest {
         mockingRedisTemplate();
 
         User 회원 = UserFixtures.회원;
-        String userKey = "user:" + 회원.getId();
+        String userKey = PostLikeFixtures.createUserKey(회원.getId());
 
         Long 포스트_ID = PostFixtures.id;
-        String postKey = "post:" + 포스트_ID;
+        String postKey = PostLikeFixtures.createPostKey(포스트_ID);
+        String deleteKey = PostLikeFixtures.createDeletedKey(포스트_ID);
 
         Long 좋아요_개수 = PostLikeFixtures.좋아요_개수L;
 
@@ -102,6 +104,7 @@ class PostLikeServiceTest {
         // then
         verify(redisTemplate.opsForZSet()).remove(eq(userKey), eq(PostFixtures.id));
         verify(redisTemplate.opsForSet()).remove(eq(postKey), eq(회원.getId()));
+        verify(redisTemplate.opsForSet()).add(eq(deleteKey), eq(회원.getId()));
         assertEquals(응답.likeCount(), 좋아요_개수-1);
         assertEquals(응답.isLiked(), false);
     }
@@ -125,7 +128,8 @@ class PostLikeServiceTest {
         // given
         mockingRedisTemplate();
 
-        String postKey = "post:" + PostFixtures.id;
+        Long 포스트_ID = PostFixtures.id;
+        String postKey = PostLikeFixtures.createPostKey(포스트_ID);
         Set<Long> userIds = PostLikeFixtures.게시글_좋아요_누른_유저목록;
         when(redisTemplate.opsForSet().members(postKey)).thenReturn(userIds);
 
@@ -134,7 +138,11 @@ class PostLikeServiceTest {
 
         // Then
         for (Long userId : userIds) {
-            verify(redisTemplate.opsForZSet(), times(1)).remove(eq("user:" + userId), eq(PostFixtures.id));
+            String userKey = PostLikeFixtures.createUserKey(userId);
+            verify(redisTemplate.opsForZSet(), times(1)).remove(eq(userKey), eq(PostFixtures.id));
+
+            String deleteKey = PostLikeFixtures.createDeletedKey(포스트_ID);
+            verify(redisTemplate.opsForSet()).add(eq(deleteKey), eq(userId));
         }
         verify(redisTemplate, times(1)).delete(postKey);
     }
@@ -146,7 +154,8 @@ class PostLikeServiceTest {
         SetOperations<String, Long> setOps = mock(SetOperations.class);
         when(redisTemplate.opsForSet()).thenReturn(setOps);
 
-        String postKey = "post:" + PostFixtures.id;
+        Long 포스트_ID = PostFixtures.id;
+        String postKey = PostLikeFixtures.createPostKey(포스트_ID);
         when(redisTemplate.opsForSet().size(postKey)).thenReturn(5L);
 
         // when
@@ -166,7 +175,7 @@ class PostLikeServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         User 회원 = UserFixtures.회원;
-        String userKey = "user:" + 회원.getId();
+        String userKey = PostLikeFixtures.createUserKey(회원.getId());
         Set<Long> postIds = PostFixtures.게시글_아이디_목록;
         List<Post> 게시글_목록 = PostFixtures.ID_존재하는_게시글_목록;
 
@@ -187,6 +196,4 @@ class PostLikeServiceTest {
         when(redisTemplate.opsForZSet()).thenReturn(zSetOps);
         when(redisTemplate.opsForSet()).thenReturn(setOps);
     }
-
-
 }
