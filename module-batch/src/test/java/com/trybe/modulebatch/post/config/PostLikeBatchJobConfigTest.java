@@ -1,4 +1,4 @@
-package com.trybe.modulebatch.config;
+package com.trybe.modulebatch.post.config;
 
 import com.trybe.modulecore.post.repository.PostLikeRepository;
 import org.junit.jupiter.api.Test;
