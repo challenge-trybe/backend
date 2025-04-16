@@ -1,10 +1,9 @@
 package com.trybe.modulecore.post.repository;
 
-import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.trybe.modulecore.utils.QueryUtils;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.enums.PostCategory;
 import com.trybe.modulecore.post.enums.PostOrder;

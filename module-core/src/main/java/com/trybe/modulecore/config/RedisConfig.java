@@ -1,4 +1,4 @@
-package com.trybe.moduleapi.config;
+package com.trybe.modulecore.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,28 +9,28 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-import java.util.Set;
-
 @Configuration
 public class RedisConfig {
+    private final String host;
+    private final int port;
 
-    private final String redisHost;
-    private final int redisPort;
-
-    public RedisConfig(@Value("${trybe.redis.host}") String redisHost,
-                       @Value("${trybe.redis.port}") int redisPort) {
-        this.redisHost = redisHost;
-        this.redisPort = redisPort;
+    public RedisConfig(
+            @Value("${spring.data.redis.host}") String host,
+            @Value("${spring.data.redis.port}") int port
+    ) {
+        this.host = host;
+        this.port = port;
     }
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(redisHost, redisPort);
+        return new LettuceConnectionFactory(host, port);
     }
 
     @Bean
     public RedisTemplate<String, Long> redisTemplate() {
         RedisTemplate<String, Long> redisTemplate = new RedisTemplate<>();
+
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         redisTemplate.setEnableTransactionSupport(true);
 
