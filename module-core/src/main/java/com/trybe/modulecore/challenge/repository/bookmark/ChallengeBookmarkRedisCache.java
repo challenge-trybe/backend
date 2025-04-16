@@ -23,12 +23,14 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
     private final String USER_KEY = "user:%d" + BOOKMARK_SUFFIX + CHALLENGE_SUFFIX;
     private final String CHALLENGE_BOOKMARK_KEY = "challenge:%d" + BOOKMARK_SUFFIX + USER_SUFFIX;
     private final String CHALLENGE_BOOKMARK_COUNT_KEY = "challenge" + BOOKMARK_SUFFIX + ":counts";
+    private final String CHALLENGE_BOOKMARK_ADDED_KEY = "challenge:%d" + BOOKMARK_SUFFIX + ":added" + USER_SUFFIX;
     private final String CHALLENGE_BOOKMARK_DELETED_KEY = "challenge:%d" + BOOKMARK_SUFFIX + ":deleted" + USER_SUFFIX;
 
     @Override
     public void addBookmark(Long userId, Long challengeId) {
         addUserChallengeBookmark(userId, challengeId);
         addChallengeUserBookmark(userId, challengeId);
+        addChallengeBookmarkAdded(userId, challengeId);
         removeChallengeBookmarkDeleted(userId, challengeId);
         incrementChallengeBookmarkScore(challengeId);
     }
@@ -37,6 +39,7 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
     public void removeBookmark(Long userId, Long challengeId) {
         removeUserChallengeBookmark(userId, challengeId);
         removeChallengeUserBookmark(userId, challengeId);
+        removeChallengeBookmarkAdded(userId, challengeId);
         addChallengeBookmarkDeleted(userId, challengeId);
         decrementChallengeBookmarkScore(challengeId);
     }
@@ -80,16 +83,17 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
     @Override
     public void removeBookmarksByChallenge(Long challengeId) {
         String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
-        String challengeDeletedKey = getRedisKey(CHALLENGE_BOOKMARK_DELETED_KEY, challengeId);
+        String challengeAddedKey = getRedisKey(CHALLENGE_BOOKMARK_ADDED_KEY, challengeId);
 
         Set<Long> userIds = getBookmarkedUsers(challengeId);
 
         userIds.forEach(userId -> {
             removeUserChallengeBookmark(userId, challengeId);
+            addChallengeBookmarkDeleted(userId, challengeId);
         });
 
         redisTemplate.opsForZSet().remove(CHALLENGE_BOOKMARK_COUNT_KEY, challengeId);
-        redisTemplate.delete(List.of(challengeKey, challengeDeletedKey));
+        redisTemplate.delete(List.of(challengeKey, challengeAddedKey));
     }
 
     private void addUserChallengeBookmark(Long userId, Long challengeId) {
@@ -111,6 +115,16 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
     private void removeChallengeUserBookmark(Long userId, Long challengeId) {
         String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
         redisTemplate.opsForSet().remove(challengeKey, userId);
+    }
+
+    private void addChallengeBookmarkAdded(Long userId, Long challengeId) {
+        String challengeAddedKey = getRedisKey(CHALLENGE_BOOKMARK_ADDED_KEY, challengeId);
+        redisTemplate.opsForSet().add(challengeAddedKey, userId);
+    }
+
+    private void removeChallengeBookmarkAdded(Long userId, Long challengeId) {
+        String challengeAddedKey = getRedisKey(CHALLENGE_BOOKMARK_ADDED_KEY, challengeId);
+        redisTemplate.opsForSet().remove(challengeAddedKey, userId);
     }
 
     private void addChallengeBookmarkDeleted(Long userId, Long challengeId) {
