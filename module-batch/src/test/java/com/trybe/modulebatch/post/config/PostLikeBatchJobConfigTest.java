@@ -8,6 +8,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 
@@ -22,9 +23,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @EnableBatchProcessing
 class PostLikeBatchJobConfigTest {
     @Autowired
+    @Qualifier("postLikeBulkUpdateJob")
     private Job postLikeJob;
+
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
+
     @Autowired
     private RedisTemplate<String, Long> redisTemplate;
 
