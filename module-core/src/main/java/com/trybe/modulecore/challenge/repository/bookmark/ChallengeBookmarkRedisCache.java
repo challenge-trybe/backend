@@ -1,6 +1,8 @@
 package com.trybe.modulecore.challenge.repository.bookmark;
 
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
@@ -16,15 +18,18 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
         this.redisTemplate = redisTemplate;
     }
 
-    private final String BOOKMARK_SUFFIX = ":bookmarks";
-    private final String USER_SUFFIX = ":users";
+    private static final String BOOKMARK_SUFFIX = ":bookmarks";
+    private static final String USER_SUFFIX = ":users";
     private final String CHALLENGE_SUFFIX = ":challenges";
 
     private final String USER_KEY = "user:%d" + BOOKMARK_SUFFIX + CHALLENGE_SUFFIX;
     private final String CHALLENGE_BOOKMARK_KEY = "challenge:%d" + BOOKMARK_SUFFIX + USER_SUFFIX;
     private final String CHALLENGE_BOOKMARK_COUNT_KEY = "challenge" + BOOKMARK_SUFFIX + ":counts";
-    private final String CHALLENGE_BOOKMARK_ADDED_KEY = "challenge:%d" + BOOKMARK_SUFFIX + ":added" + USER_SUFFIX;
-    private final String CHALLENGE_BOOKMARK_DELETED_KEY = "challenge:%d" + BOOKMARK_SUFFIX + ":deleted" + USER_SUFFIX;
+    public static final String CHALLENGE_BOOKMARK_ADDED_KEY = "challenge:%d" + BOOKMARK_SUFFIX + ":added" + USER_SUFFIX;
+    public static final String CHALLENGE_BOOKMARK_DELETED_KEY = "challenge:%d" + BOOKMARK_SUFFIX + ":deleted" + USER_SUFFIX;
+
+    public static final String CHALLENGE_BOOKMARK_ADDED_PATTERN = "challenge:*" + BOOKMARK_SUFFIX + ":added" + USER_SUFFIX;
+    public static final String CHALLENGE_BOOKMARK_DELETED_PATTERN = "challenge:*" + BOOKMARK_SUFFIX + ":deleted" + USER_SUFFIX;
 
     @Override
     public void addBookmark(Long userId, Long challengeId) {
@@ -81,6 +86,22 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
     }
 
     @Override
+    public Set<Long> getBookmarkAddedUsers(Long challengeId) {
+        String addedKey = getRedisKey(CHALLENGE_BOOKMARK_ADDED_KEY, challengeId);
+
+        return Optional.ofNullable(redisTemplate.opsForSet().members(addedKey))
+                .orElse(Collections.emptySet());
+    }
+
+    @Override
+    public Set<Long> getBookmarkDeletedUsers(Long challengeId) {
+        String deletedKey = getRedisKey(CHALLENGE_BOOKMARK_DELETED_KEY, challengeId);
+
+        return Optional.ofNullable(redisTemplate.opsForSet().members(deletedKey))
+                .orElse(Collections.emptySet());
+    }
+
+    @Override
     public void removeBookmarksByChallenge(Long challengeId) {
         String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
         String challengeAddedKey = getRedisKey(CHALLENGE_BOOKMARK_ADDED_KEY, challengeId);
@@ -94,6 +115,19 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
 
         redisTemplate.opsForZSet().remove(CHALLENGE_BOOKMARK_COUNT_KEY, challengeId);
         redisTemplate.delete(List.of(challengeKey, challengeAddedKey));
+    }
+
+    public Cursor<String> getKeysByPattern(String pattern, int count) {
+        ScanOptions scanOptions = ScanOptions.scanOptions()
+                .match(pattern)
+                .count(count)
+                .build();
+
+        return redisTemplate.scan(scanOptions);
+    }
+
+    public void deleteKeys(List<String> keys) {
+        redisTemplate.delete(keys);
     }
 
     private void addUserChallengeBookmark(Long userId, Long challengeId) {
