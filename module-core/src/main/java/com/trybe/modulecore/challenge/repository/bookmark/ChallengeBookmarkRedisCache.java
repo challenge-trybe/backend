@@ -47,7 +47,7 @@ public class ChallengeBookmarkRedisCache implements ChallengeBookmarkCache {
     @Override
     public boolean isBookmarked(Long userId, Long challengeId) {
         String challengeKey = getRedisKey(CHALLENGE_BOOKMARK_KEY, challengeId);
-        return redisTemplate.opsForSet().isMember(challengeKey, userId);
+        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(challengeKey, userId));
     }
 
     @Override
