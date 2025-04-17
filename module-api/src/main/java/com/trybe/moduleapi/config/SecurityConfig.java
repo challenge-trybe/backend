@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/challenges/{id}").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/challenges/search").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/posts/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/posts/popular").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/posts/search").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/posts/{postId}/comments").permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/ws-connection")).permitAll()
