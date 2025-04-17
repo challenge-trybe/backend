@@ -1,50 +1,34 @@
 package com.trybe.moduleapi.post.controller;
 
 import com.trybe.moduleapi.annotation.WithCustomMockUser;
-import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.challenge.exception.participation.NotFoundChallengeParticipationException;
 import com.trybe.moduleapi.common.ControllerTest;
 import com.trybe.moduleapi.common.dto.PageResponse;
-import com.trybe.moduleapi.config.SecurityConfig;
 import com.trybe.moduleapi.post.dto.PostRequest;
 import com.trybe.moduleapi.post.dto.PostResponse;
 import com.trybe.moduleapi.post.exception.ForbiddenPostException;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
-import com.trybe.moduleapi.post.fixtures.PostChallengeFixtures;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
+import com.trybe.moduleapi.post.service.PopularPostService;
 import com.trybe.moduleapi.post.service.PostService;
-import com.trybe.moduleapi.user.controller.UserController;
-import com.trybe.moduleapi.user.dto.request.UserRequest;
-import com.trybe.moduleapi.user.exception.NotFoundUserException;
 import com.trybe.moduleapi.user.fixtures.AuthenticationFixtures;
-import com.trybe.moduleapi.user.fixtures.UserFixtures;
-import com.trybe.modulecore.challenge.enums.ChallengeCategory;
-import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -61,6 +45,8 @@ class PostControllerTest extends ControllerTest {
 
     @MockitoBean
     private PostService postService;
+    @MockitoBean
+    private PopularPostService popularPostService;
 
     @Test
     @DisplayName("정상적인 게시글 생성 요청 시 200을 반환한다.")
@@ -330,6 +316,41 @@ class PostControllerTest extends ControllerTest {
         ));
 
     }
+
+    @Test
+    @DisplayName("인기 게시글 조회 시 200을 반환한다")
+    void 인기_게시글_조회_시_200을_반환한다() throws Exception {
+        /* given */
+        List<PostResponse.Summary> 인기게시글 = PostFixtures.인기_게시글;
+
+        when(popularPostService.findTop10Posts()).thenReturn(인기게시글);
+
+        /* when */
+        mockMvc.perform(get("/api/v1/posts/popular"))
+               .andExpectAll(status().isOk(),
+                             jsonPath("$[0].id").value(인기게시글.get(0).id()),
+                             jsonPath("$[0].title").value(인기게시글.get(0).title()),
+                             jsonPath("$[0].category").value(인기게시글.get(0).category().toString()),
+                             jsonPath("$[0].createdAt").value(인기게시글.get(0).createdAt()),
+                             jsonPath("$[0].writer.id").value(인기게시글.get(0).writer().id()),
+                             jsonPath("$[0].writer.userId").value(인기게시글.get(0).writer().userId()),
+                             jsonPath("$[0].writer.nickname").value(인기게시글.get(0).writer().nickname()))
+               .andDo(document(docsPath + "popular",
+                               preprocessRequest(prettyPrint()),
+                               preprocessResponse(prettyPrint()),
+                               responseFields(
+                                       fieldWithPath("[].id").description("게시글 ID"),
+                                       fieldWithPath("[].title").description("게시글 제목"),
+                                       fieldWithPath("[].category").description("게시글 카테고리"),
+                                       fieldWithPath("[].createdAt").description("게시글 생성일"),
+                                       fieldWithPath("[].writer.id").description("게시글 작성자 ID"),
+                                       fieldWithPath("[].writer.userId").description("게시글 작성자 유저 ID"),
+                                       fieldWithPath("[].writer.nickname").description("게시글 작성자 닉네임")
+                               )
+               ));
+
+    }
+
 
     @Test
     @DisplayName("정상적인 게시글 수정 요청 시 200을 반환한다")
