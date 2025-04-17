@@ -1,25 +1,22 @@
 package com.trybe.moduleapi.post.fixtures;
 
-import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.PostRequest;
 import com.trybe.moduleapi.post.dto.PostResponse;
+import com.trybe.moduleapi.post.service.event.PostEvent;
+import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
-import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.enums.PostCategory;
 import com.trybe.modulecore.post.enums.PostOrder;
 import com.trybe.modulecore.user.entity.User;
-import jdk.jfr.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 
 import java.lang.reflect.Field;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -107,5 +104,13 @@ public class PostFixtures {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static PostEvent 게시글_생성_이벤트(Long postId){
+        return PostEvent.from(postId, PostEventType.POST_CREATED);
+    }
+
+    public static PostEvent 게시글_삭제_이벤트(Long postId){
+        return PostEvent.from(postId, PostEventType.POST_DELETED);
     }
 }
