@@ -113,4 +113,6 @@ public class PostFixtures {
     public static PostEvent 게시글_삭제_이벤트(Long postId){
         return PostEvent.from(postId, PostEventType.POST_DELETED);
     }
+    public static List<PostResponse.Summary> 인기_게시글 = 게시글_목록.stream().map(PostResponse.Summary::from).toList();
+
 }
