@@ -5,6 +5,7 @@ import com.trybe.moduleapi.post.dto.PostResponse;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
 import com.trybe.moduleapi.post.fixtures.PostLikeFixtures;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.repository.PostRepository;
@@ -21,13 +22,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +35,8 @@ class PostLikeServiceTest {
     private RedisTemplate<String, Long> redisTemplate;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private PostEventPublisher eventPublisher;
 
     @InjectMocks
     private PostLikeService postLikeService;
@@ -63,6 +64,7 @@ class PostLikeServiceTest {
         // then
         assertEquals(응답.likeCount(), 좋아요_개수+1);
         assertEquals(응답.isLiked(), true);
+        verify(eventPublisher, times(1)).publish(PostLikeFixtures.좋아요_추가_이벤트(포스트_ID));
     }
 
     @Test
@@ -102,8 +104,10 @@ class PostLikeServiceTest {
         // then
         verify(redisTemplate.opsForZSet()).remove(eq(userKey), eq(PostFixtures.id));
         verify(redisTemplate.opsForSet()).remove(eq(postKey), eq(회원.getId()));
+        verify(eventPublisher, times(1)).publish(PostLikeFixtures.좋아요_삭제_이벤트(포스트_ID));
         assertEquals(응답.likeCount(), 좋아요_개수-1);
         assertEquals(응답.isLiked(), false);
+
     }
 
     @Test
