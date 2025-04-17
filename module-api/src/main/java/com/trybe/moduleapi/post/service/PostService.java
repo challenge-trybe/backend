@@ -1,10 +1,12 @@
 package com.trybe.moduleapi.post.service;
 
-import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.participation.NotFoundChallengeParticipationException;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.PostRequest;
 import com.trybe.moduleapi.post.dto.PostResponse;
+import com.trybe.moduleapi.post.service.event.PostEvent;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
+import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.moduleapi.post.exception.ForbiddenPostException;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.modulecore.challenge.entity.Challenge;
@@ -22,7 +24,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,14 +36,16 @@ public class PostService {
     private final ChallengeParticipationRepository participationRepository;
     private final CommentRepository commentRepository;
     private final PostLikeService postLikeService;
+    private final PostEventPublisher eventPublisher;
 
-    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository, CommentRepository commentRepository, PostLikeService postLikeService) {
+    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository, CommentRepository commentRepository, PostLikeService postLikeService, PostEventPublisher eventPublisher) {
         this.postRepository = postRepository;
         this.challengeRepository = challengeRepository;
         this.postChallengeRepository = postChallengeRepository;
         this.participationRepository = participationRepository;
         this.commentRepository = commentRepository;
         this.postLikeService = postLikeService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -58,6 +61,7 @@ public class PostService {
 
         List<Challenge> challenges = getChallenges(request.challengeIds());
         savePostChallenge(post,challenges);
+        eventPublisher.publish(PostEvent.from(post.getId(), PostEventType.POST_CREATED));
         return PostResponse.Detail.from(savePost, challenges, 0);
     }
 
@@ -101,6 +105,7 @@ public class PostService {
         postLikeService.removeLikesByPost(post.getId());
         commentRepository.deleteAllByPostId(post.getId());
         postRepository.deleteById(id);
+        eventPublisher.publish(PostEvent.from(post.getId(), PostEventType.POST_DELETED));
     }
 
     private static void checkLoginUserAndPostUser(User user, Post post) {
