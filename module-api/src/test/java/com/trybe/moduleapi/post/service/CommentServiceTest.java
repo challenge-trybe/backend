@@ -8,6 +8,7 @@ import com.trybe.moduleapi.post.exception.NotFoundCommentException;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.moduleapi.post.fixtures.CommentFixtures;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.post.entity.Comment;
 import com.trybe.modulecore.post.entity.Post;
@@ -37,6 +38,9 @@ class CommentServiceTest {
     @Mock
     private PostRepository postRepository;
 
+    @Mock
+    private PostEventPublisher eventPublisher;
+
     @InjectMocks
     private CommentService commentService;
 
@@ -56,6 +60,7 @@ class CommentServiceTest {
 
         /* then */
         assertEquals(response.content(), 댓글_등록.content());
+        verify(eventPublisher, times(1)).publish(CommentFixtures.댓글_생성_이벤트(게시글.getId()));
     }
 
     @Test
@@ -143,6 +148,7 @@ class CommentServiceTest {
 
         /* then */
         verify(commentRepository, times(1)).deleteById(댓글_ID);
+        verify(eventPublisher, times(1)).publish(CommentFixtures.댓글_삭제_이벤트(게시글.getId()));
     }
 
     @Test
