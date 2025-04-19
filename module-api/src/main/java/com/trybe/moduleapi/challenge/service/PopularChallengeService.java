@@ -22,14 +22,6 @@ public class PopularChallengeService {
         this.challengeRepository = challengeRepository;
     }
 
-    public void increasePopularity(Long challengeId, int score) {
-        popularChallengeCache.increaseScore(challengeId, score, DateUtils.getToday());
-    }
-
-    public void decreasePopularity(Long challengeId, int score) {
-        popularChallengeCache.decreaseScore(challengeId, score, DateUtils.getToday());
-    }
-
     public List<Challenge> getTopPopularChallenges(int count) {
         Set<Long> challengeIds = popularChallengeCache.getTopPopularChallenges(DateUtils.getToday().minusDays(1), count);
         List<Challenge> challenges = challengeIds.isEmpty()

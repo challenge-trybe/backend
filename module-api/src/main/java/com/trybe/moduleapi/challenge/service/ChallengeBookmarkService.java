@@ -1,6 +1,9 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
@@ -25,28 +28,27 @@ public class ChallengeBookmarkService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengePreferenceCache challengePreferenceCache;
-    private final PopularChallengeService popularChallengeService;
+    private final ChallengeEventPublisher challengeEventPublisher;
 
-    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, PopularChallengeService popularChallengeService) {
+    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, PopularChallengeService popularChallengeService, ChallengeEventPublisher challengeEventPublisher) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengePreferenceCache = challengePreferenceCache;
-        this.popularChallengeService = popularChallengeService;
+        this.challengeEventPublisher = challengeEventPublisher;
     }
-
-    private static final int BOOKMARK_POPULAR_SCORE = 10;
 
     @Transactional
     public ChallengeResponse.Bookmark addBookmark(User user, Long challengeId) {
         Challenge challenge = getChallenge(challengeId);
+        Long userId = user.getId();
 
         int count = challengeBookmarkCache.getBookmarkCount(challengeId);
 
-        if (!challengeBookmarkCache.isBookmarked(user.getId(), challengeId)) {
-            challengeBookmarkCache.addBookmark(user.getId(), challengeId);
-            challengePreferenceCache.addPreference(user.getId(), challenge);
-            popularChallengeService.increasePopularity(challengeId, BOOKMARK_POPULAR_SCORE);
+        if (!challengeBookmarkCache.isBookmarked(userId, challengeId)) {
+            challengeBookmarkCache.addBookmark(userId, challengeId);
+            challengePreferenceCache.addPreference(userId, challenge);
+            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.BOOKMARK_ADD));
             count++;
         }
 
@@ -56,12 +58,13 @@ public class ChallengeBookmarkService {
     @Transactional
     public ChallengeResponse.Bookmark removeBookmark(User user, Long challengeId) {
         validateExistChallenge(challengeId);
+        Long userId = user.getId();
 
         int count = challengeBookmarkCache.getBookmarkCount(challengeId);
 
-        if (challengeBookmarkCache.isBookmarked(user.getId(), challengeId)) {
-            challengeBookmarkCache.removeBookmark(user.getId(), challengeId);
-            popularChallengeService.decreasePopularity(challengeId, BOOKMARK_POPULAR_SCORE);
+        if (challengeBookmarkCache.isBookmarked(userId, challengeId)) {
+            challengeBookmarkCache.removeBookmark(userId, challengeId);
+            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.BOOKMARK_REMOVE));
             count--;
         }
 

@@ -1,6 +1,9 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
+import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.*;
 import com.trybe.moduleapi.challenge.exception.participation.*;
 import com.trybe.moduleapi.chat.service.ChatService;
@@ -24,33 +27,33 @@ public class ChallengeParticipationService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeRepository challengeRepository;
     private final ChallengePreferenceCache challengePreferenceCache;
-    private final PopularChallengeService popularChallengeService;
+    private final ChallengeEventPublisher challengeEventPublisher;
     private final ChatService chatService;
 
-    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository, ChallengePreferenceCache challengePreferenceCache, PopularChallengeService popularChallengeService, ChatService chatService) {
+    public ChallengeParticipationService(ChallengeParticipationRepository challengeParticipationRepository, ChallengeRepository challengeRepository, ChallengePreferenceCache challengePreferenceCache, ChallengeEventPublisher challengeEventPublisher, ChatService chatService) {
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeRepository = challengeRepository;
         this.challengePreferenceCache = challengePreferenceCache;
-        this.popularChallengeService = popularChallengeService;
+        this.challengeEventPublisher = challengeEventPublisher;
         this.chatService = chatService;
     }
 
     private static final int MAX_PENDING_PARTICIPATIONS = 20;
-    private static final int PARTICIPATION_POPULAR_SCORE = 15;
 
     @Transactional
     public ChallengeParticipationResponse.Detail join(User user, Long challengeId) {
         Challenge challenge = getChallenge(challengeId);
+        Long userId = user.getId();
 
-        validateDuplicatedParticipation(user.getId(), challengeId);
+        validateDuplicatedParticipation(userId, challengeId);
         validateChallengeStatus(challenge, "챌린지가 진행 예정인 경우에만 참여 신청이 가능합니다.");
         validateChallengeCapacity(challenge);
         validateChallengeParticipationCapacity(challenge);
 
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
-        challengePreferenceCache.addPreference(user.getId(), challenge);
-        popularChallengeService.increasePopularity(challengeId, PARTICIPATION_POPULAR_SCORE);
+        challengePreferenceCache.addPreference(userId, challenge);
+        challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.PARTICIPATION_ADD));
 
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
@@ -104,17 +107,19 @@ public class ChallengeParticipationService {
     @Transactional
     public void cancel(User user, Long participationId) {
         ChallengeParticipation participation = getParticipation(participationId);
+        Long challengeId = participation.getChallenge().getId();
+        Long userId = user.getId();
 
-        validateParticipationUser(participation, user.getId());
+        validateParticipationUser(participation, userId);
         validateParticipationStatus(participation, ParticipationStatus.PENDING);
 
-        popularChallengeService.decreasePopularity(participation.getChallenge().getId(), PARTICIPATION_POPULAR_SCORE);
+        challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.PARTICIPATION_REMOVE));
         challengeParticipationRepository.delete(participation);
     }
 
     private Challenge getChallenge(Long id) {
         return challengeRepository.findById(id)
-                .orElseThrow(() -> new NotFoundChallengeException());
+                .orElseThrow(NotFoundChallengeException::new);
     }
 
     private ChallengeParticipation getParticipation(Long id) {

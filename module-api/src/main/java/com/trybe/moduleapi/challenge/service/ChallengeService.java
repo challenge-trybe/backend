@@ -2,6 +2,9 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
@@ -33,22 +36,23 @@ public class ChallengeService {
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengePreferenceCache challengePreferenceCache;
     private final ChallengeViewCache challengeViewCache;
+    private final ChallengeEventPublisher challengeEventPublisher;
     private final PopularChallengeService popularChallengeService;
     private final ChallengeRecommendationClientService challengeRecommendationClientService;
     private final ChatService chatService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeViewCache challengeViewCache, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeViewCache challengeViewCache, ChallengeEventPublisher challengeEventPublisher, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengePreferenceCache = challengePreferenceCache;
         this.challengeViewCache = challengeViewCache;
+        this.challengeEventPublisher = challengeEventPublisher;
         this.popularChallengeService = popularChallengeService;
         this.challengeRecommendationClientService = challengeRecommendationClientService;
         this.chatService = chatService;
     }
 
-    private static final int VIEW_POPULAR_SCORE = 1;
     private static final int POPULAR_CHALLENGE_COUNT = 20;
 
     @Transactional
@@ -178,7 +182,7 @@ public class ChallengeService {
     private void handleView(Long userId, Long challengeId) {
         if (!challengeViewCache.hasViewed(userId, challengeId)) {
             challengeViewCache.recordView(userId, challengeId);
-            popularChallengeService.increasePopularity(challengeId, VIEW_POPULAR_SCORE);
+            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.VIEW));
         }
     }
 }
