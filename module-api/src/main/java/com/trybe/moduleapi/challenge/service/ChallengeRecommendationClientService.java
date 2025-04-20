@@ -3,6 +3,8 @@ package com.trybe.moduleapi.challenge.service;
 import com.trybe.moduleapi.challenge.client.ChallengeRecommendationClient;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
+import com.trybe.modulecore.challenge.enums.ParticipationStatus;
+import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -16,12 +18,14 @@ import java.util.Set;
 public class ChallengeRecommendationClientService {
     private final ChallengeRecommendationClient challengeRecommendationClient;
     private final ChallengeRepository challengeRepository;
+    private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final PopularChallengeService popularChallengeService;
 
-    public ChallengeRecommendationClientService(ChallengeRecommendationClient challengeRecommendationClient, ChallengeRepository challengeRepository, ChallengeBookmarkCache challengeBookmarkCache, PopularChallengeService popularChallengeService) {
+    public ChallengeRecommendationClientService(ChallengeRecommendationClient challengeRecommendationClient, ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, PopularChallengeService popularChallengeService) {
         this.challengeRecommendationClient = challengeRecommendationClient;
         this.challengeRepository = challengeRepository;
+        this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.popularChallengeService = popularChallengeService;
     }
@@ -43,14 +47,18 @@ public class ChallengeRecommendationClientService {
     }
 
     private ChallengeResponse.Preview createPreview(Long userId, Challenge challenge) {
-        int participationCount = challengeBookmarkCache.getBookmarkCount(challenge.getId());
+        int participationCount = getParticipationCount(challenge.getId());
         ChallengeResponse.Bookmark bookmark = createBookmark(userId, challenge.getId());
         return ChallengeResponse.Preview.from(challenge, participationCount, bookmark);
     }
 
     private ChallengeResponse.Bookmark createBookmark(Long userId, Long challengeId) {
         int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challengeId);
-        Boolean bookmarked = challengeBookmarkCache.isBookmarked(userId, challengeId);
+        Boolean bookmarked = userId == null ? null : challengeBookmarkCache.isBookmarked(userId, challengeId);
         return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
+    }
+
+    private int getParticipationCount(Long challengeId) {
+        return challengeParticipationRepository.countByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED);
     }
 }

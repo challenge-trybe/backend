@@ -30,11 +30,11 @@ public class ChallengeFixtures {
 
     public static final LocalDate 챌린지_시작_날짜 = LocalDate.now().plus(1, ChronoUnit.DAYS);
     public static final LocalDate 잘못된_챌린지_시작_날짜 = LocalDate.of(2001, 5, 12);
-    public static final LocalDate 수정된_챌린지_시작_날짜 = LocalDate.of(2025, 4, 8);
+    public static final LocalDate 수정된_챌린지_시작_날짜 = LocalDate.now().plus(2, ChronoUnit.DAYS);
 
     public static final LocalDate 챌린지_종료_날짜 = 챌린지_시작_날짜.plus(2, ChronoUnit.WEEKS);
     public static final LocalDate 잘못된_챌린지_종료_날짜 = LocalDate.of(2001, 11, 14);
-    public static final LocalDate 수정된_챌린지_종료_날짜 = LocalDate.of(2025, 4, 14);
+    public static final LocalDate 수정된_챌린지_종료_날짜 = LocalDate.now().plus(3, ChronoUnit.WEEKS);
 
     public static final int 챌린지_인원 = 6;
     public static final int 잘못된_챌린지_인원 = 30;
@@ -81,12 +81,16 @@ public class ChallengeFixtures {
             잘못된_챌린지_인증_횟수
     );
 
+    private static final String 챌린지_키워드 = "디톡스";
+
     public static final ChallengeRequest.Read 챌린지_조회_요청 = new ChallengeRequest.Read(
+            챌린지_키워드,
             List.of(ChallengeStatus.PENDING, ChallengeStatus.ONGOING),
             List.of(ChallengeCategory.LIFE)
     );
 
     public static final ChallengeRequest.Read 잘못된_챌린지_조회_요청 = new ChallengeRequest.Read(
+            챌린지_키워드,
             List.of(),
             List.of()
     );

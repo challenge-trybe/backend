@@ -11,16 +11,16 @@ import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.proof.entity.ProofHistory;
+import com.trybe.modulecore.proof.enums.ProofHistoryVoteStatus;
 import com.trybe.modulecore.proof.repository.ProofHistoryRepository;
+import com.trybe.modulecore.proof.repository.vote.ProofHistoryVoteCache;
 import com.trybe.modulecore.user.entity.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.Optional;
 
@@ -41,13 +41,7 @@ public class ProofHistoryVoteServiceTest {
     private ChallengeParticipationRepository challengeParticipationRepository;
 
     @Mock
-    private RedisTemplate<String, Long> redisTemplate;
-
-    @BeforeEach
-    void setUp() {
-        lenient().when(redisTemplate.opsForHash()).thenReturn(mock());
-        lenient().when(redisTemplate.opsForValue()).thenReturn(mock());
-    }
+    private ProofHistoryVoteCache proofHistoryVoteCache;
 
     @Test
     @DisplayName("인증 기록 투표 생성 시 투표 결과를 반환한다.")
@@ -63,17 +57,12 @@ public class ProofHistoryVoteServiceTest {
                 .thenReturn(Optional.of(대기_인증_기록));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(any(), any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(true);
-        when(redisTemplate.opsForHash().get(any(String.class), any(String.class)))
-                .thenReturn(null);
-        when(redisTemplate.opsForValue().increment(any(String.class), anyLong()))
-                .thenReturn(1L);
 
         /* when */
         ProofHistoryVoteResponse.My result = proofHistoryVoteService.save(user, proofHistoryId, approved);
 
         /* then */
-        verify(redisTemplate.opsForValue(), atLeastOnce()).increment(any(String.class), anyLong());
-        verify(redisTemplate.opsForHash(), atLeastOnce()).put(any(String.class), any(String.class), any(String.class));
+        verify(proofHistoryVoteCache, times(1)).saveVote(userId, proofHistoryId, approved);
         assertEquals(approved, result.approved());
     }
 
@@ -154,15 +143,14 @@ public class ProofHistoryVoteServiceTest {
         Long userId = UserFixtures.회원_PK;
         User user = spy(UserFixtures.회원);
         boolean approved = true;
-        String approvedValue = approved ? "approved" : "disapproved";
 
         when(user.getId()).thenReturn(userId);
         when(proofHistoryRepository.findById(proofHistoryId))
                 .thenReturn(Optional.of(대기_인증_기록));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(any(), any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(true);
-        when(redisTemplate.opsForHash().get(any(String.class), any(String.class)))
-                .thenReturn(approvedValue);
+        when(proofHistoryVoteCache.hasUserVoted(userId, proofHistoryId))
+                .thenReturn(true);
 
         /* when */
         /* then */
@@ -175,14 +163,14 @@ public class ProofHistoryVoteServiceTest {
         /* given */
         Long proofHistoryId = 인증_기록_ID;
         Boolean approved = true;
-        String approvedValue = approved ? "approved" : "disapproved";
+        String voteStatus = ProofHistoryVoteStatus.fromBoolean(approved).getValue();
 
         when(proofHistoryRepository.findById(proofHistoryId))
                 .thenReturn(Optional.of(대기_인증_기록));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(any(), any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(true);
-        when(redisTemplate.opsForHash().get(any(String.class), any(String.class)))
-                .thenReturn(approvedValue);
+        when(proofHistoryVoteCache.findUserVote(any(), any(Long.class)))
+                .thenReturn(voteStatus);
 
         /* when */
         ProofHistoryVoteResponse.My result = proofHistoryVoteService.findMyVote(UserFixtures.회원, proofHistoryId);
@@ -242,19 +230,15 @@ public class ProofHistoryVoteServiceTest {
     void 인증_기록에_대한_투표_결과_조회_시_투표_결과를_반환한다 () {
         /* given */
         Long proofHistoryId = 인증_기록_ID;
-        ProofHistory proofHistory = spy(대기_인증_기록);
-        Long approvedCount = 1L;
-        Long disapprovedCount = 1L;
+        ProofHistory proofHistory = 대기_인증_기록;
+        int approvedCount = 1;
+        int disapprovedCount = 1;
 
-        String approvedCountKey = String.format("proofHistory:%d:votes:approvedCount", proofHistoryId);
-        String disapprovedCountKey = String.format("proofHistory:%d:votes:disapprovedCount", proofHistoryId);
-
-        when(proofHistory.getId()).thenReturn(proofHistoryId);
         when(proofHistoryRepository.findById(proofHistoryId))
                 .thenReturn(Optional.of(proofHistory));
-        when(redisTemplate.opsForValue().get(approvedCountKey))
+        when(proofHistoryVoteCache.getVoteCount(proofHistoryId, true))
                 .thenReturn(approvedCount);
-        when(redisTemplate.opsForValue().get(disapprovedCountKey))
+        when(proofHistoryVoteCache.getVoteCount(proofHistoryId, false))
                 .thenReturn(disapprovedCount);
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
                 .thenReturn(ChallengeFixtures.참여자_수);
@@ -263,10 +247,10 @@ public class ProofHistoryVoteServiceTest {
         ProofHistoryVoteResponse.Result result = proofHistoryVoteService.getResult(UserFixtures.회원, proofHistoryId);
         
         /* then */
-        int nonParticipatedCount = (ChallengeFixtures.참여자_수 - 1) - (approvedCount.intValue() + disapprovedCount.intValue());
+        int nonParticipatedCount = (ChallengeFixtures.참여자_수 - 1) - (approvedCount + disapprovedCount);
 
-        assertEquals(approvedCount.intValue(), result.approvedCount());
-        assertEquals(disapprovedCount.intValue(), result.disapprovedCount());
+        assertEquals(approvedCount, result.approvedCount());
+        assertEquals(disapprovedCount, result.disapprovedCount());
         assertEquals(nonParticipatedCount, result.nonParticipatedCount());
     }
 

@@ -109,7 +109,8 @@ public class ChallengeRequest {
     }
 
     public record Read(
-            // TODO: Filter
+            String keyword,
+
             @NotEmptyList(message = STATUSES_NOT_EMPTY_MESSAGE)
             List<ChallengeStatus> statuses,
 

@@ -41,6 +41,7 @@ public class ChallengeRecommendationService {
         List<String> keywords = challengePreferenceCache.getPreferenceKeywords(userId, RECOMMENDATION_KEYWORD_COUNT);
 
         List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(categories, keywords, LIMIT);
+
         LinkedHashSet<Challenge> challengeSet = new LinkedHashSet<>(recommendations);
 
         if (challengeSet.size() < LIMIT) {
