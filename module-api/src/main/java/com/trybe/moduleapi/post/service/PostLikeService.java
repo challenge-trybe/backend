@@ -29,14 +29,24 @@ public class PostLikeService {
     @Transactional
     public PostResponse.Like addLike(User user, Long postId) {
         validateExistPost(postId);
-        int likeCount = postLikeCache.addLike(user.getId(), postId);
+
+        int likeCount = postLikeCache.getPostLikeCount(postId);
+        if (!postLikeCache.alreadyLike(user.getId(), postId)){
+            postLikeCache.addLike(user.getId(), postId);
+            likeCount++;
+        }
         return PostResponse.Like.from(likeCount, true);
     }
 
     @Transactional
     public PostResponse.Like removeLike(User user, Long postId){
         validateExistPost(postId);
-        int likeCount = postLikeCache.removeLike(user.getId(), postId);
+
+        int likeCount = postLikeCache.getPostLikeCount(postId);
+        if (postLikeCache.alreadyLike(user.getId(), postId)){
+            postLikeCache.removeLike(user.getId(), postId);
+            likeCount--;
+        }
         return PostResponse.Like.from(likeCount,false);
     }
 

@@ -21,36 +21,25 @@ public class PostLikeCache {
         this.redisTemplate = redisTemplate;
     }
 
-    public int addLike(Long userId, Long postId){
+    public void addLike(Long userId, Long postId){
         String userKey = createRedisKey(USER_REDIS_KEY, userId);
         String deleteKey = createRedisKey(POST_LIKE_DELETE_KEY, postId);
         String postKey = createRedisKey(POST_REDIS_KEY, postId);
-        int likeCount = getPostLikeCount(postId);
 
-        if (!alreadyLike(userKey, postId)) {
-            double score = getCurrentTimeInSeconds();
-            redisTemplate.opsForZSet().add(userKey, postId, score);
-            redisTemplate.opsForSet().add(postKey, userId);
-            redisTemplate.opsForSet().remove(deleteKey, userId);
-            likeCount++;
-        }
-        return likeCount;
+        double score = getCurrentTimeInSeconds();
+        redisTemplate.opsForZSet().add(userKey, postId, score);
+        redisTemplate.opsForSet().add(postKey, userId);
+        redisTemplate.opsForSet().remove(deleteKey, userId);
     }
 
-    public int removeLike(Long userId, Long postId){
+    public void removeLike(Long userId, Long postId){
         String userKey = createRedisKey(USER_REDIS_KEY, userId);
         String deleteKey = createRedisKey(POST_LIKE_DELETE_KEY, postId);
         String postKey = createRedisKey(POST_REDIS_KEY, postId);
 
-        int likeCount = getPostLikeCount(postId);
-
-        if (alreadyLike(userKey, postId)) {
-            redisTemplate.opsForZSet().remove(userKey, postId);
-            redisTemplate.opsForSet().remove(postKey, userId);
-            redisTemplate.opsForSet().add(deleteKey, userId);
-            likeCount--;
-        }
-        return likeCount;
+        redisTemplate.opsForZSet().remove(userKey, postId);
+        redisTemplate.opsForSet().remove(postKey, userId);
+        redisTemplate.opsForSet().add(deleteKey, userId);
     }
 
     public void removeLikesByPost(Long postId){
@@ -66,6 +55,12 @@ public class PostLikeCache {
             }
             redisTemplate.delete(postKey);
         }
+    }
+
+    public boolean alreadyLike(Long userId, Long postId) {
+        String userKey = createRedisKey(USER_REDIS_KEY, userId);
+        Double score = redisTemplate.opsForZSet().score(userKey, postId);
+        return score != null;
     }
 
     public Set<Long> getLikePostIdsByUser(Long userId, int start, int end){
@@ -88,11 +83,6 @@ public class PostLikeCache {
 
     private String createRedisKey(String key, Long id){
         return String.format(key, id);
-    }
-
-    private boolean alreadyLike(String userKey, Long postId) {
-        Double score = redisTemplate.opsForZSet().score(userKey, postId);
-        return score != null;
     }
 
     private double getCurrentTimeInSeconds() {

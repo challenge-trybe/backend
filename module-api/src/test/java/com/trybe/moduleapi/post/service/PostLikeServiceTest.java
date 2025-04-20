@@ -45,14 +45,17 @@ class PostLikeServiceTest {
 
         int 좋아요_개수 = PostLikeFixtures.좋아요_개수;
         when(postRepository.existsById(포스트_ID)).thenReturn(true);
-        when(postLikeCache.addLike(회원.getId(), 포스트_ID)).thenReturn(좋아요_개수);
+        when(postLikeCache.getPostLikeCount(포스트_ID)).thenReturn(좋아요_개수);
+        when(postLikeCache.alreadyLike(회원.getId(), 포스트_ID)).thenReturn(false);
 
         // when
         PostResponse.Like 응답 = postLikeService.addLike(회원, PostFixtures.id);
 
         // then
-        assertEquals(응답.likeCount(), 좋아요_개수);
+        assertEquals(응답.likeCount(), 좋아요_개수+1);
         assertEquals(응답.isLiked(), true);
+        verify(postLikeCache, times(1)).alreadyLike(회원.getId(), 포스트_ID);
+        verify(postLikeCache, times(1)).addLike(회원.getId(), 포스트_ID);
     }
 
     @Test
@@ -76,14 +79,17 @@ class PostLikeServiceTest {
 
         int 좋아요_개수 = PostLikeFixtures.좋아요_개수;
         when(postRepository.existsById(포스트_ID)).thenReturn(true);
-        when(postLikeCache.removeLike(회원.getId(), 포스트_ID)).thenReturn(좋아요_개수);
+        when(postLikeCache.getPostLikeCount(포스트_ID)).thenReturn(좋아요_개수);
+        when(postLikeCache.alreadyLike(회원.getId(), 포스트_ID)).thenReturn(true);
 
         // when
         PostResponse.Like 응답 = postLikeService.removeLike(회원, PostFixtures.id);
 
         // then
-        assertEquals(응답.likeCount(), 좋아요_개수);
+        assertEquals(응답.likeCount(), 좋아요_개수-1);
         assertEquals(응답.isLiked(), false);
+        verify(postLikeCache, times(1)).alreadyLike(회원.getId(), 포스트_ID);
+        verify(postLikeCache, times(1)).removeLike(회원.getId(), 포스트_ID);
     }
 
     @Test
