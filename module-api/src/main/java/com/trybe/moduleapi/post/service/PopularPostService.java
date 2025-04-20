@@ -50,7 +50,7 @@ public class PopularPostService {
     }
 
     private boolean isPostCreatedToday(PostEvent event) {
-        if (event.eventType() == PostEventType.POST_CREATED) {
+        if (event.eventType() == PostEventType.POST_CREATED || event.eventType() == PostEventType.POST_DELETED) {
             return true;
         }
         LocalDate createdAt = postCreatedAtCache.getCreatedAtByPostId(event.postId());
