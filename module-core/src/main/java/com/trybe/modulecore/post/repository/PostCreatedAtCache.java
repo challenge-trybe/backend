@@ -9,7 +9,7 @@ import java.time.*;
 public class PostCreatedAtCache {
     private final RedisTemplate<String, Long> redisTemplate;
 
-    private static final String POST_CREATED_KEY = "posts:%d:createdAt";
+    private static final String POST_CREATED_KEY = "post:%d:createdAt";
     private static final Duration TTL = Duration.ofDays(2);
 
     public PostCreatedAtCache(RedisTemplate<String, Long> redisTemplate) {
