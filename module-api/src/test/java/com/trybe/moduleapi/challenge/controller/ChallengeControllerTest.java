@@ -262,6 +262,7 @@ class ChallengeControllerTest extends ControllerTest {
                         parameterWithName("size").description("페이지 크기")
                 ),
                 requestFields(
+                        fieldWithPath("keyword").description("챌린지 검색 키워드"),
                         fieldWithPath("statuses").description("챌린지 상태"),
                         fieldWithPath("categories").description("챌린지 카테고리")
                 ),
