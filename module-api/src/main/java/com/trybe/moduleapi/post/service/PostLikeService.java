@@ -47,9 +47,9 @@ public class PostLikeService {
             double score = getCurrentTimeInSeconds();
             redisTemplate.opsForZSet().add(userKey, postId, score);
             redisTemplate.opsForSet().add(postKey, user.getId());
+            eventPublisher.publish(PostEvent.from(postId, PostEventType.POST_LIKED));
             likeCount++;
         }
-        eventPublisher.publish(PostEvent.from(postId, PostEventType.POST_LIKED));
         return PostResponse.Like.from(likeCount, true);
     }
 
@@ -64,10 +64,10 @@ public class PostLikeService {
         if (alreadyLike(userKey, postId)) {
             redisTemplate.opsForZSet().remove(userKey, postId);
             redisTemplate.opsForSet().remove(postKey, user.getId());
+            eventPublisher.publish(PostEvent.from(postId, PostEventType.POST_UNLIKED));
             likeCount--;
         }
 
-        eventPublisher.publish(PostEvent.from(postId, PostEventType.POST_UNLIKED));
         return PostResponse.Like.from(likeCount,false);
     }
 
