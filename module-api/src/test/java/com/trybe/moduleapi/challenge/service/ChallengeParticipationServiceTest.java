@@ -2,6 +2,8 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.*;
@@ -43,7 +45,10 @@ class ChallengeParticipationServiceTest {
 
     @Mock
     private ChallengePreferenceCache challengePreferenceCache;
-  
+
+    @Mock
+    private ChallengeEventPublisher challengeEventPublisher;
+
     @Mock
     private ChatService chatService;
 
@@ -78,6 +83,7 @@ class ChallengeParticipationServiceTest {
         verifyUserResponse(멤버, result.user());
 
         verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
     @Test
@@ -440,9 +446,11 @@ class ChallengeParticipationServiceTest {
                 .thenReturn(Optional.of(챌린지_참여(member, ChallengeFixtures.챌린지(), 챌린지_멤버_역할, 챌린지_참여_대기_상태)));
 
         /* when */
-        /* then */
         challengeParticipationService.cancel(member, participationId);
+
+        /* then */
         verify(challengeParticipationRepository, atLeastOnce()).delete(any(ChallengeParticipation.class));
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
     @Test

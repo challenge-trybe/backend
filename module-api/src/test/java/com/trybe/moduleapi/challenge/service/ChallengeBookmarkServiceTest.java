@@ -1,6 +1,8 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.common.dto.PageResponse;
@@ -47,6 +49,9 @@ class ChallengeBookmarkServiceTest {
     @Mock
     private ChallengePreferenceCache challengePreferenceCache;
 
+    @Mock
+    private ChallengeEventPublisher challengeEventPublisher;
+
     @Test
     @DisplayName("챌린지 북마크 추가 시 북마크 정보를 반환한다.")
     void 챌린지_북마크_추가_시_북마크_정보를_반환한다 () {
@@ -68,6 +73,8 @@ class ChallengeBookmarkServiceTest {
 
         /* then */
         verify(challengeBookmarkCache, times(1)).addBookmark(userId, challengeId);
+        verify(challengePreferenceCache, times(1)).addPreference(eq(userId), any(Challenge.class));
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
 
         assertEquals(북마크_수 + 1, result.bookmarkCount());
         assertEquals(북마크_여부_참, result.bookmarked());
@@ -94,6 +101,8 @@ class ChallengeBookmarkServiceTest {
 
         /* then */
         verify(challengeBookmarkCache, never()).addBookmark(userId, challengeId);
+        verify(challengePreferenceCache, never()).addPreference(eq(userId), any(Challenge.class));
+        verify(challengeEventPublisher, never()).publish(any(ChallengeEvent.class));
 
         assertEquals(북마크_수, result.bookmarkCount());
         assertEquals(북마크_여부_참, result.bookmarked());
@@ -134,6 +143,7 @@ class ChallengeBookmarkServiceTest {
 
         /* then */
         verify(challengeBookmarkCache, times(1)).removeBookmark(userId, challengeId);
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
 
         assertEquals(북마크_수 - 1, result.bookmarkCount());
         assertEquals(북마크_여부_거짓, result.bookmarked());
@@ -160,6 +170,7 @@ class ChallengeBookmarkServiceTest {
 
         /* then */
         verify(challengeBookmarkCache, never()).removeBookmark(userId, challengeId);
+        verify(challengeEventPublisher, never()).publish(any(ChallengeEvent.class));
 
         assertEquals(북마크_수, result.bookmarkCount());
         assertEquals(북마크_여부_거짓, result.bookmarked());

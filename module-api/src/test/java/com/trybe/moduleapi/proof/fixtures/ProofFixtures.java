@@ -11,11 +11,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class ProofFixtures {
     public static final Long 인증_ID = 1L;
-    public static final LocalDate 인증_날짜 = LocalDate.of(2025, 4, 14);
+
+    public static final LocalDate 인증_날짜 = LocalDate.now().plus(2, ChronoUnit.DAYS);
     public static final LocalDate 잘못된_인증_날짜 = LocalDate.of(2001, 11, 14);
 
     public static final int 인증_라운드 = 1;

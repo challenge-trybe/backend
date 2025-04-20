@@ -43,11 +43,14 @@ Content-Type: application/json
   "categories": ["STUDY"]
 }
 
-### 4. 추천 챌린지 조회
+### 4. 인기 챌린지 목록 조회
+GET http://localhost:8080/api/v1/challenges/popular
+
+### 5. 추천 챌린지 목록 조회
 GET http://localhost:8080/api/v1/challenges/recommendations
 Authorization: {{accessToken}}
 
-### 5. 챌린지 내용 수정
+### 6. 챌린지 내용 수정
 PUT http://localhost:8080/api/v1/challenges/1/content
 Authorization: {{accessToken}}
 Content-Type: application/json
@@ -62,7 +65,7 @@ Content-Type: application/json
 }
 
 
-### 5-1. 챌린지 내용 수정 (유효성 검증 실패)
+### 6-1. 챌린지 내용 수정 (유효성 검증 실패)
 PUT http://localhost:8080/api/v1/challenges/1/content
 Authorization: {{accessToken}}
 Content-Type: application/json
@@ -76,7 +79,7 @@ Content-Type: application/json
   "category": "STUDY"
 }
 
-### 6. 챌린지 인증 내용 수정
+### 7. 챌린지 인증 내용 수정
 PUT http://localhost:8080/api/v1/challenges/1/proof
 Authorization: {{accessToken}}
 Content-Type: application/json
@@ -86,7 +89,7 @@ Content-Type: application/json
   "proofCount": 15
 }
 
-### 6-1. 챌린지 인증 내용 수정 (유효성 검증 실패)
+### 7-1. 챌린지 인증 내용 수정 (유효성 검증 실패)
 PUT http://localhost:8080/api/v1/challenges/1/proof
 Authorization: {{accessToken}}
 Content-Type: application/json
@@ -96,6 +99,6 @@ Content-Type: application/json
   "proofCount": 0
 }
 
-### 7. 챌린지 삭제
+### 8. 챌린지 삭제
 DELETE http://localhost:8080/api/v1/challenges/1
 Authorization: {{accessToken}}

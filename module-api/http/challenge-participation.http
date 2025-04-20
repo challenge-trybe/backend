@@ -19,7 +19,10 @@ Content-Type: application/json
   "status": "ACCEPTED"
 }
 
-
 ### 5. 챌린지 나가기
 PUT http://localhost:8080/api/v1/challenges/participations/leave/1
+Authorization: {{accessToken}}
+
+### 6. 챌린지 참여 요청 취소
+DELETE http://localhost:8080/api/v1/challenges/participations/2
 Authorization: {{accessToken}}
