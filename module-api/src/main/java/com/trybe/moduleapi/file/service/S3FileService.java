@@ -2,7 +2,7 @@ package com.trybe.moduleapi.file.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.trybe.moduleapi.file.dto.S3FileInfo;
+import com.trybe.moduleapi.file.dto.FileResponse;
 import com.trybe.moduleapi.file.exception.FileUploadException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,8 +28,8 @@ public class S3FileService implements FileService {
     }
 
     @Override
-    public List<S3FileInfo> uploadImages(List<MultipartFile> files, String basePath) {
-        List<S3FileInfo> S3fileInfos = new ArrayList<>();
+    public List<FileResponse> uploadImages(List<MultipartFile> files, String basePath) {
+        List<FileResponse> fileResponses = new ArrayList<>();
         for (MultipartFile file : files) {
             String fileName = generateFileName(file);
             String filePath = basePath + "/" + fileName;
@@ -39,13 +39,13 @@ public class S3FileService implements FileService {
                 metadata.setContentLength(file.getSize());
                 metadata.setContentType(file.getContentType());
                 amazonS3Client.putObject(bucket, filePath, file.getInputStream(), metadata);
-                S3FileInfo s3FileInfo = S3FileInfo.from(file.getOriginalFilename(), fileName, filePath);
-                S3fileInfos.add(s3FileInfo);
+                FileResponse fileResponse = FileResponse.from(file.getOriginalFilename(), fileName, filePath);
+                fileResponses.add(fileResponse);
             } catch (IOException e) {
                 throw new FileUploadException();
             }
         }
-        return S3fileInfos;
+        return fileResponses;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class S3FileService implements FileService {
     }
 
     @Override
-    public List<S3FileInfo> updateImages(List<String> filePaths, List<MultipartFile> newImages, String basePath) {
+    public List<FileResponse> updateImages(List<String> filePaths, List<MultipartFile> newImages, String basePath) {
         for (String filePath : filePaths) {
             deleteImage(filePath);
         }
