@@ -3,27 +3,24 @@ package com.trybe.moduleapi.post.service.event.handler;
 import com.trybe.moduleapi.post.service.event.PostEvent;
 import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.modulecore.post.repository.PopularPostCache;
-import com.trybe.modulecore.post.repository.PostCreatedAtCache;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PopularPostDeleteEventHandler implements PostEventHandler {
-    private final PostCreatedAtCache postCreatedAtCache;
+public class PostLikeEventHandler implements PostEventHandler {
     private final PopularPostCache popularPostCache;
 
-    public PopularPostDeleteEventHandler(PostCreatedAtCache postCreatedAtCache, PopularPostCache popularPostCache) {
-        this.postCreatedAtCache = postCreatedAtCache;
+    public PostLikeEventHandler(PopularPostCache popularPostCache) {
         this.popularPostCache = popularPostCache;
     }
 
     @Override
     public boolean supports(PostEventType type) {
-        return type == PostEventType.POST_DELETED;
+        return type == PostEventType.POST_LIKED;
     }
 
     @Override
     public void handle(PostEvent event) {
-        postCreatedAtCache.remove(event.postId());
-        popularPostCache.remove(event.postId());
+        popularPostCache.update(event.postId(), event.eventType().getScore());
     }
 }
+

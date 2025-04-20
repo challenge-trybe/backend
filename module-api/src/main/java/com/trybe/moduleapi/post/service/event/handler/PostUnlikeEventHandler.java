@@ -6,16 +6,16 @@ import com.trybe.modulecore.post.repository.PopularPostCache;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PopularPostLikeEventHandler implements PostEventHandler {
+public class PostUnlikeEventHandler implements PostEventHandler {
     private final PopularPostCache popularPostCache;
 
-    public PopularPostLikeEventHandler(PopularPostCache popularPostCache) {
+    public PostUnlikeEventHandler(PopularPostCache popularPostCache) {
         this.popularPostCache = popularPostCache;
     }
 
     @Override
     public boolean supports(PostEventType type) {
-        return type == PostEventType.POST_LIKED;
+        return type == PostEventType.POST_UNLIKED;
     }
 
     @Override
@@ -23,4 +23,3 @@ public class PopularPostLikeEventHandler implements PostEventHandler {
         popularPostCache.update(event.postId(), event.eventType().getScore());
     }
 }
-
