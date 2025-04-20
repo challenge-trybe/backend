@@ -2,6 +2,8 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.*;
@@ -45,8 +47,8 @@ class ChallengeParticipationServiceTest {
     private ChallengePreferenceCache challengePreferenceCache;
 
     @Mock
-    private PopularChallengeService popularChallengeService;
-  
+    private ChallengeEventPublisher challengeEventPublisher;
+
     @Mock
     private ChatService chatService;
 
@@ -81,7 +83,7 @@ class ChallengeParticipationServiceTest {
         verifyUserResponse(멤버, result.user());
 
         verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
-        verify(popularChallengeService, times(1)).increasePopularity(any(), anyInt());
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
     @Test
@@ -448,7 +450,7 @@ class ChallengeParticipationServiceTest {
 
         /* then */
         verify(challengeParticipationRepository, atLeastOnce()).delete(any(ChallengeParticipation.class));
-        verify(popularChallengeService, times(1)).decreasePopularity(any(), anyInt());
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
     @Test

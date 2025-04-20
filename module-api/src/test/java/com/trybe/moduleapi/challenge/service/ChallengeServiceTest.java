@@ -2,6 +2,8 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
@@ -54,6 +56,9 @@ class ChallengeServiceTest {
 
     @Mock
     private ChallengeViewCache challengeViewCache;
+
+    @Mock
+    private ChallengeEventPublisher challengeEventPublisher;
 
     @Mock
     private PopularChallengeService popularChallengeService;
@@ -115,7 +120,7 @@ class ChallengeServiceTest {
         assertEquals(false, response.bookmark().bookmarked());
 
         verify(challengeViewCache, times(1)).recordView(any(), any());
-        verify(popularChallengeService, times(1)).increasePopularity(any(), anyInt());
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
     @Test
@@ -146,7 +151,7 @@ class ChallengeServiceTest {
         assertEquals(false, response.bookmark().bookmarked());
 
         verify(challengeViewCache, never()).recordView(any(), any());
-        verify(popularChallengeService, never()).increasePopularity(any(), anyInt());
+        verify(challengeEventPublisher, never()).publish(any(ChallengeEvent.class));
     }
 
     @Test
