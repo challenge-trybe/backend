@@ -17,22 +17,7 @@ public class PostLikeFixtures {
         return PostEvent.from(postId, PostEventType.POST_LIKED);
     }
 
-    public static PostEvent 좋아요_삭제_이벤트(Long postId){
+    public static PostEvent 좋아요_삭제_이벤트(Long postId) {
         return PostEvent.from(postId, PostEventType.POST_UNLIKED);
-
-    private static final String POST_LIKE_SUFFIX = ":liked";
-    private static final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX + ":posts";
-    private static final String POST_REDIS_KEY = "post:%d" + POST_LIKE_SUFFIX + ":users";
-    private static final String POST_LIKE_DELETE_KEY = POST_REDIS_KEY + ":deleted";
-    public static String createUserKey(Long userId) {
-        return String.format(USER_REDIS_KEY, userId);
-    }
-
-    public static String createDeletedKey(Long postId) {
-        return String.format(POST_LIKE_DELETE_KEY, postId);
-    }
-
-    public static String createPostKey(Long postId) {
-        return String.format(POST_REDIS_KEY, postId);
     }
 }

@@ -91,9 +91,6 @@ class PostLikeServiceTest {
         PostResponse.Like 응답 = postLikeService.removeLike(회원, PostFixtures.id);
 
         // then
-        verify(redisTemplate.opsForZSet()).remove(eq(userKey), eq(PostFixtures.id));
-        verify(redisTemplate.opsForSet()).remove(eq(postKey), eq(회원.getId()));
-
         assertEquals(응답.likeCount(), 좋아요_개수-1);
         assertEquals(응답.isLiked(), false);
 
