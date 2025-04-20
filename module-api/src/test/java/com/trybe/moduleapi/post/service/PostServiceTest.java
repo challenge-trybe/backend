@@ -10,6 +10,7 @@ import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.moduleapi.post.fixtures.PostChallengeFixtures;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
 import com.trybe.moduleapi.post.fixtures.PostLikeFixtures;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
@@ -50,6 +51,8 @@ class PostServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private PostLikeService postLikeService;
+    @Mock
+    private PostEventPublisher eventPublisher;
 
     @InjectMocks
     private PostService postService;
@@ -77,6 +80,7 @@ class PostServiceTest {
         assertEquals(postDetail.writer().nickname(), UserFixtures.회원_닉네임);
         assertEquals(postDetail.likeCount(), 0);
         assertEquals(postDetail.challenges().size(), 3);
+        verify(eventPublisher, times(1)).publish(PostFixtures.게시글_생성_이벤트(게시글.getId()));
     }
 
     @Test
@@ -230,7 +234,7 @@ class PostServiceTest {
         verify(postChallengeRepository, times(1)).deleteAllByPostId(any());
         verify(commentRepository, times(1)).deleteAllByPostId(any());
         verify(postLikeService, times(1)).removeLikesByPost(any());
-
+        verify(eventPublisher, times(1)).publish(PostFixtures.게시글_삭제_이벤트(post.getId()));
     }
 
     @Test

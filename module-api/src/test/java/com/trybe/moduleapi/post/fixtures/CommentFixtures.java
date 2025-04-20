@@ -3,6 +3,8 @@ package com.trybe.moduleapi.post.fixtures;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.CommentRequest;
 import com.trybe.moduleapi.post.dto.CommentResponse;
+import com.trybe.moduleapi.post.service.event.PostEvent;
+import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.post.entity.Comment;
 import com.trybe.modulecore.post.entity.Post;
@@ -69,4 +71,11 @@ public class CommentFixtures {
     public static PageResponse<CommentResponse.Summary> 게시글에_달린_댓글_페이지_응답 = new PageResponse<>(댓글_페이지.map(CommentResponse.Summary::from));;
     public static PageResponse<CommentResponse.Detail> 내가_작성한_댓글_페이지_응답 = new PageResponse<>(댓글_페이지.map(CommentResponse.Detail::from));;
 
+    public static PostEvent 댓글_생성_이벤트(Long postId){
+        return PostEvent.from(postId, PostEventType.COMMENT_CREATED);
+    }
+
+    public static PostEvent 댓글_삭제_이벤트(Long postId){
+        return PostEvent.from(postId, PostEventType.COMMENT_DELETED);
+    }
 }

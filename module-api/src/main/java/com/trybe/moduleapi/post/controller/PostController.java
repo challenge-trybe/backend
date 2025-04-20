@@ -4,21 +4,25 @@ import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.PostRequest;
 import com.trybe.moduleapi.post.dto.PostResponse;
+import com.trybe.moduleapi.post.service.PopularPostService;
 import com.trybe.moduleapi.post.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/posts")
 public class PostController {
-
     private final PostService postService;
+    private final PopularPostService popularPostService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, PopularPostService popularPostService) {
         this.postService = postService;
+        this.popularPostService = popularPostService;
     }
 
     @PostMapping
@@ -37,6 +41,11 @@ public class PostController {
     public PageResponse<PostResponse.Summary> findAll(@Valid @RequestBody PostRequest.Read request,
                                                      Pageable pageable){
         return postService.findAll(request, pageable);
+    }
+
+    @GetMapping("/popular")
+    public List<PostResponse.Summary> findPopular(){
+        return popularPostService.findTop10Posts();
     }
 
     @PutMapping("/{id}")

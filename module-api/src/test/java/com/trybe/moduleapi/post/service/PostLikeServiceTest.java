@@ -5,6 +5,7 @@ import com.trybe.moduleapi.post.dto.PostResponse;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
 import com.trybe.moduleapi.post.fixtures.PostLikeFixtures;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.repository.PostLikeCache;
@@ -32,6 +33,8 @@ class PostLikeServiceTest {
     private PostLikeCache postLikeCache;
     @Mock
     private PostRepository postRepository;
+    @Mock
+    private PostEventPublisher eventPublisher;
 
     @InjectMocks
     private PostLikeService postLikeService;
@@ -54,6 +57,8 @@ class PostLikeServiceTest {
         // then
         assertEquals(응답.likeCount(), 좋아요_개수+1);
         assertEquals(응답.isLiked(), true);
+
+        verify(eventPublisher, times(1)).publish(PostLikeFixtures.좋아요_추가_이벤트(포스트_ID));
         verify(postLikeCache, times(1)).alreadyLike(회원.getId(), 포스트_ID);
         verify(postLikeCache, times(1)).addLike(회원.getId(), 포스트_ID);
     }
@@ -86,10 +91,18 @@ class PostLikeServiceTest {
         PostResponse.Like 응답 = postLikeService.removeLike(회원, PostFixtures.id);
 
         // then
+        verify(redisTemplate.opsForZSet()).remove(eq(userKey), eq(PostFixtures.id));
+        verify(redisTemplate.opsForSet()).remove(eq(postKey), eq(회원.getId()));
+
         assertEquals(응답.likeCount(), 좋아요_개수-1);
         assertEquals(응답.isLiked(), false);
+
+        assertEquals(응답.likeCount(), 좋아요_개수-1);
+        assertEquals(응답.isLiked(), false);
+      
         verify(postLikeCache, times(1)).alreadyLike(회원.getId(), 포스트_ID);
         verify(postLikeCache, times(1)).removeLike(회원.getId(), 포스트_ID);
+        verify(eventPublisher, times(1)).publish(PostLikeFixtures.좋아요_삭제_이벤트(포스트_ID));
     }
 
     @Test

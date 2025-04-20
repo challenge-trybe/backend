@@ -2,6 +2,9 @@ package com.trybe.moduleapi.post.service;
 
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.PostResponse;
+import com.trybe.moduleapi.post.service.event.PostEvent;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
+import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.repository.PostLikeCache;
@@ -13,17 +16,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class PostLikeService {
     private final PostRepository postRepository;
     private final PostLikeCache postLikeCache;
+    private final PostEventPublisher eventPublisher;
 
-    public PostLikeService(PostRepository postRepository, PostLikeCache postLikeCache) {
+    public PostLikeService(PostRepository postRepository, PostLikeCache postLikeCache, PostEventPublisher eventPublisher) {
         this.postRepository = postRepository;
         this.postLikeCache = postLikeCache;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -33,6 +40,7 @@ public class PostLikeService {
         int likeCount = postLikeCache.getPostLikeCount(postId);
         if (!postLikeCache.alreadyLike(user.getId(), postId)){
             postLikeCache.addLike(user.getId(), postId);
+            eventPublisher.publish(PostEvent.from(postId, PostEventType.POST_LIKED));
             likeCount++;
         }
         return PostResponse.Like.from(likeCount, true);
@@ -45,8 +53,10 @@ public class PostLikeService {
         int likeCount = postLikeCache.getPostLikeCount(postId);
         if (postLikeCache.alreadyLike(user.getId(), postId)){
             postLikeCache.removeLike(user.getId(), postId);
+            eventPublisher.publish(PostEvent.from(postId, PostEventType.POST_UNLIKED));
             likeCount--;
         }
+
         return PostResponse.Like.from(likeCount,false);
     }
 

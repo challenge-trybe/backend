@@ -3,6 +3,9 @@ package com.trybe.moduleapi.post.service;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.CommentRequest;
 import com.trybe.moduleapi.post.dto.CommentResponse;
+import com.trybe.moduleapi.post.service.event.PostEvent;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
+import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.moduleapi.post.exception.ForbiddenCommentException;
 import com.trybe.moduleapi.post.exception.NotFoundCommentException;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
@@ -16,17 +19,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.*;
-
 @Service
 public class CommentService {
-
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final PostEventPublisher eventPublisher;
 
-    public CommentService(CommentRepository commentRepository, PostRepository postRepository) {
+    public CommentService(CommentRepository commentRepository, PostRepository postRepository, PostEventPublisher eventPublisher) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -34,6 +36,7 @@ public class CommentService {
         Post post = getPostById(postId);
         Comment comment = request.toEntity(user, post, request.content());
         commentRepository.save(comment);
+        eventPublisher.publish(PostEvent.from(post.getId(), PostEventType.COMMENT_CREATED));
         return CommentResponse.Summary.from(comment);
     }
 
@@ -63,6 +66,7 @@ public class CommentService {
         Comment comment = getCommentById(commentId);
         checkLoginUserAndCommentWriter(user, comment, "본인이 작성한 댓글만 삭제할 수 있습니다.");
         commentRepository.deleteById(comment.getId());
+        eventPublisher.publish(PostEvent.from(comment.getPost().getId(), PostEventType.COMMENT_DELETED));
     }
 
     private void checkLoginUserAndCommentWriter(User loginUser, Comment comment, String message) {

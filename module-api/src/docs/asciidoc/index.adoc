@@ -1030,6 +1030,17 @@ include::{snippets}/post-controller-test/search/query-parameters.adoc
 include::{snippets}/post-controller-test/search/http-response.adoc[]
 include::{snippets}/post-controller-test/search/response-fields.adoc[]
 
+=== 인기 게시글 조회 API
+
+인기 게시글 조회 시 다음과 같이 반환됩니다.
+
+==== 정상 요청
+include::{snippets}/post-controller-test/popular/http-request.adoc[]
+
+- 응답
+include::{snippets}/post-controller-test/popular/http-response.adoc[]
+include::{snippets}/post-controller-test/popular/response-fields.adoc[]
+
 === 게시글 수정 API
 
 게시글을 수정합니다.
