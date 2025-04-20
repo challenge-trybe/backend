@@ -2,10 +2,10 @@ package com.trybe.moduleapi.post.service;
 
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.PostResponse;
-import com.trybe.moduleapi.post.service.event.PostEvent;
-import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
-import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
+import com.trybe.moduleapi.post.service.event.PostEvent;
+import com.trybe.moduleapi.post.service.event.PostEventType;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.repository.PostLikeCache;
 import com.trybe.modulecore.post.repository.PostRepository;
@@ -16,8 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
