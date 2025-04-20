@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class PopularPostService {
@@ -43,7 +45,8 @@ public class PopularPostService {
         LocalDate time = LocalDate.now().minusDays(1);
         Set<Long> postIds = popularPostCache.findPopularPostIds(time);
         List<Post> posts = postRepository.findAllByIdIn(postIds);
-        return posts.stream().map(PostResponse.Summary::from).toList();
+        List<Post> sortedPosts = sortPosts(posts, postIds);
+        return sortedPosts.stream().map(PostResponse.Summary::from).toList();
     }
 
     private boolean isPostCreatedToday(PostEvent event) {
@@ -52,5 +55,14 @@ public class PopularPostService {
         }
         LocalDate createdAt = postCreatedAtCache.getCreatedAtByPostId(event.postId());
         return LocalDate.now().equals(createdAt);
+    }
+
+    private List<Post> sortPosts(List<Post> posts, Set<Long> postIds) {
+        Map<Long, Post> postMap = posts.stream()
+                .collect(Collectors.toMap(Post::getId, post -> post));
+
+        return postIds.stream()
+                .map(postMap::get)
+                .toList();
     }
 }
