@@ -1,4 +1,4 @@
-package com.trybe.modulebatch.config;
+package com.trybe.modulebatch.post.config;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;

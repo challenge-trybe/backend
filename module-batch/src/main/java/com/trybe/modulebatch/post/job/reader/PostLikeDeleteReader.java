@@ -1,18 +1,19 @@
-package com.trybe.modulebatch.job.reader;
+package com.trybe.modulebatch.post.job.reader;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PostLikeInsertReader extends PostLikeReader {
-    public PostLikeInsertReader(RedisTemplate<String, Long> redisTemplate) {
+public class PostLikeDeleteReader extends PostLikeReader {
+    public PostLikeDeleteReader(RedisTemplate<String, Long> redisTemplate) {
         super(redisTemplate);
     }
 
-    private final String REDIS_SCAN_PATTERN = "post:*:liked:users";
+    private final String REDIS_SCAN_PATTERN = "post:*:liked:users:deleted";
 
     @Override
     protected String getRedisScanPattern() {
         return REDIS_SCAN_PATTERN;
     }
+
 }
