@@ -29,11 +29,11 @@ public class ChallengeEventListener {
         }
     }
 
-    private void increaseScore(Long challengeId, int amount) {
-        popularChallengeCache.increaseScore(challengeId, amount, DateUtils.getToday());
+    private void increaseScore(Long challengeId, int score) {
+        popularChallengeCache.increaseScore(challengeId, score, DateUtils.getToday());
     }
 
-    private void decreaseScore(Long challengeId, int amount) {
-        popularChallengeCache.decreaseScore(challengeId, amount, DateUtils.getToday());
+    private void decreaseScore(Long challengeId, int score) {
+        popularChallengeCache.decreaseScore(challengeId, score, DateUtils.getToday());
     }
 }
