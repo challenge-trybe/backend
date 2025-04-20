@@ -68,7 +68,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponse.Detail find(Long id){
         Post post = getPostById(id);
-        int likes = postLikeService.count(post.getId());
+        int likes = postLikeService.getPostLikeCount(post.getId());
         List<Challenge> challenges = getChallengesByPostId(post.getId());
         return PostResponse.Detail.from(post, challenges, likes);
     }
@@ -83,7 +83,7 @@ public class PostService {
     @Transactional
     public PostResponse.Detail updatePost(User user, Long id, PostRequest.Update request) {
         Post post = getPostById(id);
-        int likes = postLikeService.count(post.getId());
+        int likes = postLikeService.getPostLikeCount(post.getId());
 
         checkLoginUserAndPostUser(user, post);
 

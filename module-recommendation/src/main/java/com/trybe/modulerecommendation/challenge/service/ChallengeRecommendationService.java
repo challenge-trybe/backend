@@ -7,11 +7,12 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.challenge.repository.popular.PopularChallengeCache;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -20,32 +21,36 @@ public class ChallengeRecommendationService {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengePreferenceCache challengePreferenceCache;
+    private final PopularChallengeCache popularChallengeCache;
 
-    public ChallengeRecommendationService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache) {
+    public ChallengeRecommendationService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, PopularChallengeCache popularChallengeCache) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengePreferenceCache = challengePreferenceCache;
+        this.popularChallengeCache = popularChallengeCache;
     }
 
-    private static final int MIN_LIMIT = 20;
-    private static final int MAX_LIMIT = 40;
+    private static final int LIMIT = 20;
     private static final int RECOMMENDATION_CATEGORY_COUNT = 3;
     private static final int RECOMMENDATION_KEYWORD_COUNT = 10;
+    public static final int INITIALIZE_HOUR = 4;
 
     public List<ChallengeResponse.Preview> getChallengeRecommendations(Long userId) {
         List<ChallengeCategory> categories = challengePreferenceCache.getPreferenceCategories(userId, RECOMMENDATION_CATEGORY_COUNT);
         List<String> keywords = challengePreferenceCache.getPreferenceKeywords(userId, RECOMMENDATION_KEYWORD_COUNT);
 
-        List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(categories, keywords, MAX_LIMIT);
+        List<Challenge> recommendations = challengeRepository.getByCategoriesOrKeywords(categories, keywords, LIMIT);
+
         LinkedHashSet<Challenge> challengeSet = new LinkedHashSet<>(recommendations);
 
-        challengeSet.addAll(getMostBookmarkedChallenges(MIN_LIMIT));
-        challengeSet.addAll(getRecentChallenges(MIN_LIMIT));
+        if (challengeSet.size() < LIMIT) {
+            challengeSet.addAll(getPopularChallenges(LIMIT));
+        }
 
         List<Challenge> challenges = new ArrayList<>(challengeSet);
-        if (challenges.size() > MAX_LIMIT) {
-            challenges = challenges.subList(0, MAX_LIMIT);
+        if (challenges.size() > LIMIT) {
+            challenges = challenges.subList(0, LIMIT);
         }
 
         Collections.shuffle(challenges);
@@ -57,14 +62,9 @@ public class ChallengeRecommendationService {
         return challengePreviews;
     }
 
-    private List<Challenge> getMostBookmarkedChallenges(int count) {
-        Set<Long> challengeIds = challengeBookmarkCache.getMostBookmarkedChallenges(count);
+    private List<Challenge> getPopularChallenges(int count) {
+        Set<Long> challengeIds = popularChallengeCache.getTopPopularChallenges(getToday(), count);
         return challengeRepository.findAllByIdIn(challengeIds);
-    }
-
-    private List<Challenge> getRecentChallenges(int count) {
-        Pageable pageable = PageRequest.of(0, count);
-        return challengeRepository.findAllTopByOrderByCreatedAtDesc(pageable);
     }
 
     private ChallengeResponse.Preview createPreview(Long userId, Challenge challenge) {
@@ -81,5 +81,11 @@ public class ChallengeRecommendationService {
 
     private int getParticipationCount(Long challengeId) {
         return challengeParticipationRepository.countByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED);
+    }
+
+    private LocalDate getToday() {
+        LocalDateTime now = LocalDateTime.now();
+
+        return (now.getHour() < INITIALIZE_HOUR) ? now.toLocalDate().minusDays(1) : now.toLocalDate();
     }
 }

@@ -261,6 +261,18 @@ include::{snippets}/challenge-controller-test/recommendations/response-fields.ad
 
 ---
 
+=== 챌린지 인기 목록 조회
+챌린지 인기 목록을 조회합니다.
+
+==== 정상 요청
+include::{snippets}/challenge-controller-test/popular/http-request.adoc[]
+
+- 응답
+include::{snippets}/challenge-controller-test/popular/http-response.adoc[]
+include::{snippets}/challenge-controller-test/popular/response-fields.adoc[]
+
+---
+
 === 챌린지 내용 수정
 챌린지 ID에 해당하는 챌린지의 정보를 수정합니다.
 

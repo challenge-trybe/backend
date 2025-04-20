@@ -262,6 +262,7 @@ class ChallengeControllerTest extends ControllerTest {
                         parameterWithName("size").description("페이지 크기")
                 ),
                 requestFields(
+                        fieldWithPath("keyword").description("챌린지 검색 키워드"),
                         fieldWithPath("statuses").description("챌린지 상태"),
                         fieldWithPath("categories").description("챌린지 카테고리")
                 ),
@@ -315,6 +316,42 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("data.statuses").description("챌린지 상태 에러 메시지"),
                         fieldWithPath("data.categories").description("챌린지 카테고리 에러 메시지")
                 )));
+    }
+
+    @Test
+    @WithCustomMockUser
+    @DisplayName("정상적인 챌린지 인기 목록 조회 요청 시 응답코드 200을 반환한다.")
+    void 정상적인_챌린지_인기_목록_조회_요청_시_응답코드_200을_반환한다 () throws Exception {
+        /* given */
+        when(challengeService.getPopular(any(User.class)))
+                .thenReturn(ChallengeFixtures.챌린지_미리보기_목록_응답);
+
+        /* when */
+        /* then */
+        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.get(endpoint + "/popular"));
+
+        result.andExpectAll(
+                status().isOk(),
+                jsonPath("$.size()").value(ChallengeFixtures.챌린지_미리보기_목록_응답.size())
+        );
+
+        result.andDo(document(docsPath + "popular",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("[]").description("챌린지 목록"),
+                        fieldWithPath("[].id").description("챌린지 ID"),
+                        fieldWithPath("[].title").description("챌린지 제목"),
+                        fieldWithPath("[].description").description("챌린지 설명"),
+                        fieldWithPath("[].status").description("챌린지 상태"),
+                        fieldWithPath("[].category").description("챌린지 카테고리"),
+                        fieldWithPath("[].capacity").description("챌린지 인원"),
+                        fieldWithPath("[].participantCount").description("챌린지 참여자 수"),
+                        fieldWithPath("[].bookmark").description("챌린지 북마크 정보"),
+                        fieldWithPath("[].bookmark.bookmarkCount").description("챌린지 북마크 수"),
+                        fieldWithPath("[].bookmark.bookmarked").description("북마크 여부")
+                )
+        ));
     }
 
     @Test

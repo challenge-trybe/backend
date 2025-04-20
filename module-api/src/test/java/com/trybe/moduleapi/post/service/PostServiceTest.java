@@ -110,7 +110,7 @@ class PostServiceTest {
 
         when(postRepository.findById(any())).thenReturn(Optional.of(게시글));
         when(postChallengeRepository.findAllByPostId(any())).thenReturn(PostChallengeFixtures.게시글_챌린지_목록);
-        when(postLikeService.count(any())).thenReturn(좋아요_개수);
+        when(postLikeService.getPostLikeCount(any())).thenReturn(좋아요_개수);
 
         /* when */
         PostResponse.Detail postDetail = postService.find(1L);
@@ -165,7 +165,7 @@ class PostServiceTest {
 
         when(postRepository.findById(any())).thenReturn(Optional.of(PostFixtures.게시글));
         when(challengeRepository.findAllByIdIn(PostFixtures.수정_챌린지_Ids)).thenReturn(List.of(ChallengeFixtures.챌린지(),ChallengeFixtures.챌린지()));
-        when(postLikeService.count(any())).thenReturn(좋아요_개수);
+        when(postLikeService.getPostLikeCount(any())).thenReturn(좋아요_개수);
 
 
         /* when */

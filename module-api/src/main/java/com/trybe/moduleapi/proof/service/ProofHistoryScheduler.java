@@ -3,23 +3,22 @@ package com.trybe.moduleapi.proof.service;
 import com.trybe.modulecore.proof.entity.ProofHistory;
 import com.trybe.modulecore.proof.enums.ProofHistoryStatus;
 import com.trybe.modulecore.proof.repository.ProofHistoryRepository;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.trybe.modulecore.proof.repository.vote.ProofHistoryVoteCache;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProofHistoryScheduler {
     private final ProofHistoryRepository proofHistoryRepository;
-    private final RedisTemplate<String, Long> redisTemplate;
+    private final ProofHistoryVoteCache proofHistoryVoteCache;
 
-    public ProofHistoryScheduler(ProofHistoryRepository proofHistoryRepository, RedisTemplate<String, Long> redisTemplate) {
+    public ProofHistoryScheduler(ProofHistoryRepository proofHistoryRepository, ProofHistoryVoteCache proofHistoryVoteCache) {
         this.proofHistoryRepository = proofHistoryRepository;
-        this.redisTemplate = redisTemplate;
+        this.proofHistoryVoteCache = proofHistoryVoteCache;
     }
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -35,11 +34,8 @@ public class ProofHistoryScheduler {
     }
 
     private boolean isApproved(ProofHistory proofHistory) {
-        String approvedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:approvedCount";
-        String disapprovedCountKey = "proofHistory:" + proofHistory.getId() + ":votes:disapprovedCount";
-
-        long approvedCount = Optional.ofNullable(redisTemplate.opsForValue().get(approvedCountKey)).orElse(0L);
-        long disapprovedCount = Optional.ofNullable(redisTemplate.opsForValue().get(disapprovedCountKey)).orElse(0L);
+        int approvedCount = proofHistoryVoteCache.getVoteCount(proofHistory.getId(), true);
+        int disapprovedCount = proofHistoryVoteCache.getVoteCount(proofHistory.getId(), false);
 
         return approvedCount >= disapprovedCount;
     }

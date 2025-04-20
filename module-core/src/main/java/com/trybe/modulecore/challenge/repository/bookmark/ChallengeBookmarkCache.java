@@ -10,5 +10,7 @@ public interface ChallengeBookmarkCache {
     int getUserBookmarkCount(Long userId);
     Set<Long> getBookmarkedChallenges(Long userId, int start, int end);
     Set<Long> getMostBookmarkedChallenges(int count);
+    Set<Long> getBookmarkAddedUsers(Long challengeId);
+    Set<Long> getBookmarkDeletedUsers(Long challengeId);
     void removeBookmarksByChallenge(Long challengeId);
 }
