@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class PostFixtures {
     public static final String 내용 = "테스트 게시글 내용입니다.";
     public static final PostCategory 카테고리 = PostCategory.PROMOTION;
     public static final Set<Long> 챌린지_Ids = Set.of(1L, 2L, 3L);
-    public static final Set<Long> 게시글_아이디_목록 = Set.of(1L, 2L, 3L, 4L, 5L);
+    public static final Set<Long> 게시글_아이디_목록 = new LinkedHashSet<>(List.of(1L, 2L, 4L, 3L, 5L));
     public static final LocalDateTime 작성일 = LocalDateTime.of(2025,01,01,20,10,58);
 
     public static final String 수정_제목 = "테스트 게시글 수정 제목입니다.";
