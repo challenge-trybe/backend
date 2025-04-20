@@ -10,7 +10,6 @@ public class PostLikeFixtures {
     public static final PostResponse.Like 좋아요_추가_응답 = PostResponse.Like.from(5, true);
     public static final PostResponse.Like 좋아요_삭제_응답 = PostResponse.Like.from(4, false);
     public static final int 좋아요_개수 = 10;
-    public static final Long 좋아요_개수L = 20L;
 
     private static final String POST_LIKE_SUFFIX = ":liked";
     private static final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX + ":posts";

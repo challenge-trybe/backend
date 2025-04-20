@@ -4,48 +4,35 @@ import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.PostResponse;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
 import com.trybe.modulecore.post.entity.Post;
+import com.trybe.modulecore.post.repository.PostLikeCache;
 import com.trybe.modulecore.post.repository.PostRepository;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class PostLikeService {
-    private final String POST_LIKE_SUFFIX = ":liked";
-    private final String USER_REDIS_KEY = "user:%d" + POST_LIKE_SUFFIX + ":posts";
-    private final String POST_REDIS_KEY = "post:%d" + POST_LIKE_SUFFIX + ":users";
-    private final String POST_LIKE_DELETE_KEY = POST_REDIS_KEY + ":deleted";
-    private final RedisTemplate<String, Long> redisTemplate;
     private final PostRepository postRepository;
+    private final PostLikeCache postLikeCache;
 
-    public PostLikeService(RedisTemplate<String, Long> redisTemplate, PostRepository postRepository) {
-        this.redisTemplate = redisTemplate;
+    public PostLikeService(PostRepository postRepository, PostLikeCache postLikeCache) {
         this.postRepository = postRepository;
+        this.postLikeCache = postLikeCache;
     }
 
     @Transactional
     public PostResponse.Like addLike(User user, Long postId) {
         validateExistPost(postId);
 
-        String userKey = createRedisKey(USER_REDIS_KEY, user.getId());
-        String deleteKey = createRedisKey(POST_LIKE_DELETE_KEY, postId);
-        String postKey = createRedisKey(POST_REDIS_KEY, postId);
-        int likeCount = count(postId);
-
-        if (!alreadyLike(userKey, postId)) {
-            double score = getCurrentTimeInSeconds();
-            redisTemplate.opsForZSet().add(userKey, postId, score);
-            redisTemplate.opsForSet().add(postKey, user.getId());
-            redisTemplate.opsForSet().remove(deleteKey, user.getId());
+        int likeCount = postLikeCache.getPostLikeCount(postId);
+        if (!postLikeCache.alreadyLike(user.getId(), postId)){
+            postLikeCache.addLike(user.getId(), postId);
             likeCount++;
         }
         return PostResponse.Like.from(likeCount, true);
@@ -55,68 +42,37 @@ public class PostLikeService {
     public PostResponse.Like removeLike(User user, Long postId){
         validateExistPost(postId);
 
-        String userKey = createRedisKey(USER_REDIS_KEY, user.getId());
-        String deleteKey = createRedisKey(POST_LIKE_DELETE_KEY, postId);
-        String postKey = createRedisKey(POST_REDIS_KEY, postId);
-
-        int likeCount = count(postId);
-
-        if (alreadyLike(userKey, postId)) {
-            redisTemplate.opsForZSet().remove(userKey, postId);
-            redisTemplate.opsForSet().remove(postKey, user.getId());
-            redisTemplate.opsForSet().add(deleteKey, user.getId());
+        int likeCount = postLikeCache.getPostLikeCount(postId);
+        if (postLikeCache.alreadyLike(user.getId(), postId)){
+            postLikeCache.removeLike(user.getId(), postId);
             likeCount--;
         }
         return PostResponse.Like.from(likeCount,false);
     }
 
-    public void removeLikesByPost(Long postId){
-        String postKey = createRedisKey(POST_REDIS_KEY, postId);
-        Set<Long> userIds = redisTemplate.opsForSet().members(postKey);
-        if (userIds != null) {
-            for (Long userId : userIds) {
-                String userKey = createRedisKey(USER_REDIS_KEY, userId);
-                redisTemplate.opsForZSet().remove(userKey, postId);
-
-                String deleteKey = createRedisKey(POST_LIKE_DELETE_KEY, postId);
-                redisTemplate.opsForSet().add(deleteKey, userId);
-            }
-            redisTemplate.delete(postKey);
-        }
+    public int getPostLikeCount(Long postId){
+        return postLikeCache.getPostLikeCount(postId);
     }
 
-    public int count(Long postId){
-        String postKey = createRedisKey(POST_REDIS_KEY, postId);
-        Long count = redisTemplate.opsForSet().size(postKey);
-        return count == null ? 0 : count.intValue();
+    public void removeLikesByPost(Long postId){
+        postLikeCache.removeLikesByPost(postId);
     }
 
     @Transactional
     public PageResponse<PostResponse.Summary> getLikePostByUser(User user, Pageable pageable){
-        String userKey = createRedisKey(USER_REDIS_KEY, user.getId());
+        int start = pageable.getPageNumber() * pageable.getPageSize();
+        int end = start + pageable.getPageSize() - 1;
 
-        Set<Long> postIds = redisTemplate.opsForZSet().reverseRange(userKey, 0, -1);
+        Set<Long> postIds = postLikeCache.getLikePostIdsByUser(user.getId(), start, end);
 
-        if (postIds == null || postIds.isEmpty()) {
-            return new PageResponse<>(Page.empty());
-        }
-        List<Post> posts = postRepository.findAllByIdIn(postIds);
-        List<Post> sortedPosts = postIds.stream()
-                                        .map(postId -> posts.stream()
-                                                                  .filter(post -> postId.equals(post.getId()))
-                                                                  .findFirst()
-                                                                  .orElse(null))
-                                        .filter(Objects::nonNull)
-                                        .collect(Collectors.toList());
+        List<Post> posts = postIds.isEmpty() ? Collections.emptyList() : postRepository.findAllByIdIn(postIds);
+        List<Post> sortedPosts = sortPosts(posts, postIds);
 
+        int totalElements = postLikeCache.getUserPostLikeCount(user.getId());
 
-        Page<Post> filterPostsPage = new PageImpl<>(sortedPosts, pageable, sortedPosts.size());
-        Page<PostResponse.Summary> likePostPages = filterPostsPage.map(PostResponse.Summary::from);
+        Page<Post> postPage = new PageImpl<>(sortedPosts, pageable, totalElements);
+        Page<PostResponse.Summary> likePostPages = postPage.map(PostResponse.Summary::from);
         return new PageResponse<>(likePostPages);
-    }
-
-    private String createRedisKey(String key, Long id){
-        return String.format(key, id);
     }
 
     private void validateExistPost(Long postId){
@@ -125,12 +81,12 @@ public class PostLikeService {
         }
     }
 
-    private boolean alreadyLike(String userKey, Long postId) {
-        Double score = redisTemplate.opsForZSet().score(userKey, postId);
-        return score != null;
-    }
+    private List<Post> sortPosts(List<Post> posts, Set<Long> postIds) {
+        Map<Long, Post> postMap = posts.stream()
+                .collect(Collectors.toMap(Post::getId, post -> post));
 
-    private double getCurrentTimeInSeconds() {
-        return System.currentTimeMillis() / 1000.0;
+        return postIds.stream()
+                .map(postMap::get)
+                .toList();
     }
 }

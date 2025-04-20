@@ -1,6 +1,5 @@
 package com.trybe.moduleapi.post.service;
 
-import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.exception.participation.NotFoundChallengeParticipationException;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.post.dto.PostRequest;
@@ -22,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,7 +62,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostResponse.Detail find(Long id){
         Post post = getPostById(id);
-        int likes = postLikeService.count(post.getId());
+        int likes = postLikeService.getPostLikeCount(post.getId());
         List<Challenge> challenges = getChallengesByPostId(post.getId());
         return PostResponse.Detail.from(post, challenges, likes);
     }
@@ -79,7 +77,7 @@ public class PostService {
     @Transactional
     public PostResponse.Detail updatePost(User user, Long id, PostRequest.Update request) {
         Post post = getPostById(id);
-        int likes = postLikeService.count(post.getId());
+        int likes = postLikeService.getPostLikeCount(post.getId());
 
         checkLoginUserAndPostUser(user, post);
 

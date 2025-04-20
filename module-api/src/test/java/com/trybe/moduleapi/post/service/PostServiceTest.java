@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +31,8 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -106,7 +106,7 @@ class PostServiceTest {
 
         when(postRepository.findById(any())).thenReturn(Optional.of(게시글));
         when(postChallengeRepository.findAllByPostId(any())).thenReturn(PostChallengeFixtures.게시글_챌린지_목록);
-        when(postLikeService.count(any())).thenReturn(좋아요_개수);
+        when(postLikeService.getPostLikeCount(any())).thenReturn(좋아요_개수);
 
         /* when */
         PostResponse.Detail postDetail = postService.find(1L);
@@ -161,7 +161,7 @@ class PostServiceTest {
 
         when(postRepository.findById(any())).thenReturn(Optional.of(PostFixtures.게시글));
         when(challengeRepository.findAllByIdIn(PostFixtures.수정_챌린지_Ids)).thenReturn(List.of(ChallengeFixtures.챌린지(),ChallengeFixtures.챌린지()));
-        when(postLikeService.count(any())).thenReturn(좋아요_개수);
+        when(postLikeService.getPostLikeCount(any())).thenReturn(좋아요_개수);
 
 
         /* when */
