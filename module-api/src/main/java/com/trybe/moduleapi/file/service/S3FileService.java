@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class S3Service implements FileService {
+public class S3FileService implements FileService {
     private final AmazonS3Client amazonS3Client;
 
     @Value("${cloud.aws.s3.bucket}")
@@ -23,11 +23,10 @@ public class S3Service implements FileService {
 
     private static final String S3baseUrl = "https://%s.s3.%s.amazonaws.com/%s";
 
-    public S3Service(AmazonS3Client amazonS3Client) {
+    public S3FileService(AmazonS3Client amazonS3Client) {
         this.amazonS3Client = amazonS3Client;
     }
 
-    // 이미지 저장
     @Override
     public List<S3FileInfo> uploadImages(List<MultipartFile> files, String basePath) {
         List<S3FileInfo> S3fileInfos = new ArrayList<>();
@@ -49,10 +48,8 @@ public class S3Service implements FileService {
         return S3fileInfos;
     }
 
-    // 이미지 URL 조회
     @Override
     public String getImageUrl(String filePath) {
-        // filePath = basePath + "/" + savedName
         return String.format(S3baseUrl, bucket, amazonS3Client.getRegionName(), filePath);
     }
 
@@ -64,7 +61,6 @@ public class S3Service implements FileService {
         return uploadImages(newImages, basePath);
     }
 
-    // 이미지 삭제
     @Override
     public void deleteImage(String filePath) {
         amazonS3Client.deleteObject(bucket, filePath);
