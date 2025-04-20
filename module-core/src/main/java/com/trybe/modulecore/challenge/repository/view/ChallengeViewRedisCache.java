@@ -13,7 +13,8 @@ public class ChallengeViewRedisCache implements ChallengeViewCache {
         this.redisTemplate = redisTemplate;
     }
 
-    private final String USER_VIEWED_CHALLENGE_KEY = "user:%d:viewed:challenge:%d";
+    private static final String USER_VIEWED_CHALLENGE_KEY = "user:%d:viewed:challenge:%d";
+    private static final Duration USER_VIEWED_CHALLENGE_DURATION = Duration.ofHours(3);
 
     @Override
     public boolean hasViewed(Long userId, Long challengeId) {
@@ -24,6 +25,6 @@ public class ChallengeViewRedisCache implements ChallengeViewCache {
     @Override
     public void recordView(Long userId, Long challengeId) {
         String key = String.format(USER_VIEWED_CHALLENGE_KEY, userId, challengeId);
-        redisTemplate.opsForValue().set(key, 1L, Duration.ofHours(3));
+        redisTemplate.opsForValue().set(key, 1L, USER_VIEWED_CHALLENGE_DURATION);
     }
 }

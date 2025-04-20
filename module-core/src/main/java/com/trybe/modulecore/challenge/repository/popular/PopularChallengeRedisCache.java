@@ -18,7 +18,9 @@ public class PopularChallengeRedisCache implements PopularChallengeCache {
         this.redisTemplate = redisTemplate;
     }
 
-    private final String POPULAR_CHALLENGES_KEY = "popular:challenges:%s";
+    private static final String POPULAR_CHALLENGES_KEY = "popular:challenges:%s";
+    private static final Duration POPULAR_CHALLENGES_DURATION = Duration.ofDays(2);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
 
     @Override
     public void increaseScore(Long challengeId, int score, LocalDate date) {
@@ -26,7 +28,7 @@ public class PopularChallengeRedisCache implements PopularChallengeCache {
         String key = getRedisKey(POPULAR_CHALLENGES_KEY, formattedDate);
 
         redisTemplate.opsForZSet().incrementScore(key, challengeId, score);
-        redisTemplate.expire(key, Duration.ofDays(2));
+        redisTemplate.expire(key, POPULAR_CHALLENGES_DURATION);
     }
 
     @Override
@@ -51,7 +53,6 @@ public class PopularChallengeRedisCache implements PopularChallengeCache {
     }
 
     private String getFormattedDate(LocalDate date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
-        return date.format(formatter);
+        return date.format(DATE_FORMATTER);
     }
 }
