@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.trybe.moduleapi.file.dto.FileResponse;
 import com.trybe.moduleapi.file.exception.FileUploadException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Profile("prod")
 public class S3FileService implements FileService {
     private final AmazonS3Client amazonS3Client;
 
