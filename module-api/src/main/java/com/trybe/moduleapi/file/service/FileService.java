@@ -6,11 +6,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface FileService {
-    List<FileResponse> uploadImages(List<MultipartFile> files, String basePath);
+    List<FileResponse> uploadFiles(List<MultipartFile> files, String basePath);
 
-    String getImageUrl(String filePath);
+    String getFileUrl(String filePath);
 
-    List<FileResponse> updateImages(List<String> filePaths, List<MultipartFile> newImages, String basePath);
+    List<FileResponse> updateFiles(List<String> filePaths, List<MultipartFile> newFiles, String basePath);
 
-    void deleteImage(String filePath);
+    void deleteFile(String filePath);
 }

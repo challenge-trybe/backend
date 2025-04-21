@@ -30,7 +30,7 @@ public class S3FileService implements FileService {
     }
 
     @Override
-    public List<FileResponse> uploadImages(List<MultipartFile> files, String basePath) {
+    public List<FileResponse> uploadFiles(List<MultipartFile> files, String basePath) {
         List<FileResponse> fileResponses = new ArrayList<>();
         for (MultipartFile file : files) {
             String fileName = generateFileName(file);
@@ -51,20 +51,20 @@ public class S3FileService implements FileService {
     }
 
     @Override
-    public String getImageUrl(String filePath) {
+    public String getFileUrl(String filePath) {
         return String.format(S3baseUrl, bucket, amazonS3Client.getRegionName(), filePath);
     }
 
     @Override
-    public List<FileResponse> updateImages(List<String> filePaths, List<MultipartFile> newImages, String basePath) {
+    public List<FileResponse> updateFiles(List<String> filePaths, List<MultipartFile> newFiles, String basePath) {
         for (String filePath : filePaths) {
-            deleteImage(filePath);
+            deleteFile(filePath);
         }
-        return uploadImages(newImages, basePath);
+        return uploadFiles(newFiles, basePath);
     }
 
     @Override
-    public void deleteImage(String filePath) {
+    public void deleteFile(String filePath) {
         amazonS3Client.deleteObject(bucket, filePath);
     }
 
