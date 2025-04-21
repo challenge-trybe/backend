@@ -975,6 +975,21 @@ include::{snippets}/proof-history-vote-controller-test/get-result/invalid/forbid
 include::{snippets}/proof-history-vote-controller-test/get-result/invalid/conflict/status/http-response.adoc[]
 include::{snippets}/proof-history-vote-controller-test/get-result/invalid/conflict/status/response-fields.adoc[]
 
+== 챌린지 그룹 채팅
+
+=== 채팅 내역 조회 API
+
+채팅 내역 조회 시 다음과 같이 반환합니다.
+
+==== 정상 요청
+include::{snippets}/chat-controller-test/http-request.adoc[]
+include::{snippets}/chat-controller-test/path-parameters.adoc[]
+include::{snippets}/chat-controller-test/query-parameters.adoc[]
+
+- 응답
+include::{snippets}/chat-controller-test/http-response.adoc[]
+include::{snippets}/chat-controller-test/response-fields.adoc[]
+
 == 게시글
 
 === 게시글 생성 API
@@ -987,7 +1002,7 @@ include::{snippets}/post-controller-test/save/request-fields.adoc[]
 
 - 응답
 include::{snippets}/post-controller-test/save/http-response.adoc[]
-include::{snippets}/post-controller-test/save/response-fields.adoc[]
+include::{snippets}/post-controller-test/save/response-fields.adoc[]글
 
 ==== 비정상 요청 (잘못된 요청)
 유효성 검증에 실패하는 요청 시 다음과 같이 반환합니다.
