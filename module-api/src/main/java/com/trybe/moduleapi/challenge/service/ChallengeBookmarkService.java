@@ -48,7 +48,7 @@ public class ChallengeBookmarkService {
         if (!challengeBookmarkCache.isBookmarked(userId, challengeId)) {
             challengeBookmarkCache.addBookmark(userId, challengeId);
             challengePreferenceCache.addPreference(userId, challenge);
-            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.BOOKMARK_ADD));
+            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.BOOKMARK_ADD));
             count++;
         }
 
@@ -57,14 +57,14 @@ public class ChallengeBookmarkService {
 
     @Transactional
     public ChallengeResponse.Bookmark removeBookmark(User user, Long challengeId) {
-        validateExistChallenge(challengeId);
+        Challenge challenge = getChallenge(challengeId);
         Long userId = user.getId();
 
         int count = challengeBookmarkCache.getBookmarkCount(challengeId);
 
         if (challengeBookmarkCache.isBookmarked(userId, challengeId)) {
             challengeBookmarkCache.removeBookmark(userId, challengeId);
-            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.BOOKMARK_REMOVE));
+            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.BOOKMARK_REMOVE));
             count--;
         }
 
@@ -105,12 +105,6 @@ public class ChallengeBookmarkService {
         return challengeIds.stream()
                 .map(challengeMap::get)
                 .collect(Collectors.toList());
-    }
-
-    private void validateExistChallenge(Long challengeId) {
-        if (!challengeRepository.existsById(challengeId)) {
-            throw new NotFoundChallengeException();
-        }
     }
 
     private Challenge getChallenge(Long challengeId) {

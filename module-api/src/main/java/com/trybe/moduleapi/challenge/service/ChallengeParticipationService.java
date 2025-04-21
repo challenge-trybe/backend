@@ -53,7 +53,7 @@ public class ChallengeParticipationService {
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
         challengePreferenceCache.addPreference(userId, challenge);
-        challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.PARTICIPATION_ADD));
+        challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.PARTICIPATION_ADD));
 
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
@@ -107,13 +107,12 @@ public class ChallengeParticipationService {
     @Transactional
     public void cancel(User user, Long participationId) {
         ChallengeParticipation participation = getParticipation(participationId);
-        Long challengeId = participation.getChallenge().getId();
         Long userId = user.getId();
 
         validateParticipationUser(participation, userId);
         validateParticipationStatus(participation, ParticipationStatus.PENDING);
 
-        challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.PARTICIPATION_REMOVE));
+        challengeEventPublisher.publish(new ChallengeEvent(participation.getChallenge(), userId, ChallengeEventType.PARTICIPATION_REMOVE));
         challengeParticipationRepository.delete(participation);
     }
 

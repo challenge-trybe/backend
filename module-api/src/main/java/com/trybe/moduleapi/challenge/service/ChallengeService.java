@@ -74,7 +74,7 @@ public class ChallengeService {
         Challenge challenge = getChallenge(id);
 
         if (user != null) {
-            handleView(user.getId(), challenge.getId());
+            handleView(user.getId(), challenge);
         }
 
         return createDetail(user, challenge);
@@ -179,10 +179,11 @@ public class ChallengeService {
         }
     }
 
-    private void handleView(Long userId, Long challengeId) {
+    private void handleView(Long userId, Challenge challenge) {
+        Long challengeId = challenge.getId();
         if (!challengeViewCache.hasViewed(userId, challengeId)) {
             challengeViewCache.recordView(userId, challengeId);
-            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.VIEW));
+            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.VIEW));
         }
     }
 }
