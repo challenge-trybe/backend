@@ -54,7 +54,7 @@ public class LocalFileService implements FileService {
 
     private String generateFileName(MultipartFile file) {
         String originalName = file.getOriginalFilename();
-        String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
+        String extension = StringUtils.getFilenameExtension(originalName);
         return UUID.randomUUID() + "-" + originalName + "." + extension;
     }
 
