@@ -18,7 +18,6 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
-import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -34,18 +33,16 @@ public class ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
-    private final ChallengePreferenceCache challengePreferenceCache;
     private final ChallengeViewCache challengeViewCache;
     private final ChallengeEventPublisher challengeEventPublisher;
     private final PopularChallengeService popularChallengeService;
     private final ChallengeRecommendationClientService challengeRecommendationClientService;
     private final ChatService chatService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, ChallengeViewCache challengeViewCache, ChallengeEventPublisher challengeEventPublisher, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeViewCache challengeViewCache, ChallengeEventPublisher challengeEventPublisher, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
-        this.challengePreferenceCache = challengePreferenceCache;
         this.challengeViewCache = challengeViewCache;
         this.challengeEventPublisher = challengeEventPublisher;
         this.popularChallengeService = popularChallengeService;
@@ -62,7 +59,6 @@ public class ChallengeService {
 
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
         challengeParticipationRepository.save(participation);
-        challengePreferenceCache.addPreference(user.getId(), savedChallenge);
         chatService.create(savedChallenge);
 
         ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
