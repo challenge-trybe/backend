@@ -23,21 +23,21 @@ public class ChallengePreferenceRedisCache implements ChallengePreferenceCache {
     private final String USER_CHALLENGE_CATEGORIES = "user:%d:challenge:categories";
 
     @Override
-    public void addPreference(Long userId, Challenge challenge) {
+    public void addPreference(Long userId, Challenge challenge, int score) {
         String category = challenge.getCategory().name();
         List<String> keywords = processKeywords(challenge.getTitle());
 
-        incrementChallengeCategory(userId, category);
-        keywords.forEach(keyword -> incrementChallengeKeywords(userId, keyword));
+        incrementChallengeCategory(userId, category, score);
+        keywords.forEach(keyword -> incrementChallengeKeywords(userId, keyword, score));
     }
 
     @Override
-    public void removePreference(Long userId, Challenge challenge) {
+    public void removePreference(Long userId, Challenge challenge, int score) {
         String category = challenge.getCategory().name();
         List<String> keywords = processKeywords(challenge.getTitle());
 
-        decrementChallengeCategory(userId, category);
-        keywords.forEach(keyword -> decrementChallengeKeywords(userId, keyword));
+        decrementChallengeCategory(userId, category, score);
+        keywords.forEach(keyword -> decrementChallengeKeywords(userId, keyword, score));
     }
 
     @Override
@@ -67,30 +67,30 @@ public class ChallengePreferenceRedisCache implements ChallengePreferenceCache {
         return new ArrayList<>(keywords);
     }
 
-    private void incrementChallengeCategory(Long userId, String category) {
+    private void incrementChallengeCategory(Long userId, String category, int score) {
         String key = getRedisKey(USER_CHALLENGE_CATEGORIES, userId);
-        redisTemplate.opsForZSet().incrementScore(key, category, 1.0);
+        redisTemplate.opsForZSet().incrementScore(key, category, score);
     }
 
-    private void decrementChallengeCategory(Long userId, String category) {
+    private void decrementChallengeCategory(Long userId, String category, int score) {
         String key = getRedisKey(USER_CHALLENGE_CATEGORIES, userId);
-        Double score = redisTemplate.opsForZSet().incrementScore(key, category, -1.0);
+        Double totalScore = redisTemplate.opsForZSet().incrementScore(key, category, -score);
 
-        if (score != null && score <= 0) {
+        if (totalScore != null && totalScore <= 0) {
             redisTemplate.opsForZSet().remove(key, category);
         }
     }
 
-    private void incrementChallengeKeywords(Long userId, String keyword) {
+    private void incrementChallengeKeywords(Long userId, String keyword, int score) {
         String key = getRedisKey(USER_CHALLENGE_KEYWORDS, userId);
-        redisTemplate.opsForZSet().incrementScore(key, keyword, 1.0);
+        redisTemplate.opsForZSet().incrementScore(key, keyword, score);
     }
 
-    private void decrementChallengeKeywords(Long userId, String keyword) {
+    private void decrementChallengeKeywords(Long userId, String keyword, int score) {
         String key = getRedisKey(USER_CHALLENGE_KEYWORDS, userId);
-        Double score = redisTemplate.opsForZSet().incrementScore(key, keyword, -1.0);
+        Double totalScore = redisTemplate.opsForZSet().incrementScore(key, keyword, -score);
 
-        if (score != null && score <= 0) {
+        if (totalScore != null && totalScore <= 0) {
             redisTemplate.opsForZSet().remove(key, keyword);
         }
     }
