@@ -32,10 +32,10 @@ public class ChallengeEventListener {
 
         if (type.isScoreUp()) {
             increasePopularity(challengeId, score);
-            increasePreference(userId, challenge);
+            increasePreference(userId, challenge, score);
         } else {
             decreasePopularity(challengeId, score);
-            decreasePreference(userId, challenge);
+            decreasePreference(userId, challenge, score);
         }
     }
 
@@ -47,11 +47,11 @@ public class ChallengeEventListener {
         popularChallengeCache.decreaseScore(challengeId, score, DateUtils.getToday());
     }
 
-    private void increasePreference(Long userId, Challenge challenge) {
-        challengePreferenceCache.addPreference(userId, challenge);
+    private void increasePreference(Long userId, Challenge challenge, int score) {
+        challengePreferenceCache.addPreference(userId, challenge, score);
     }
 
-    private void decreasePreference(Long userId, Challenge challenge) {
-        challengePreferenceCache.removePreference(userId, challenge);
+    private void decreasePreference(Long userId, Challenge challenge, int score) {
+        challengePreferenceCache.removePreference(userId, challenge, score);
     }
 }
