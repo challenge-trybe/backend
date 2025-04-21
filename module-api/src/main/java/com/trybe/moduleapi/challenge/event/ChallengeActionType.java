@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum ChallengeActionType {
+    CREATE(10),
     VIEW(1),
     BOOKMARK(10),
     PARTICIPATION(15);

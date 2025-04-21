@@ -30,6 +30,11 @@ public class ChallengeEventListener {
         ChallengeEventType type = event.getType();
         int score = type.getActionType().getScore();
 
+        if (type.getActionType() == ChallengeActionType.CREATE) {
+            increasePreference(userId, challenge, score);
+            return;
+        }
+
         if (type.isScoreUp()) {
             increasePopularity(challengeId, score);
             increasePreference(userId, challenge, score);

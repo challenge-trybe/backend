@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum ChallengeEventType {
+    CREATE(ChallengeActionType.CREATE, true),
     VIEW(ChallengeActionType.VIEW, true),
     BOOKMARK_ADD(ChallengeActionType.BOOKMARK, true),
     BOOKMARK_REMOVE(ChallengeActionType.BOOKMARK, false),
