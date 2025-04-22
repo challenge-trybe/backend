@@ -9,11 +9,8 @@ public enum PostEventType {
     COMMENT_CREATED(3.0),
     COMMENT_DELETED(-3.0),
     POST_CREATED(0),
-    POST_DELETED(0);
-    /**
-     * TODO
-     * 조회수 이벤트 타입 추가
-     */
+    POST_DELETED(0),
+    VIEW(1.0);
 
     private final double score;
 
