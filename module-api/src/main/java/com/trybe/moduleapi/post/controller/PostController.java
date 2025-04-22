@@ -6,6 +6,7 @@ import com.trybe.moduleapi.post.dto.PostRequest;
 import com.trybe.moduleapi.post.dto.PostResponse;
 import com.trybe.moduleapi.post.service.PopularPostService;
 import com.trybe.moduleapi.post.service.PostService;
+import com.trybe.modulecore.user.entity.User;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,8 +33,12 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public PostResponse.Detail findById(@PathVariable Long id) {
-        return postService.find(id);
+    public PostResponse.Detail findById(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id)
+    {
+        User user = userDetails == null ? null : userDetails.getUser();
+        return postService.find(user, id);
     }
 
     // 전체 조회 (정렬/필터링이 없는 경우 + 정렬/필터링이 있는 경우)

@@ -18,6 +18,7 @@ import com.trybe.modulecore.post.entity.PostChallenge;
 import com.trybe.modulecore.post.repository.CommentRepository;
 import com.trybe.modulecore.post.repository.PostChallengeRepository;
 import com.trybe.modulecore.post.repository.PostRepository;
+import com.trybe.modulecore.post.repository.PostViewCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,15 +37,17 @@ public class PostService {
     private final ChallengeParticipationRepository participationRepository;
     private final CommentRepository commentRepository;
     private final PostLikeService postLikeService;
+    private final PostViewCache postViewCache;
     private final PostEventPublisher eventPublisher;
 
-    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository, CommentRepository commentRepository, PostLikeService postLikeService, PostEventPublisher eventPublisher) {
+    public PostService(PostRepository postRepository, ChallengeRepository challengeRepository, PostChallengeRepository postChallengeRepository, ChallengeParticipationRepository participationRepository, CommentRepository commentRepository, PostLikeService postLikeService, PostViewCache postViewCache, PostEventPublisher eventPublisher) {
         this.postRepository = postRepository;
         this.challengeRepository = challengeRepository;
         this.postChallengeRepository = postChallengeRepository;
         this.participationRepository = participationRepository;
         this.commentRepository = commentRepository;
         this.postLikeService = postLikeService;
+        this.postViewCache = postViewCache;
         this.eventPublisher = eventPublisher;
     }
 
@@ -66,10 +69,16 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostResponse.Detail find(Long id){
+    public PostResponse.Detail find(User user, Long id){
         Post post = getPostById(id);
-        int likes = postLikeService.getPostLikeCount(post.getId());
-        List<Challenge> challenges = getChallengesByPostId(post.getId());
+        int likes = postLikeService.getPostLikeCount(id);
+        List<Challenge> challenges = getChallengesByPostId(id);
+
+        if (!postViewCache.hasViewed(user.getId(), id)){
+            postViewCache.recordView(user.getId(), id);
+            eventPublisher.publish(PostEvent.from(id, PostEventType.VIEW));
+        }
+
         return PostResponse.Detail.from(post, challenges, likes);
     }
 
