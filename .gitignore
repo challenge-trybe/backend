@@ -39,8 +39,6 @@ out/
 ### ETC ###
 data
 jenkins
-**/application.yml
-**/application-core.yml
-**/application-aws.yml
-
-redis/
+redis
+files
+**/application*.yml
