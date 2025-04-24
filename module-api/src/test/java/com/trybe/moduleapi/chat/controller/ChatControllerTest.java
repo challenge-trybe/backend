@@ -48,7 +48,7 @@ class ChatControllerTest extends ControllerTest {
         mockMvc.perform(get("/api/v1/chats/{challengeId}", ChallengeFixtures.챌린지_ID)
                         .param("cursor", String.valueOf(커서_ID))
                         .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8))
-                .andExpectAll(status().isOk())
+                .andExpect(status().isOk())
                 .andExpectAll(
                         jsonPath("$.content").isArray(),
                         jsonPath("$.content[0].id").value(응답.content().get(0).id()),
