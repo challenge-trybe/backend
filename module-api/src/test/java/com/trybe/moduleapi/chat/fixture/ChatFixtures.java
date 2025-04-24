@@ -22,7 +22,7 @@ public class ChatFixtures {
     }
     public static final ChatRequest.Send 채팅_메시지_전송_요청 = new ChatRequest.Send("채팅 메시지 전송");
 
-    public static final int 메세지_조회_제한_개수 = 20;
+    public static final int 메시지_조회_제한_개수 = 20;
     public static final Long 커서_ID = 6L;
 
     public static final MessageType 입장 = MessageType.ENTER;

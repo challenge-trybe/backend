@@ -88,8 +88,8 @@ class ChatServiceTest {
     }
 
     @Test
-    @DisplayName("정상적인 채팅 메시지 조회 시 메세지 내역을 반환한다.")
-    void 정상적인_채팅_메시지_조회_시_메세지_내역을_반환한다 () {
+    @DisplayName("정상적인 채팅 메시지 조회 시 메시지 내역을 반환한다.")
+    void 정상적인_채팅_메시지_조회_시_메시지_내역을_반환한다 () {
         /* given */
         User 회원 = UserFixtures.회원;
         Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
@@ -106,7 +106,7 @@ class ChatServiceTest {
         when(chatRoomRepository.findByChallengeId(챌린지_ID)).thenReturn(채팅방);
         when(chatMessageRepository.findByChatRoomIdAndUserIdAndMessageType(회원.getId(), 채팅방.getId(), 입장)).thenReturn(입장_메시지);
         when(chatMessageRepository.findLatestIdByChatRoomId(채팅방.getId())).thenReturn(커서_ID);
-        when(chatMessageRepository.findMessagesByCursorId(챌린지_ID, 커서_ID+1, 입장_메시지.getCreatedAt(), Limit.of(ChatFixtures.메세지_조회_제한_개수+1))).thenReturn(채팅_메시지_내역);
+        when(chatMessageRepository.findMessagesByCursorId(챌린지_ID, 커서_ID+1, 입장_메시지.getCreatedAt(), Limit.of(ChatFixtures.메시지_조회_제한_개수+1))).thenReturn(채팅_메시지_내역);
 
 
         /* when */
