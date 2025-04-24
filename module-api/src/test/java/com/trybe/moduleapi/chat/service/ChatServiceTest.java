@@ -88,8 +88,8 @@ class ChatServiceTest {
     }
 
     @Test
-    @DisplayName("정상적인 채팅 메시지 조회 시 최신 메세지 내역을 반환한다.")
-    void 정상적인_채팅_메시지_조회_시_최신_메시지_내역을_반환한다 () {
+    @DisplayName("정상적인 채팅 메시지 조회 시 메세지 내역을 반환한다.")
+    void 정상적인_채팅_메시지_조회_시_메세지_내역을_반환한다 () {
         /* given */
         User 회원 = UserFixtures.회원;
         Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
@@ -124,21 +124,10 @@ class ChatServiceTest {
         /* given */
         User 회원 = UserFixtures.회원;
         Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
-        ChatRoom 채팅방 = ChatFixtures.채팅방(ChallengeFixtures.챌린지());
-
-        ParticipationStatus 챌린지_참여_수락_상태 = ChallengeParticipationFixtures.챌린지_참여_수락_상태;
-        MessageType 입장 = ChatFixtures.입장;
-        ChatMessage 입장_메시지 = ChatFixtures.채팅_메시지(채팅방, 회원, "입장 메시지", 입장);
 
         when(chatRoomRepository.existsByChallengeId(챌린지_ID)).thenReturn(false);
 
         /* when, then */
-        verify(challengeParticipationRepository, never()).existsByUserIdAndChallengeIdAndStatus(회원.getId(), 챌린지_ID, 챌린지_참여_수락_상태);
-        verify(chatRoomRepository, never()).findByChallengeId(챌린지_ID);
-        verify(chatMessageRepository, never()).findByChatRoomIdAndUserIdAndMessageType(회원.getId(), 채팅방.getId(), 입장);
-        verify(chatMessageRepository, never()).findLatestIdByChatRoomId(채팅방.getId());
-        verify(chatMessageRepository, never()).findMessagesByCursorId(챌린지_ID, 6L, 입장_메시지.getCreatedAt(), Limit.of(ChatFixtures.메세지_조회_제한_개수+1));
-
         assertThrows(NotFoundChatRoomException.class, () -> chatService.findMessages(회원, 챌린지_ID, null),
                 "해당 챌린지에 대한 채팅방은 존재하지 않습니다.");
     }
@@ -149,21 +138,13 @@ class ChatServiceTest {
         /* given */
         User 회원 = UserFixtures.회원;
         Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
-        ChatRoom 채팅방 = ChatFixtures.채팅방(ChallengeFixtures.챌린지());
 
         ParticipationStatus 챌린지_참여_수락_상태 = ChallengeParticipationFixtures.챌린지_참여_수락_상태;
-        MessageType 입장 = ChatFixtures.입장;
-        ChatMessage 입장_메시지 = ChatFixtures.채팅_메시지(채팅방, 회원, "입장 메시지", 입장);
 
         when(chatRoomRepository.existsByChallengeId(챌린지_ID)).thenReturn(true);
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(회원.getId(),챌린지_ID,챌린지_참여_수락_상태)).thenReturn(false);
 
         /* when, then */
-        verify(chatRoomRepository, never()).findByChallengeId(챌린지_ID);
-        verify(chatMessageRepository, never()).findByChatRoomIdAndUserIdAndMessageType(회원.getId(), 채팅방.getId(), 입장);
-        verify(chatMessageRepository, never()).findLatestIdByChatRoomId(채팅방.getId());
-        verify(chatMessageRepository, never()).findMessagesByCursorId(챌린지_ID, 6L, 입장_메시지.getCreatedAt(), Limit.of(ChatFixtures.메세지_조회_제한_개수+1));
-
         assertThrows(NotFoundChallengeParticipationException.class, () -> chatService.findMessages(회원, 챌린지_ID, null),
                 "챌린지에 참여한 회원이 아닙니다.");
     }
