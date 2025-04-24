@@ -74,9 +74,8 @@ public class PostService {
         int likes = postLikeService.getPostLikeCount(id);
         List<Challenge> challenges = getChallengesByPostId(id);
 
-        if (!postViewCache.hasViewed(user.getId(), id)){
-            postViewCache.recordView(user.getId(), id);
-            eventPublisher.publish(PostEvent.from(id, PostEventType.VIEW));
+        if (user != null) {
+            handleView(user.getId(), id);
         }
 
         return PostResponse.Detail.from(post, challenges, likes);
@@ -146,6 +145,13 @@ public class PostService {
                                                        .challenge(challenge)
                                                        .build();
             postChallengeRepository.save(postChallenge);
+        }
+    }
+
+    private void handleView(Long userId, Long postId){
+        if (!postViewCache.hasViewed(userId, postId)){
+            postViewCache.recordView(userId, postId);
+            eventPublisher.publish(PostEvent.from(postId, PostEventType.VIEW));
         }
     }
 
