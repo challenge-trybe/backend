@@ -47,6 +47,6 @@ public class ChatFixtures {
                 .build();
     }
 
-    public static final List<ChatMessage> 채팅_메시지_내역 = java.util.List.of(채팅_메시지(시스템),채팅_메시지(입장),채팅_메시지(퇴장),채팅_메시지(대화),채팅_메시지(대화), 채팅_메시지(대화));
+    public static final List<ChatMessage> 채팅_메시지_내역 = List.of(채팅_메시지(시스템),채팅_메시지(입장),채팅_메시지(퇴장),채팅_메시지(대화),채팅_메시지(대화), 채팅_메시지(대화));
     public static final CursorResponse<ChatResponse.Message> 채팅_메시지_내역_응답 = CursorResponse.of(채팅_메시지_내역.stream().map(ChatResponse.Message::from).toList(), null, 채팅_메시지_내역.size(), false);
 }
