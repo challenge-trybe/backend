@@ -53,7 +53,7 @@ class ChatServiceTest {
         /* given */
         User 회원 = UserFixtures.회원;
         Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
-        ChatRoom 채팅방 = ChatFixtures.채팅방(ChallengeFixtures.챌린지());
+        ChatRoom 채팅방 = ChatFixtures.채팅방();
         ChatRequest.Send 채팅_메시지_전송_요청 = ChatFixtures.채팅_메시지_전송_요청;
 
         ParticipationStatus 챌린지_참여_수락_상태 = ChallengeParticipationFixtures.챌린지_참여_수락_상태;
@@ -93,7 +93,7 @@ class ChatServiceTest {
         /* given */
         User 회원 = UserFixtures.회원;
         Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
-        ChatRoom 채팅방 = ChatFixtures.채팅방(ChallengeFixtures.챌린지());
+        ChatRoom 채팅방 = ChatFixtures.채팅방();
         Long 커서_ID = ChatFixtures.커서_ID;
 
         ParticipationStatus 챌린지_참여_수락_상태 = ChallengeParticipationFixtures.챌린지_참여_수락_상태;
