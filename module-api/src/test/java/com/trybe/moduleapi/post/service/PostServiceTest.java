@@ -118,6 +118,7 @@ class PostServiceTest {
         when(postRepository.findById(게시글_ID)).thenReturn(Optional.of(게시글));
         when(postChallengeRepository.findAllByPostId(게시글_ID)).thenReturn(챌린지_목록);
         when(postLikeService.getPostLikeCount(게시글_ID)).thenReturn(좋아요_개수);
+        when(postViewCache.hasViewed(회원.getId(), 게시글_ID)).thenReturn(false);
 
         /* when */
         PostResponse.Detail postDetail = postService.find(회원,게시글_ID);
@@ -130,7 +131,6 @@ class PostServiceTest {
         assertEquals(postDetail.likeCount(), 좋아요_개수);
         assertEquals(postDetail.challenges().size(), 챌린지_목록.size());
 
-        verify(postViewCache, times(1)).hasViewed(회원.getId(), 게시글_ID);
         verify(postViewCache, times(1)).recordView(회원.getId(), 게시글_ID);
         verify(eventPublisher, times(1)).publish(PostFixtures.게시글_조회_이벤트(게시글_ID));
     }
