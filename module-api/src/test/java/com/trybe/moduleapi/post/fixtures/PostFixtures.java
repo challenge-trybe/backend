@@ -116,7 +116,7 @@ public class PostFixtures {
     }
 
     public static PostEvent 게시글_조회_이벤트(Long postId) {
-        return PostEvent.from(postId, PostEventType.VIEW);
+        return PostEvent.from(postId, PostEventType.POST_VIEW);
     }
     public static List<PostResponse.Summary> 인기_게시글 = 게시글_목록.stream().map(PostResponse.Summary::from).toList();
 

@@ -15,7 +15,7 @@ public class PostViewEventHandler implements PostEventHandler{
 
     @Override
     public boolean supports(PostEventType type) {
-        return type == PostEventType.VIEW;
+        return type == PostEventType.POST_VIEW;
     }
 
     @Override

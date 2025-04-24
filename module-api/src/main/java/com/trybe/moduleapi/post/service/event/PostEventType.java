@@ -10,7 +10,7 @@ public enum PostEventType {
     COMMENT_DELETED(-3.0),
     POST_CREATED(0),
     POST_DELETED(0),
-    VIEW(1.0);
+    POST_VIEW(1.0);
 
     private final double score;
 

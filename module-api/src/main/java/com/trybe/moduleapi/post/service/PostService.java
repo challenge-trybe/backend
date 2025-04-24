@@ -151,7 +151,7 @@ public class PostService {
     private void handleView(Long userId, Long postId){
         if (!postViewCache.hasViewed(userId, postId)){
             postViewCache.recordView(userId, postId);
-            eventPublisher.publish(PostEvent.from(postId, PostEventType.VIEW));
+            eventPublisher.publish(PostEvent.from(postId, PostEventType.POST_VIEW));
         }
     }
 
