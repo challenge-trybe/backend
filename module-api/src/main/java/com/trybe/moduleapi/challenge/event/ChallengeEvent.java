@@ -1,15 +1,16 @@
 package com.trybe.moduleapi.challenge.event;
 
+import com.trybe.modulecore.challenge.entity.Challenge;
 import lombok.Getter;
 
 @Getter
 public class ChallengeEvent {
-    private final Long challengeId;
+    private final Challenge challenge;
     private final Long userId;
     private final ChallengeEventType type;
 
-    public ChallengeEvent(Long challengeId, Long userId, ChallengeEventType type) {
-        this.challengeId = challengeId;
+    public ChallengeEvent(Challenge challenge, Long userId, ChallengeEventType type) {
+        this.challenge = challenge;
         this.userId = userId;
         this.type = type;
     }

@@ -52,9 +52,6 @@ class ChallengeServiceTest {
     private ChallengeBookmarkCache challengeBookmarkCache;
 
     @Mock
-    private ChallengePreferenceCache challengePreferenceCache;
-
-    @Mock
     private ChallengeViewCache challengeViewCache;
 
     @Mock
@@ -74,10 +71,10 @@ class ChallengeServiceTest {
     void 챌린지_생성_시_저장된_챌린지_정보를_반환한다 () {
         /* given */
         ChallengeRequest.Create request = 챌린지_생성_요청;
-        Challenge 챌린지 = 챌린지();
+        Challenge challenge = 챌린지();
 
         when(challengeRepository.save(any(Challenge.class)))
-                .thenReturn(챌린지);
+                .thenReturn(challenge);
         when(challengeParticipationRepository.save(any(ChallengeParticipation.class)))
                 .thenReturn(ChallengeParticipationFixtures.챌린지_리더_참여());
 
@@ -85,13 +82,13 @@ class ChallengeServiceTest {
         ChallengeResponse.Detail response = challengeService.save(UserFixtures.회원, request);
 
         /* then */
-        verifyChallengeResponse(챌린지, response);
-        verify(chatService, times(1)).create(챌린지);
+        verifyChallengeResponse(challenge, response);
+        verify(chatService, times(1)).create(challenge);
         assertEquals(초기_참여자_수, response.participantCount());
         assertEquals(초기_북마크_수, response.bookmark().bookmarkCount());
         assertEquals(false, response.bookmark().bookmarked());
 
-        verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
     @Test

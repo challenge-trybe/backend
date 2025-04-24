@@ -11,7 +11,6 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
-import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,14 +26,12 @@ public class ChallengeBookmarkService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
-    private final ChallengePreferenceCache challengePreferenceCache;
     private final ChallengeEventPublisher challengeEventPublisher;
 
-    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengePreferenceCache challengePreferenceCache, PopularChallengeService popularChallengeService, ChallengeEventPublisher challengeEventPublisher) {
+    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeEventPublisher challengeEventPublisher) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
-        this.challengePreferenceCache = challengePreferenceCache;
         this.challengeEventPublisher = challengeEventPublisher;
     }
 
@@ -47,8 +44,7 @@ public class ChallengeBookmarkService {
 
         if (!challengeBookmarkCache.isBookmarked(userId, challengeId)) {
             challengeBookmarkCache.addBookmark(userId, challengeId);
-            challengePreferenceCache.addPreference(userId, challenge);
-            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.BOOKMARK_ADD));
+            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.BOOKMARK_ADD));
             count++;
         }
 
@@ -57,14 +53,14 @@ public class ChallengeBookmarkService {
 
     @Transactional
     public ChallengeResponse.Bookmark removeBookmark(User user, Long challengeId) {
-        validateExistChallenge(challengeId);
+        Challenge challenge = getChallenge(challengeId);
         Long userId = user.getId();
 
         int count = challengeBookmarkCache.getBookmarkCount(challengeId);
 
         if (challengeBookmarkCache.isBookmarked(userId, challengeId)) {
             challengeBookmarkCache.removeBookmark(userId, challengeId);
-            challengeEventPublisher.publish(new ChallengeEvent(challengeId, userId, ChallengeEventType.BOOKMARK_REMOVE));
+            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.BOOKMARK_REMOVE));
             count--;
         }
 
@@ -105,12 +101,6 @@ public class ChallengeBookmarkService {
         return challengeIds.stream()
                 .map(challengeMap::get)
                 .collect(Collectors.toList());
-    }
-
-    private void validateExistChallenge(Long challengeId) {
-        if (!challengeRepository.existsById(challengeId)) {
-            throw new NotFoundChallengeException();
-        }
     }
 
     private Challenge getChallenge(Long challengeId) {

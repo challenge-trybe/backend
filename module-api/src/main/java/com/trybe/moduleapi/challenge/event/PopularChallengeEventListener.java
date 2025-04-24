@@ -8,32 +8,35 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
-public class ChallengeEventListener {
+public class PopularChallengeEventListener {
     private final PopularChallengeCache popularChallengeCache;
 
-    public ChallengeEventListener(PopularChallengeCache popularChallengeCache) {
+    public PopularChallengeEventListener(PopularChallengeCache popularChallengeCache) {
         this.popularChallengeCache = popularChallengeCache;
     }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChallengeEvent(ChallengeEvent event) {
-        Long challengeId = event.getChallengeId();
+        Long challengeId = event.getChallenge().getId();
+
         ChallengeEventType type = event.getType();
-        int score = type.getActionType().getScore();
+        int score = type.getActionType().getPopularityScore();
+
+        if (score == 0) { return; }
 
         if (type.isScoreUp()) {
-            increaseScore(challengeId, score);
+            increasePopularity(challengeId, score);
         } else {
-            decreaseScore(challengeId, score);
+            decreasePopularity(challengeId, score);
         }
     }
 
-    private void increaseScore(Long challengeId, int score) {
+    private void increasePopularity(Long challengeId, int score) {
         popularChallengeCache.increaseScore(challengeId, score, DateUtils.getToday());
     }
 
-    private void decreaseScore(Long challengeId, int score) {
+    private void decreasePopularity(Long challengeId, int score) {
         popularChallengeCache.decreaseScore(challengeId, score, DateUtils.getToday());
     }
 }

@@ -44,9 +44,6 @@ class ChallengeParticipationServiceTest {
     private ChallengeRepository challengeRepository;
 
     @Mock
-    private ChallengePreferenceCache challengePreferenceCache;
-
-    @Mock
     private ChallengeEventPublisher challengeEventPublisher;
 
     @Mock
@@ -82,7 +79,6 @@ class ChallengeParticipationServiceTest {
         verifyChallengeResponseSummary(challenge, result.challenge());
         verifyUserResponse(멤버, result.user());
 
-        verify(challengePreferenceCache, times(1)).addPreference(any(), any(Challenge.class));
         verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
