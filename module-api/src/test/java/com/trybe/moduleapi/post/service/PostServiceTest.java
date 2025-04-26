@@ -16,9 +16,11 @@ import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.post.entity.Post;
+import com.trybe.modulecore.post.entity.PostChallenge;
 import com.trybe.modulecore.post.repository.CommentRepository;
 import com.trybe.modulecore.post.repository.PostChallengeRepository;
 import com.trybe.modulecore.post.repository.PostRepository;
+import com.trybe.modulecore.post.repository.PostViewCache;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,6 +53,8 @@ class PostServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private PostLikeService postLikeService;
+    @Mock
+    private PostViewCache postViewCache;
     @Mock
     private PostEventPublisher eventPublisher;
 
@@ -102,18 +106,22 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("게시글 단건 조회 시 게시글를 응답해준다.")
-    void 게시글_단건_조회_시_게시글를_응답해준다() {
+    @DisplayName("게시글 단건 조회 시 게시글을 응답해준다.")
+    void 게시글_단건_조회_시_게시글을_응답해준다() {
         /* given */
+        Long 게시글_ID = PostFixtures.id;
         Post 게시글 = PostFixtures.게시글;
         int 좋아요_개수 = PostLikeFixtures.좋아요_개수;
+        List<PostChallenge> 챌린지_목록 = PostChallengeFixtures.게시글_챌린지_목록;
+        User 회원 = UserFixtures.회원;
 
-        when(postRepository.findById(any())).thenReturn(Optional.of(게시글));
-        when(postChallengeRepository.findAllByPostId(any())).thenReturn(PostChallengeFixtures.게시글_챌린지_목록);
-        when(postLikeService.getPostLikeCount(any())).thenReturn(좋아요_개수);
+        when(postRepository.findById(게시글_ID)).thenReturn(Optional.of(게시글));
+        when(postChallengeRepository.findAllByPostId(게시글_ID)).thenReturn(챌린지_목록);
+        when(postLikeService.getPostLikeCount(게시글_ID)).thenReturn(좋아요_개수);
+        when(postViewCache.hasViewed(회원.getId(), 게시글_ID)).thenReturn(false);
 
         /* when */
-        PostResponse.Detail postDetail = postService.find(1L);
+        PostResponse.Detail postDetail = postService.find(회원,게시글_ID);
 
         /* then */
         assertEquals(postDetail.title(), 게시글.getTitle());
@@ -121,18 +129,23 @@ class PostServiceTest {
         assertEquals(postDetail.writer().userId(), 게시글.getUser().getUserId());
         assertEquals(postDetail.writer().nickname(), 게시글.getUser().getNickname());
         assertEquals(postDetail.likeCount(), 좋아요_개수);
-        assertEquals(postDetail.challenges().size(), 1);
+        assertEquals(postDetail.challenges().size(), 챌린지_목록.size());
+
+        verify(postViewCache, times(1)).recordView(회원.getId(), 게시글_ID);
+        verify(eventPublisher, times(1)).publish(PostFixtures.게시글_조회_이벤트(게시글_ID));
     }
 
     @Test
     @DisplayName("존재하지 않는 게시글 단건 조회 시 예외를 터뜨린다.")
     void 존재하지_않는_게시글_단건_조회_시_예외를_터뜨린다() {
         /* given */
-        when(postRepository.findById(any())).thenReturn(Optional.empty());
+        Long 게시글_ID = PostFixtures.id;
+
+        when(postRepository.findById(게시글_ID)).thenReturn(Optional.empty());
 
         /* when, then */
         assertThrows(NotFoundPostException.class, () -> {
-            postService.find(1L);
+            postService.find(null, 게시글_ID);
         }, "존재하지 않는 게시글입니다.");
     }
 

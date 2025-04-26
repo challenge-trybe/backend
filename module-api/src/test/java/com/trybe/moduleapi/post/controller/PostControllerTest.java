@@ -181,7 +181,7 @@ class PostControllerTest extends ControllerTest {
     @WithCustomMockUser
     void 존재하는_게시글_조회_시_200을_반환한다() throws Exception {
         PostResponse.Detail 게시글_상세_응답 = PostFixtures.컨트롤러_테스트_게시글_상세_응답;
-        when(postService.find(any(Long.class))).thenReturn(게시글_상세_응답);
+        when(postService.find(any(User.class), any(Long.class))).thenReturn(게시글_상세_응답);
 
         mockMvc.perform(get("/api/v1/posts/{id}", 1L)
                                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
@@ -231,7 +231,7 @@ class PostControllerTest extends ControllerTest {
     @DisplayName("존재하지 않는 게시글 조회 시 404을 반환한다.")
     @WithCustomMockUser
     void 존재하지_않는_게시글_조회_시_404을_반환한다() throws Exception {
-        doThrow(new NotFoundPostException()).when(postService).find(eq(1L));
+        doThrow(new NotFoundPostException()).when(postService).find(any(User.class), eq(1L));
         mockMvc.perform(get("/api/v1/posts/{id}", 1L)
                                 .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
                                 .header("Authorization", "Bearer "+ AuthenticationFixtures.accessToken))
