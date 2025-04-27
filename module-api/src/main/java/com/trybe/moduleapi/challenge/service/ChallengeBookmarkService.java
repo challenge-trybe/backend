@@ -1,14 +1,13 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
 import com.trybe.moduleapi.challenge.event.ChallengeEvent;
 import com.trybe.moduleapi.challenge.event.ChallengeEventType;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
-import com.trybe.modulecore.challenge.enums.ParticipationStatus;
-import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.user.entity.User;
@@ -24,15 +23,15 @@ import java.util.stream.Collectors;
 @Service
 public class ChallengeBookmarkService {
     private final ChallengeRepository challengeRepository;
-    private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final ChallengeEventPublisher challengeEventPublisher;
+    private final ChallengeResponseAssembler challengeResponseAssembler;
 
-    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeEventPublisher challengeEventPublisher) {
+    public ChallengeBookmarkService(ChallengeRepository challengeRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeEventPublisher challengeEventPublisher, ChallengeResponseAssembler challengeResponseAssembler) {
         this.challengeRepository = challengeRepository;
-        this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.challengeEventPublisher = challengeEventPublisher;
+        this.challengeResponseAssembler = challengeResponseAssembler;
     }
 
     @Transactional
@@ -78,18 +77,12 @@ public class ChallengeBookmarkService {
                 ? Collections.emptyList()
                 : challengeRepository.findAllByIdIn(challengeIds);
 
-        List<ChallengeResponse.Preview> challengeSummaries = sortChallenges(challenges, challengeIds).stream()
-                .map(challenge -> {
-                    int participantCount = challengeParticipationRepository.countByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED);
-                    int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challenge.getId());
-
-                    ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(bookmarkCount, true);
-                    return ChallengeResponse.Preview.from(challenge, participantCount, bookmark);
-                })
-                .collect(Collectors.toList());
+        List<ChallengeResponse.Preview> challengePreviews = sortChallenges(challenges, challengeIds).stream()
+                .map(challenge -> challengeResponseAssembler.toPreview(challenge, user.getId()))
+                .toList();
 
         int totalElements = challengeBookmarkCache.getUserBookmarkCount(user.getId());
-        Page<ChallengeResponse.Preview> challengePage = new PageImpl<>(challengeSummaries, pageable, totalElements);
+        Page<ChallengeResponse.Preview> challengePage = new PageImpl<>(challengePreviews, pageable, totalElements);
 
         return new PageResponse<>(challengePage);
     }
@@ -100,7 +93,7 @@ public class ChallengeBookmarkService {
 
         return challengeIds.stream()
                 .map(challengeMap::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Challenge getChallenge(Long challengeId) {
