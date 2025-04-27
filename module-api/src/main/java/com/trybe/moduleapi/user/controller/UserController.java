@@ -7,11 +7,11 @@ import com.trybe.moduleapi.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
-
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -40,6 +40,13 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserRequest.UpdatePassword userRequest) {
         userService.updatePassword(userDetails, userRequest);
+    }
+
+    @PutMapping("/update-profile")
+    public UserResponse.Detail update(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart(name = "file") MultipartFile profileImage) {
+        return userService.updateProfileImage(userDetails.getUser(), profileImage);
     }
 
     @DeleteMapping
