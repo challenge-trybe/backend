@@ -13,15 +13,19 @@ public class UserResponse {
             String userId,
             String email,
             Gender gender,
-            LocalDate birth
+            LocalDate birth,
+            String profileImageUrl
     ) {
-        public static Detail from(User user) {
-            return new Detail(user.getId(),
-                              user.getNickname(),
-                              user.getUserId(),
-                              user.getEmail(),
-                              user.getGender(),
-                              user.getBirth());
+        public static Detail from(User user, String profileImageUrl) {
+            return new Detail(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getUserId(),
+                    user.getEmail(),
+                    user.getGender(),
+                    user.getBirth(),
+                    profileImageUrl
+            );
         }
     }
 
@@ -31,9 +35,11 @@ public class UserResponse {
             String nickname
     ){
         public static Summary from(User user) {
-            return new Summary(user.getId(),
-                              user.getUserId(),
-                              user.getNickname());
+            return new Summary(
+                    user.getId(),
+                    user.getUserId(),
+                    user.getNickname()
+            );
         }
     }
 }
