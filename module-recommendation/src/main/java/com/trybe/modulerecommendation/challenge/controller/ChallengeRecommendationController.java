@@ -1,6 +1,6 @@
 package com.trybe.modulerecommendation.challenge.controller;
 
-import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulerecommendation.challenge.service.ChallengeRecommendationService;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +16,7 @@ public class ChallengeRecommendationController {
     }
 
     @GetMapping
-    public List<ChallengeResponse.Preview> getChallengeRecommendations(@RequestParam Long userId) {
+    public List<Challenge> getChallengeRecommendations(@RequestParam Long userId) {
         return challengeRecommendationService.getChallengeRecommendations(userId);
     }
 }
