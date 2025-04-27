@@ -17,14 +17,12 @@ public class ChallengeRecommendationClientService {
         this.popularChallengeService = popularChallengeService;
     }
 
-    private static final int MIN_LIMIT = 20;
-
     @CircuitBreaker(name = "challengeRecommendation", fallbackMethod = "fallbackGetChallengeRecommendations")
-    public List<Challenge> getChallengeRecommendations(Long userId) {
+    public List<Challenge> getChallengeRecommendations(Long userId, int limit) {
         return challengeRecommendationClient.getChallengeRecommendations(userId);
     }
 
-    public List<Challenge> fallbackGetChallengeRecommendations(Long userId, Throwable throwable) {
-        return popularChallengeService.getTopPopularChallenges(MIN_LIMIT);
+    public List<Challenge> fallbackGetChallengeRecommendations(Long userId, int limit, Throwable throwable) {
+        return popularChallengeService.getTopPopularChallenges(limit);
     }
 }

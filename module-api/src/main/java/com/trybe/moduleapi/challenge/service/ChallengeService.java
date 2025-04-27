@@ -101,7 +101,7 @@ public class ChallengeService {
 
     @Transactional(readOnly = true)
     public List<ChallengeResponse.Preview> getRecommendations(User user) {
-        List<Challenge> challenges = challengeRecommendationClientService.getChallengeRecommendations(user.getId());
+        List<Challenge> challenges = challengeRecommendationClientService.getChallengeRecommendations(user.getId(), RECOMMEND_CHALLENGE_COUNT);
 
         if (challenges.size() < RECOMMEND_CHALLENGE_COUNT) {
             Set<Challenge> challengeSet = new LinkedHashSet<>(challenges);
