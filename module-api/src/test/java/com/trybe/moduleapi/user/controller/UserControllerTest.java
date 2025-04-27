@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.user.controller;
 
+import com.trybe.moduleapi.annotation.WithCustomMockUser;
 import com.trybe.moduleapi.auth.CustomUserDetails;
 import com.trybe.moduleapi.common.ControllerTest;
 import com.trybe.moduleapi.user.dto.request.UserRequest;
@@ -10,13 +11,16 @@ import com.trybe.moduleapi.user.exception.UpdatePasswordFailException;
 import com.trybe.moduleapi.user.fixtures.AuthenticationFixtures;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.moduleapi.user.service.UserService;
+import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 
@@ -24,11 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -115,6 +116,7 @@ class UserControllerTest  extends ControllerTest {
     @DisplayName("중복 아이디로 회원가입 요청 시 409을 반환한다.")
     void 중복_아이디로_회원가입_요청_시_409을_반환한다() throws Exception {
         UserRequest.Create 중복된_아이디_회원가입_요청 = UserFixtures.회원가입_요청;
+
         doThrow(new DuplicatedUserException("이미 존재하는 아이디입니다.")).when(userService).save(중복된_아이디_회원가입_요청);
         mockMvc.perform(post("/api/v1/users")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -148,6 +150,7 @@ class UserControllerTest  extends ControllerTest {
     @DisplayName("중복 이메일로 회원가입 요청 시 409을 반환한다.")
     void 중복_이메일로_회원가입_요청_시_409을_반환한다() throws Exception {
         UserRequest.Create 중복된_이메일_회원가입_요청 = UserFixtures.회원가입_요청;
+
         doThrow(new DuplicatedUserException("이미 존재하는 이메일입니다.")).when(userService).save(중복된_이메일_회원가입_요청);
         mockMvc.perform(post("/api/v1/users")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -194,7 +197,8 @@ class UserControllerTest  extends ControllerTest {
                        jsonPath("$.email").value(회원_응답.email()),
                        jsonPath("$.userId").value(회원_응답.userId()),
                        jsonPath("$.gender").value(회원_응답.gender().toString()),
-                       jsonPath("$.birth").value(회원_응답.birth().toString())
+                       jsonPath("$.birth").value(회원_응답.birth().toString()),
+                       jsonPath("$.profileImageUrl").value(회원_응답.profileImageUrl())
                )
                .andDo(document(docsPath + "findById",
                                preprocessRequest(prettyPrint()),
@@ -206,7 +210,8 @@ class UserControllerTest  extends ControllerTest {
                                        fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
                                        fieldWithPath("userId").type(JsonFieldType.STRING).description("아이디"),
                                        fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
-                                       fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)")
+                                       fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
+                                       fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).description("이미지 경로")
                                )
                ));
     }
@@ -261,7 +266,8 @@ class UserControllerTest  extends ControllerTest {
                        jsonPath("$.email").value(회원_응답.email()),
                        jsonPath("$.userId").value(회원_응답.userId()),
                        jsonPath("$.gender").value(회원_응답.gender().toString()),
-                       jsonPath("$.birth").value(회원_응답.birth().toString())
+                       jsonPath("$.birth").value(회원_응답.birth().toString()),
+                       jsonPath("$.profileImageUrl").value(회원_응답.profileImageUrl())
                )
                .andDo(document(docsPath + "user-update-profile",
                                preprocessRequest(prettyPrint()),
@@ -278,7 +284,8 @@ class UserControllerTest  extends ControllerTest {
                                        fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
                                        fieldWithPath("userId").type(JsonFieldType.STRING).description("아이디"),
                                        fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
-                                       fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)")
+                                       fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
+                                       fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).description("이미지 경로")
                                )
                ));
     }
@@ -425,6 +432,47 @@ class UserControllerTest  extends ControllerTest {
                                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("추가 메시지").optional()
                                )
                ));
+    }
+
+    @Test
+    @DisplayName("정상적인 프로필 이미지 수정 시 200을 반환한다.")
+    @WithCustomMockUser
+    void 정상적인_프로필_이미지_수정_시_200을_반환한다 () throws Exception {
+        MockMultipartFile 프로필_이미지_요청 = UserFixtures.프로필_이미지_요청;
+        UserResponse.Detail 회원_응답 = UserFixtures.회원_응답;
+
+        when(userService.updateProfileImage(any(User.class), any(MultipartFile.class))).thenReturn(회원_응답);
+
+        mockMvc.perform(multipart("/api/v1/users/update-profile")
+                .file(프로필_이미지_요청)
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
+                .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.id").value(회원_응답.id()),
+                        jsonPath("$.nickname").value(회원_응답.nickname()),
+                        jsonPath("$.email").value(회원_응답.email()),
+                        jsonPath("$.userId").value(회원_응답.userId()),
+                        jsonPath("$.gender").value(회원_응답.gender().toString()),
+                        jsonPath("$.birth").value(회원_응답.birth().toString()),
+                        jsonPath("$.profileImageUrl").value(회원_응답.profileImageUrl())
+                )
+                .andDo(document(docsPath + "updateProfile",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("PK"),
+                                fieldWithPath("nickname").type(JsonFieldType.STRING).description("닉네임"),
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("이메일"),
+                                fieldWithPath("userId").type(JsonFieldType.STRING).description("아이디"),
+                                fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
+                                fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
+                                fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).description("이미지 경로")
+                        )
+                ));
     }
 
     @Test
