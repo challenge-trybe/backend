@@ -1,6 +1,7 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
 import com.trybe.moduleapi.challenge.event.ChallengeEvent;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
@@ -8,11 +9,8 @@ import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.entity.Challenge;
-import com.trybe.modulecore.challenge.enums.ParticipationStatus;
-import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
-import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,10 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.trybe.moduleapi.challenge.fixtures.ChallengeBookmarkFixtures.*;
@@ -41,13 +36,13 @@ class ChallengeBookmarkServiceTest {
     private ChallengeRepository challengeRepository;
 
     @Mock
-    private ChallengeParticipationRepository challengeParticipationRepository;
-
-    @Mock
     private ChallengeBookmarkCache challengeBookmarkCache;
 
     @Mock
     private ChallengeEventPublisher challengeEventPublisher;
+
+    @Mock
+    private ChallengeResponseAssembler challengeResponseAssembler;
 
     @Test
     @DisplayName("챌린지 북마크 추가 시 북마크 정보를 반환한다.")
@@ -192,6 +187,7 @@ class ChallengeBookmarkServiceTest {
         Long userId = UserFixtures.회원_PK;
         User user = spy(UserFixtures.회원);
         Set<Long> challengeIds = 북마크된_챌린지_ID_목록;
+        Iterator<Long> iterator = challengeIds.iterator();
 
         List<Challenge> challenges = List.of(spy(ChallengeFixtures.챌린지()), spy(ChallengeFixtures.챌린지()), spy(ChallengeFixtures.챌린지()));
 
@@ -204,12 +200,12 @@ class ChallengeBookmarkServiceTest {
                 .thenReturn(challengeIds);
         when(challengeRepository.findAllByIdIn(any(Set.class)))
                 .thenReturn(challenges);
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(Long.class), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(ChallengeFixtures.참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any(Long.class)))
-                .thenReturn(북마크_수);
         when(challengeBookmarkCache.getUserBookmarkCount(any(Long.class)))
                 .thenReturn(challengeIds.size());
+        when(challengeResponseAssembler.toPreview(any(Challenge.class), any(Long.class)))
+                .thenReturn(ChallengeFixtures.챌린지_미리보기_응답_생성(iterator.next()))
+                .thenReturn(ChallengeFixtures.챌린지_미리보기_응답_생성(iterator.next()))
+                .thenReturn(ChallengeFixtures.챌린지_미리보기_응답_생성(iterator.next()));
 
         /* when */
         PageResponse<ChallengeResponse.Preview> result = challengeBookmarkService.getMyBookmarkedChallenges(user, ChallengeFixtures.페이지_요청);
@@ -244,7 +240,7 @@ class ChallengeBookmarkServiceTest {
 
         /* then */
         verify(challengeRepository, never()).findAllByIdIn(any(Set.class));
-        verify(challengeParticipationRepository, never()).countByChallengeIdAndStatus(any(Long.class), eq(ParticipationStatus.ACCEPTED));
+        verify(challengeResponseAssembler, never()).toPreview(any(Challenge.class), any(Long.class));
         verify(challengeBookmarkCache, never()).getBookmarkCount(any(Long.class));
 
         assertEquals(0, result.content().size());

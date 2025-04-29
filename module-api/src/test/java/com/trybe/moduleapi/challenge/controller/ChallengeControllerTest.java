@@ -360,7 +360,7 @@ class ChallengeControllerTest extends ControllerTest {
     void 정상적인_챌린지_추천_목록_조회_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
         when(challengeService.getRecommendations(any(User.class)))
-                .thenReturn(ChallengeFixtures.챌린지_추천_목록_응답);
+                .thenReturn(ChallengeFixtures.챌린지_미리보기_목록_응답);
 
         /* when */
         /* then */
@@ -368,7 +368,7 @@ class ChallengeControllerTest extends ControllerTest {
 
         result.andExpectAll(
                 status().isOk(),
-                jsonPath("$.size()").value(ChallengeFixtures.챌린지_추천_목록_응답.size())
+                jsonPath("$.size()").value(ChallengeFixtures.챌린지_미리보기_목록_응답.size())
         );
 
         result.andDo(document(docsPath + "recommendations",
