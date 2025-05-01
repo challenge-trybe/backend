@@ -1,19 +1,31 @@
 package com.trybe.moduleapi.challenge.dto;
 
+import com.trybe.moduleapi.file.dto.FileResponse;
+import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.file.entity.File;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ChallengeResponseAssembler {
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
+    private final FileManager fileManager;
 
-    public ChallengeResponseAssembler(ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache) {
+    public ChallengeResponseAssembler(ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, FileManager fileManager) {
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
+        this.fileManager = fileManager;
+    }
+
+    public ChallengeResponse.Detail toInitialDetail(Challenge challenge) {
+        FileResponse thumbnail = toFileResponse(challenge.getThumbnail());
+        ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
+
+        return ChallengeResponse.Detail.from(challenge, thumbnail, 0, bookmark);
     }
 
     public ChallengeResponse.Detail toDetail(Challenge challenge, Long userId) {
@@ -21,8 +33,9 @@ public class ChallengeResponseAssembler {
 
         int participantCount = getParticipantCount(challengeId);
         ChallengeResponse.Bookmark bookmark = toBookmark(challengeId, userId);
+        FileResponse thumbnail = toFileResponse(challenge.getThumbnail());
 
-        return ChallengeResponse.Detail.from(challenge, participantCount, bookmark);
+        return ChallengeResponse.Detail.from(challenge, thumbnail, participantCount, bookmark);
     }
 
     public ChallengeResponse.Preview toPreview(Challenge challenge, Long userId) {
@@ -30,8 +43,9 @@ public class ChallengeResponseAssembler {
 
         int participantCount = getParticipantCount(challengeId);
         ChallengeResponse.Bookmark bookmark = toBookmark(challengeId, userId);
+        FileResponse thumbnail = toFileResponse(challenge.getThumbnail());
 
-        return ChallengeResponse.Preview.from(challenge, participantCount, bookmark);
+        return ChallengeResponse.Preview.from(challenge, thumbnail, participantCount, bookmark);
     }
 
     public ChallengeResponse.Summary toSummary(Challenge challenge) {
@@ -46,5 +60,9 @@ public class ChallengeResponseAssembler {
         int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challengeId);
         Boolean bookmarked = userId == null ? null : challengeBookmarkCache.isBookmarked(userId, challengeId);
         return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
+    }
+
+    private FileResponse toFileResponse(File file) {
+        return FileResponse.from(file.getOriginalName(), fileManager.getFileUrl(file.getFilePath()));
     }
 }
