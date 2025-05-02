@@ -72,8 +72,11 @@ public class Challenge extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public void updateContent(File thumbnail, String title, String description, LocalDate startDate, LocalDate endDate, int capacity, ChallengeCategory category) {
+    public void updateThumbnail(File thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    public void updateContent(String title, String description, LocalDate startDate, LocalDate endDate, int capacity, ChallengeCategory category) {
         this.title = title;
         this.description = description;
         this.startDate = startDate;
