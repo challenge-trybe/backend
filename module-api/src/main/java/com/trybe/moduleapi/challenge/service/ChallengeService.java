@@ -68,7 +68,7 @@ public class ChallengeService {
         Challenge savedChallenge = challengeRepository.save(challenge);
 
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
-        File thumbnailFile = fileManager.uploadFile(thumbnail, String.format(CHALLENGE_THUMBNAIL_BASE_PATH, challenge.getId()));
+        File thumbnailFile = thumbnail == null ? null : fileManager.uploadFile(thumbnail, String.format(CHALLENGE_THUMBNAIL_BASE_PATH, challenge.getId()));
 
         challenge.updateThumbnail(thumbnailFile);
         challengeParticipationRepository.save(participation);
