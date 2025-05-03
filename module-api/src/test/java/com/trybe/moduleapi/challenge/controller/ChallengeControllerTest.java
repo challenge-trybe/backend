@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.challenge.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.trybe.moduleapi.annotation.WithCustomMockUser;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
@@ -8,14 +9,17 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRol
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.challenge.service.ChallengeService;
 import com.trybe.moduleapi.common.ControllerTest;
+import com.trybe.moduleapi.file.fixtures.FileFixtures;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.charset.StandardCharsets;
 
@@ -24,6 +28,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ChallengeController.class)
@@ -35,6 +40,15 @@ class ChallengeControllerTest extends ControllerTest {
 
     private String docsPath = "challenge-controller-test/";
 
+    private MockMultipartFile createJsonRequestPart(Object request) throws JsonProcessingException {
+        return new MockMultipartFile(
+                "request",
+                null,
+                "application/json",
+                objectMapper.writeValueAsBytes(request)
+        );
+    }
+
     @Test
     @WithCustomMockUser
     @DisplayName("정상적인 챌린지 생성 요청 시 응답코드 200을 반환한다.")
@@ -42,17 +56,26 @@ class ChallengeControllerTest extends ControllerTest {
         /* given */
         ChallengeRequest.Create request = ChallengeFixtures.챌린지_생성_요청;
 
-        when(challengeService.save(any(User.class), eq(request)))
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+        MockMultipartFile thumbnailPart = FileFixtures.파일_요청_생성("thumbnail");
+
+        when(challengeService.save(any(User.class), eq(thumbnailPart), eq(request)))
                 .thenReturn(ChallengeFixtures.초기_챌린지_상세_응답);
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint)
+                        .file(jsonPart)
+                        .file(thumbnailPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isOk(),
+                jsonPath("$.thumbnail.originalName").value(FileFixtures.파일_원본_이름),
+                jsonPath("$.thumbnail.filePath").value(FileFixtures.파일_전체_경로),
                 jsonPath("$.title").value(request.title()),
                 jsonPath("$.description").value(request.description()),
                 jsonPath("$.startDate").value(request.startDate().toString()),
@@ -71,7 +94,11 @@ class ChallengeControllerTest extends ControllerTest {
         result.andDo(document(docsPath + "create",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestFields(
+                requestParts(
+                        partWithName("request").description("챌린지 생성 요청 데이터 (JSON)"),
+                        partWithName("thumbnail").description("챌린지 썸네일 이미지 (선택)")
+                ),
+                requestPartFields("request",
                         fieldWithPath("title").description("챌린지 제목 (최대 100자)"),
                         fieldWithPath("description").description("챌린지 설명 (최대 1,000자)"),
                         fieldWithPath("startDate").description("챌린지 시작일 (현재 날짜 이후)"),
@@ -83,6 +110,9 @@ class ChallengeControllerTest extends ControllerTest {
                 ),
                 responseFields(
                         fieldWithPath("id").description("챌린지 ID"),
+                        fieldWithPath("thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),
@@ -106,11 +136,16 @@ class ChallengeControllerTest extends ControllerTest {
         /* given */
         ChallengeRequest.Create request = ChallengeFixtures.잘못된_챌린지_생성_요청;
 
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint)
+                        .file(jsonPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isBadRequest(),
@@ -127,7 +162,7 @@ class ChallengeControllerTest extends ControllerTest {
         result.andDo(document(docsPath + "create/" + invalidBadRequestPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestFields(
+                requestPartFields("request",
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),
@@ -166,6 +201,9 @@ class ChallengeControllerTest extends ControllerTest {
 
         result.andExpectAll(
                 status().isOk(),
+                jsonPath("$.thumbnail").exists(),
+                jsonPath("$.thumbnail.originalName").value(ChallengeFixtures.챌린지_상세_응답.thumbnail().originalName()),
+                jsonPath("$.thumbnail.filePath").value(ChallengeFixtures.챌린지_상세_응답.thumbnail().filePath()),
                 jsonPath("$.title").value(ChallengeFixtures.챌린지_상세_응답.title()),
                 jsonPath("$.description").value(ChallengeFixtures.챌린지_상세_응답.description()),
                 jsonPath("$.startDate").value(ChallengeFixtures.챌린지_상세_응답.startDate().toString()),
@@ -187,6 +225,9 @@ class ChallengeControllerTest extends ControllerTest {
                 pathParameters(parameterWithName("id").description("조회할 챌린지 ID")),
                 responseFields(
                         fieldWithPath("id").description("챌린지 ID"),
+                        fieldWithPath("thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),
@@ -269,6 +310,9 @@ class ChallengeControllerTest extends ControllerTest {
                 responseFields(
                         fieldWithPath("content").description("챌린지 목록"),
                         fieldWithPath("content[].id").description("챌린지 ID"),
+                        fieldWithPath("content[].thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("content[].thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("content[].thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("content[].title").description("챌린지 제목"),
                         fieldWithPath("content[].description").description("챌린지 설명"),
                         fieldWithPath("content[].status").description("챌린지 상태"),
@@ -341,6 +385,9 @@ class ChallengeControllerTest extends ControllerTest {
                 responseFields(
                         fieldWithPath("[]").description("챌린지 목록"),
                         fieldWithPath("[].id").description("챌린지 ID"),
+                        fieldWithPath("[].thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("[].thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("[].thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("[].title").description("챌린지 제목"),
                         fieldWithPath("[].description").description("챌린지 설명"),
                         fieldWithPath("[].status").description("챌린지 상태"),
@@ -377,6 +424,9 @@ class ChallengeControllerTest extends ControllerTest {
                 responseFields(
                         fieldWithPath("[]").description("챌린지 목록"),
                         fieldWithPath("[].id").description("챌린지 ID"),
+                        fieldWithPath("[].thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("[].thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("[].thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("[].title").description("챌린지 제목"),
                         fieldWithPath("[].description").description("챌린지 설명"),
                         fieldWithPath("[].status").description("챌린지 상태"),
@@ -398,17 +448,27 @@ class ChallengeControllerTest extends ControllerTest {
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
-        when(challengeService.updateContent(any(User.class), eq(challengeId), eq(request)))
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+        MockMultipartFile thumbnailPart = FileFixtures.파일_요청_생성("thumbnail");
+
+        when(challengeService.updateContent(any(User.class), eq(challengeId), eq(thumbnailPart), eq(request)))
                 .thenReturn(ChallengeFixtures.내용_수정된_챌린지_상세_응답);
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{id}/content", challengeId)
+                        .file(jsonPart)
+                        .file(thumbnailPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isOk(),
+                jsonPath("$.thumbnail.originalName").value(FileFixtures.파일_원본_이름),
+                jsonPath("$.thumbnail.filePath").value(FileFixtures.파일_전체_경로),
                 jsonPath("$.title").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.title()),
                 jsonPath("$.description").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.description()),
                 jsonPath("$.startDate").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.startDate().toString()),
@@ -428,7 +488,11 @@ class ChallengeControllerTest extends ControllerTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 pathParameters(parameterWithName("id").description("수정할 챌린지 ID")),
-                requestFields(
+                requestParts(
+                        partWithName("request").description("챌린지 수정 요청 데이터 (JSON)"),
+                        partWithName("thumbnail").description("챌린지 썸네일 이미지 (선택)")
+                ),
+                requestPartFields("request",
                         fieldWithPath("title").description("챌린지 제목 (최대 100자)"),
                         fieldWithPath("description").description("챌린지 설명 (최대 1,000자)"),
                         fieldWithPath("startDate").description("챌린지 시작일 (현재 날짜 이후)"),
@@ -438,6 +502,9 @@ class ChallengeControllerTest extends ControllerTest {
                 ),
                 responseFields(
                         fieldWithPath("id").description("챌린지 ID"),
+                        fieldWithPath("thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),
@@ -462,11 +529,17 @@ class ChallengeControllerTest extends ControllerTest {
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.잘못된_챌린지_내용_수정_요청;
 
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{id}/content", challengeId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isBadRequest(),
@@ -482,7 +555,7 @@ class ChallengeControllerTest extends ControllerTest {
         result.andDo(document(docsPath + "update-content/" + invalidBadRequestPath,
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
-                requestFields(
+                requestPartFields("request",
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),
@@ -509,14 +582,20 @@ class ChallengeControllerTest extends ControllerTest {
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
         doThrow(new InvalidChallengeRoleActionException("리더만 챌린지 정보를 수정할 수 있습니다."))
-                .when(challengeService).updateContent(any(User.class), eq(challengeId), eq(request));
+                .when(challengeService).updateContent(any(User.class), eq(challengeId), nullable(MultipartFile.class), eq(request));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{id}/content", challengeId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isForbidden(),
@@ -543,14 +622,20 @@ class ChallengeControllerTest extends ControllerTest {
         Long challengeId = ChallengeFixtures.챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
         doThrow(new InvalidChallengeStatusException("진행 예정인 챌린지만 수정할 수 있습니다."))
-                .when(challengeService).updateContent(any(User.class), eq(challengeId), eq(request));
+                .when(challengeService).updateContent(any(User.class), eq(challengeId), nullable(MultipartFile.class), eq(request));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{id}/content", challengeId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isConflict(),
@@ -577,13 +662,19 @@ class ChallengeControllerTest extends ControllerTest {
         Long challengeId = ChallengeFixtures.잘못된_챌린지_ID;
         ChallengeRequest.UpdateContent request = ChallengeFixtures.챌린지_내용_수정_요청;
 
-        doThrow(new NotFoundChallengeException()).when(challengeService).updateContent(any(User.class), eq(challengeId), eq(request));
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        doThrow(new NotFoundChallengeException()).when(challengeService).updateContent(any(User.class), eq(challengeId), nullable(MultipartFile.class), eq(request));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{id}/content", challengeId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{id}/content", challengeId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isNotFound(),
@@ -645,6 +736,9 @@ class ChallengeControllerTest extends ControllerTest {
                 ),
                 responseFields(
                         fieldWithPath("id").description("챌린지 ID"),
+                        fieldWithPath("thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),

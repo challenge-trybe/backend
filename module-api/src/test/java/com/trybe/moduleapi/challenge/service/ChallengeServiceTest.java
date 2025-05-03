@@ -11,6 +11,9 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRol
 import com.trybe.moduleapi.challenge.fixtures.ChallengeParticipationFixtures;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.dto.FileResponse;
+import com.trybe.moduleapi.file.fixtures.FileFixtures;
+import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
@@ -19,6 +22,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
+import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +72,9 @@ class ChallengeServiceTest {
     @Mock
     private ChallengeResponseAssembler challengeResponseAssembler;
 
+    @Mock
+    private FileManager fileManager;
+
     @Test
     @DisplayName("챌린지 생성 시 저장된 챌린지 정보를 반환한다.")
     void 챌린지_생성_시_저장된_챌린지_정보를_반환한다 () {
@@ -74,13 +82,19 @@ class ChallengeServiceTest {
         ChallengeRequest.Create request = 챌린지_생성_요청;
         Challenge challenge = 챌린지();
 
+        MockMultipartFile thumbnail = FileFixtures.파일_요청_생성("thumbnail");
+
         when(challengeRepository.save(any(Challenge.class)))
                 .thenReturn(challenge);
         when(challengeParticipationRepository.save(any(ChallengeParticipation.class)))
                 .thenReturn(ChallengeParticipationFixtures.챌린지_리더_참여());
+        when(fileManager.uploadFile(eq(thumbnail), any(String.class)))
+                .thenReturn(FileFixtures.파일);
+        when(challengeResponseAssembler.toInitialDetail(challenge))
+                .thenReturn(초기_챌린지_상세_응답);
 
         /* when */
-        ChallengeResponse.Detail response = challengeService.save(UserFixtures.회원, request);
+        ChallengeResponse.Detail response = challengeService.save(UserFixtures.회원, thumbnail, request);
 
         /* then */
         verifyChallengeResponse(challenge, response);
@@ -249,17 +263,24 @@ class ChallengeServiceTest {
     void 챌린지_정보_수정_시_수정된_챌린지_정보를_반환한다 () {
         /* given */
         Long challengeId = 챌린지_ID;
+        Challenge challenge = 내용_수정된_챌린지;
+
         ChallengeRequest.UpdateContent request = 챌린지_내용_수정_요청;
+
+        File thumbnailFile = FileFixtures.파일;
+        MockMultipartFile thumbnail = FileFixtures.파일_요청_생성("thumbnail");
 
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(챌린지()));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(any(), eq(challengeId), eq(ChallengeRole.LEADER)))
                 .thenReturn(true);
+        when(fileManager.updateFile(any(File.class), eq(thumbnail), any(String.class)))
+                .thenReturn(thumbnailFile);
         when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
                 .thenReturn(내용_수정된_챌린지_상세_응답);
 
         /* when */
-        ChallengeResponse.Detail response = challengeService.updateContent(UserFixtures.회원, challengeId, request);
+        ChallengeResponse.Detail response = challengeService.updateContent(UserFixtures.회원, challengeId, thumbnail, request);
 
         /* then */
         verifyChallengeResponse(내용_수정된_챌린지, response);
@@ -282,7 +303,7 @@ class ChallengeServiceTest {
 
         /* when */
         /* then */
-        assertThrows(InvalidChallengeRoleActionException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+        assertThrows(InvalidChallengeRoleActionException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, null, request));
     }
 
     @Test
@@ -299,7 +320,7 @@ class ChallengeServiceTest {
 
         /* when */
         /* then */
-        assertThrows(InvalidChallengeStatusException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+        assertThrows(InvalidChallengeStatusException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, null, request));
     }
 
     @Test
@@ -314,7 +335,7 @@ class ChallengeServiceTest {
 
         /* when */
         /* then */
-        assertThrows(NotFoundChallengeException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+        assertThrows(NotFoundChallengeException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, null, request));
     }
 
     @Test
@@ -322,6 +343,8 @@ class ChallengeServiceTest {
     void 챌린지_인증_정보_수정_시_수정된_챌린지_정보를_반환한다 () {
         /* given */
         Long challengeId = 챌린지_ID;
+        Challenge challenge = 인증_내용_수정된_챌린지;
+
         ChallengeRequest.UpdateProof request = 챌린지_인증_내용_수정_요청;
 
         when(challengeRepository.findById(challengeId))
@@ -463,6 +486,7 @@ class ChallengeServiceTest {
     }
 
     private void verifyChallengeResponse(Challenge challenge, ChallengeResponse.Detail response) {
+        verifyFileResponse(challenge.getThumbnail(), response.thumbnail());
         assertEquals(challenge.getTitle(), response.title());
         assertEquals(challenge.getDescription(), response.description());
         assertEquals(challenge.getStartDate(), response.startDate());
@@ -472,5 +496,15 @@ class ChallengeServiceTest {
         assertEquals(challenge.getCategory(), response.category());
         assertEquals(challenge.getProofWay(), response.proofWay());
         assertEquals(challenge.getProofCount(), response.proofCount());
+    }
+
+    private void verifyFileResponse(File file, FileResponse fileResponse) {
+        if (file == null) {
+            assertNull(fileResponse);
+            return;
+        }
+
+        assertEquals(file.getOriginalName(), fileResponse.originalName());
+        assertEquals(FileFixtures.파일_저장소_경로 + file.getFilePath(), fileResponse.filePath());
     }
 }
