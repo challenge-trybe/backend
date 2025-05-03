@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @PutMapping("/update-profile")
-    public UserResponse.Detail update(
+    public UserResponse.Detail updateProfileImage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart(name = "file") MultipartFile profileImage) {
         return userService.updateProfileImage(userDetails.getUser(), profileImage);
