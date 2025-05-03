@@ -11,6 +11,7 @@ import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
@@ -20,11 +21,13 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
+import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -39,8 +42,9 @@ public class ChallengeService {
     private final ChallengeRecommendationClientService challengeRecommendationClientService;
     private final ChatService chatService;
     private final ChallengeResponseAssembler challengeResponseAssembler;
+    private final FileManager fileManager;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeViewCache challengeViewCache, ChallengeEventPublisher challengeEventPublisher, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService, ChallengeResponseAssembler challengeResponseAssembler) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeViewCache challengeViewCache, ChallengeEventPublisher challengeEventPublisher, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService, ChallengeResponseAssembler challengeResponseAssembler, FileManager fileManager) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
@@ -50,23 +54,28 @@ public class ChallengeService {
         this.challengeRecommendationClientService = challengeRecommendationClientService;
         this.chatService = chatService;
         this.challengeResponseAssembler = challengeResponseAssembler;
+        this.fileManager = fileManager;
     }
 
     private static final int RECOMMEND_CHALLENGE_COUNT = 20;
     private static final int POPULAR_CHALLENGE_COUNT = 20;
 
+    private static final String CHALLENGE_THUMBNAIL_BASE_PATH = "/challenge/%d/thumbnail/";
+
     @Transactional
-    public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
+    public ChallengeResponse.Detail save(User user, MultipartFile thumbnail, ChallengeRequest.Create request) {
         Challenge challenge = request.toEntity();
         Challenge savedChallenge = challengeRepository.save(challenge);
 
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
+        File thumbnailFile = fileManager.uploadFile(thumbnail, String.format(CHALLENGE_THUMBNAIL_BASE_PATH, challenge.getId()));
+
+        challenge.updateThumbnail(thumbnailFile);
         challengeParticipationRepository.save(participation);
         challengeEventPublisher.publish(new ChallengeEvent(savedChallenge, user.getId(), ChallengeEventType.CREATE));
         chatService.create(savedChallenge);
 
-        ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
-        return ChallengeResponse.Detail.from(savedChallenge, 1, bookmark);
+        return challengeResponseAssembler.toInitialDetail(savedChallenge);
     }
 
     @Transactional(readOnly = true)
@@ -124,12 +133,14 @@ public class ChallengeService {
     }
 
     @Transactional
-    public ChallengeResponse.Detail updateContent(User user, Long id, ChallengeRequest.UpdateContent request) {
+    public ChallengeResponse.Detail updateContent(User user, Long id, MultipartFile thumbnail, ChallengeRequest.UpdateContent request) {
         Challenge challenge = getChallenge(id);
 
         validateLeader(user.getId(), id, "리더만 챌린지 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 정보를 수정할 수 있습니다.");
 
+        File thumbnailFile = updateThumbnail(challenge, thumbnail);
+        challenge.updateThumbnail(thumbnailFile);
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
         return challengeResponseAssembler.toDetail(challenge, user.getId());
@@ -154,6 +165,7 @@ public class ChallengeService {
         validateLeader(user.getId(), id, "리더만 챌린지를 삭제할 수 있습니다.");
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
+        fileManager.deleteFile(challenge.getThumbnail());
         challengeBookmarkCache.removeBookmarksByChallenge(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
         chatService.delete(id);
@@ -182,6 +194,24 @@ public class ChallengeService {
         if (userId != null && !challengeViewCache.hasViewed(userId, challengeId)) {
             challengeViewCache.recordView(userId, challengeId);
             challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.VIEW));
+        }
+    }
+
+    private File updateThumbnail(Challenge challenge, MultipartFile newThumbnail) {
+        File oldThumbnail = challenge.getThumbnail();
+        String basePath = String.format(CHALLENGE_THUMBNAIL_BASE_PATH, challenge.getId());
+
+        if (newThumbnail == null) {
+            if (oldThumbnail != null) {
+                fileManager.deleteFile(oldThumbnail);
+            }
+            return null;
+        }
+
+        if (oldThumbnail != null) {
+            return fileManager.updateFile(oldThumbnail, newThumbnail, basePath);
+        } else {
+            return fileManager.uploadFile(newThumbnail, basePath);
         }
     }
 }
