@@ -15,10 +15,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "challenge")
+@Table(name = "challenges")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SQLDelete(sql = "UPDATE challenge SET deleted_at = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE challenges SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
 public class Challenge extends BaseEntity {
     public Challenge(String title, String description, LocalDate startDate, LocalDate endDate, int capacity, ChallengeCategory category, String proofWay, int proofCount) {
