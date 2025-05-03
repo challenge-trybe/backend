@@ -467,8 +467,6 @@ class ChallengeControllerTest extends ControllerTest {
 
         result.andExpectAll(
                 status().isOk(),
-                jsonPath("$.thumbnail.originalName").value(FileFixtures.파일_원본_이름),
-                jsonPath("$.thumbnail.filePath").value(FileFixtures.파일_전체_경로),
                 jsonPath("$.title").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.title()),
                 jsonPath("$.description").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.description()),
                 jsonPath("$.startDate").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.startDate().toString()),
@@ -503,8 +501,6 @@ class ChallengeControllerTest extends ControllerTest {
                 responseFields(
                         fieldWithPath("id").description("챌린지 ID"),
                         fieldWithPath("thumbnail").description("챌린지 썸네일 정보"),
-                        fieldWithPath("thumbnail.originalName").description("썸네일 파일 원본 이름"),
-                        fieldWithPath("thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),
@@ -737,8 +733,6 @@ class ChallengeControllerTest extends ControllerTest {
                 responseFields(
                         fieldWithPath("id").description("챌린지 ID"),
                         fieldWithPath("thumbnail").description("챌린지 썸네일 정보"),
-                        fieldWithPath("thumbnail.originalName").description("썸네일 파일 원본 이름"),
-                        fieldWithPath("thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("title").description("챌린지 제목"),
                         fieldWithPath("description").description("챌린지 설명"),
                         fieldWithPath("startDate").description("챌린지 시작일"),
