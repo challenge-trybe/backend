@@ -23,7 +23,6 @@ public class UserService {
     private final FileManager fileManager;
 
     private static final String USER_PROFILE_BASE_PATH = "profile/user";
-    private static final String DEFAULT_PROFILE_BASE_PATH = "profile/default-profile.jpeg";
 
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, FileManager fileManager) {
         this.userRepository = userRepository;
@@ -47,8 +46,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse.Detail findById(Long id){
         User user = getUserById(id);
-        String profileImageUrl = getUserProfileImageUrl(user);
-        FileResponse fileResponse = FileResponse.from(user.getProfileImage().getOriginalName(), profileImageUrl);
+        FileResponse fileResponse = toFileResponse(user);
         return UserResponse.Detail.from(user, fileResponse);
     }
 
@@ -65,14 +63,13 @@ public class UserService {
     @Transactional
     public UserResponse.Detail updateProfile(CustomUserDetails userDetails,
                                              UserRequest.Update userRequest){
-        User user = userDetails.getUser();
+        User user = getUserById(userDetails.getUser().getId());
         if (user.getEmail() != userRequest.email()) {
             checkDuplicatedEmail(userRequest.email());
         }
         user.updateProfile(userRequest.nickname(), userRequest.email(), userRequest.gender(), userRequest.birth());
-        String profileImageUrl = getUserProfileImageUrl(user);
+        FileResponse fileResponse = toFileResponse(user);
 
-        FileResponse fileResponse = FileResponse.from(user.getProfileImage().getOriginalName(), profileImageUrl);
         return UserResponse.Detail.from(user, fileResponse);
     }
 
@@ -86,8 +83,7 @@ public class UserService {
         user.updateProfileImage(file);
         userRepository.save(user);
 
-        String profileImageUrl = getUserProfileImageUrl(user);
-        FileResponse fileResponse = FileResponse.from(file.getOriginalName(), profileImageUrl);
+        FileResponse fileResponse = toFileResponse(user);
         return UserResponse.Detail.from(user, fileResponse);
     }
 
@@ -136,12 +132,10 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(NotFoundUserException::new);
     }
 
-    private String getUserProfileImageUrl(User user){
-        String filePath = (user.getProfileImage() == null) ?
-                DEFAULT_PROFILE_BASE_PATH :
-                user.getProfileImage().getFilePath();
+    private FileResponse toFileResponse(User user) {
+        if (user.getProfileImage() == null) return null;
 
-        return fileManager.getFileUrl(filePath);
+        String url = fileManager.getFileUrl(user.getProfileImage().getFilePath());
+        return FileResponse.from(user.getProfileImage().getOriginalName(), url);
     }
-
 }
