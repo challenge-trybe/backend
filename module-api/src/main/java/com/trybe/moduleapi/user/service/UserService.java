@@ -1,6 +1,7 @@
 package com.trybe.moduleapi.user.service;
 
 import com.trybe.moduleapi.auth.CustomUserDetails;
+import com.trybe.moduleapi.file.dto.FileResponse;
 import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.moduleapi.user.dto.request.UserRequest;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
@@ -47,7 +48,8 @@ public class UserService {
     public UserResponse.Detail findById(Long id){
         User user = getUserById(id);
         String profileImageUrl = getUserProfileImageUrl(user);
-        return UserResponse.Detail.from(user, profileImageUrl);
+        FileResponse fileResponse = FileResponse.from(user.getProfileImage().getOriginalName(), profileImageUrl);
+        return UserResponse.Detail.from(user, fileResponse);
     }
 
     @Transactional
@@ -69,7 +71,9 @@ public class UserService {
         }
         user.updateProfile(userRequest.nickname(), userRequest.email(), userRequest.gender(), userRequest.birth());
         String profileImageUrl = getUserProfileImageUrl(user);
-        return UserResponse.Detail.from(user, profileImageUrl);
+
+        FileResponse fileResponse = FileResponse.from(user.getProfileImage().getOriginalName(), profileImageUrl);
+        return UserResponse.Detail.from(user, fileResponse);
     }
 
     @Transactional
@@ -83,7 +87,8 @@ public class UserService {
         userRepository.save(user);
 
         String profileImageUrl = getUserProfileImageUrl(user);
-        return UserResponse.Detail.from(user, profileImageUrl);
+        FileResponse fileResponse = FileResponse.from(file.getOriginalName(), profileImageUrl);
+        return UserResponse.Detail.from(user, fileResponse);
     }
 
     @Transactional
