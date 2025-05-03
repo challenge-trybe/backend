@@ -127,7 +127,11 @@ class UserServiceTest {
     void 회원정보_수정_시_성공하면_수정된_회원_정보를_반환한다() {
         /* given */
         UserRequest.Update request = UserFixtures.회원정보_수정_요청;
-        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원());
+        User 회원 = UserFixtures.회원();
+
+        when(customUserDetails.getUser()).thenReturn(회원);
+        when(userRepository.findById(회원.getId())).thenReturn(Optional.of(회원));
+        when(fileManager.getFileUrl(UserFixtures.프로필_이미지_파일.getFilePath())).thenReturn(UserFixtures.프로필_이미지_URL);
 
         /* when */
         UserResponse.Detail response = userService.updateProfile(customUserDetails, request);
@@ -137,6 +141,8 @@ class UserServiceTest {
         assertEquals(response.email(), UserFixtures.수정된_회원_이메일);
         assertEquals(response.gender(), UserFixtures.수정된_회원_성별);
         assertEquals(response.birth(), UserFixtures.수정된_회원_생년월일);
+        assertEquals(response.fileResponse().filePath(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().originalName(), UserFixtures.프로필_이미지_파일.getOriginalName());
     }
 
     @Test
@@ -144,12 +150,11 @@ class UserServiceTest {
     void 회원정보_수정_시_이메일이_중복이면_에러를_반환한다() {
         /* given */
         UserRequest.Update request = UserFixtures.회원정보_수정_요청;
-        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
-        Mockito.when(userRepository.existsByEmail(any(String.class))).thenReturn(true);
-        UserFixtures.회원.updateProfile(UserFixtures.수정된_회원_닉네임,
-                                      UserFixtures.회원_이메일,
-                                      UserFixtures.수정된_회원_성별,
-                                      UserFixtures.수정된_회원_생년월일);
+        User 회원 = UserFixtures.회원();
+
+        when(customUserDetails.getUser()).thenReturn(회원);
+        when(userRepository.findById(회원.getId())).thenReturn(Optional.of(회원));
+        when(userRepository.existsByEmail(request.email())).thenReturn(true);
 
         /* when , then */
         assertThrows(DuplicatedUserException.class, () -> {
