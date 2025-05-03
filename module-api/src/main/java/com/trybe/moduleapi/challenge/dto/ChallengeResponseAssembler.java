@@ -63,6 +63,6 @@ public class ChallengeResponseAssembler {
     }
 
     private FileResponse toFileResponse(File file) {
-        return FileResponse.from(file.getOriginalName(), fileManager.getFileUrl(file.getFilePath()));
+        return file == null ? null : FileResponse.from(file.getOriginalName(), fileManager.getFileUrl(file.getFilePath()));
     }
 }
