@@ -1,6 +1,10 @@
 ### 1. 챌린지 생성
 POST http://localhost:8080/api/v1/challenges
 Authorization: {{accessToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="request"
 Content-Type: application/json
 
 {
@@ -13,6 +17,12 @@ Content-Type: application/json
   "proofWay": "읽은 내용을 정리해서 공유",
   "proofCount": 17
 }
+--boundary
+Content-Disposition: form-data; name="thumbnail"; filename="thumbnail.jpeg"
+Content-Type: image/jpeg
+
+< ./testImg/test.jpeg
+--boundary
 
 ### 1-1. 챌린지 생성 (유효성 검증 실패)
 POST http://localhost:8080/api/v1/challenges
@@ -53,6 +63,10 @@ Authorization: {{accessToken}}
 ### 6. 챌린지 내용 수정
 PUT http://localhost:8080/api/v1/challenges/1/content
 Authorization: {{accessToken}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="request"
 Content-Type: application/json
 
 {
@@ -63,7 +77,12 @@ Content-Type: application/json
   "capacity": 10,
   "category": "STUDY"
 }
+--boundary
+Content-Disposition: form-data; name="thumbnail"; filename="thumbnail.jpeg"
+Content-Type: image/jpeg
 
+< ./testImg/test.jpeg
+--boundary
 
 ### 6-1. 챌린지 내용 수정 (유효성 검증 실패)
 PUT http://localhost:8080/api/v1/challenges/1/content
