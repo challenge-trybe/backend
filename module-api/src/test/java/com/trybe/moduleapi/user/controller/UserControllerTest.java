@@ -198,8 +198,8 @@ class UserControllerTest  extends ControllerTest {
                        jsonPath("$.userId").value(회원_응답.userId()),
                        jsonPath("$.gender").value(회원_응답.gender().toString()),
                        jsonPath("$.birth").value(회원_응답.birth().toString()),
-                       jsonPath("$.profileImageUrl").value(회원_응답.profileImageUrl())
-               )
+                       jsonPath("$.fileResponse.originalName").value(회원_응답.fileResponse().originalName()),
+                       jsonPath("$.fileResponse.filePath").value(회원_응답.fileResponse().filePath()))
                .andDo(document(docsPath + "findById",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -211,7 +211,9 @@ class UserControllerTest  extends ControllerTest {
                                        fieldWithPath("userId").type(JsonFieldType.STRING).description("아이디"),
                                        fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
                                        fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
-                                       fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).description("이미지 경로")
+                                       fieldWithPath("fileResponse").type(JsonFieldType.OBJECT).description("프로필 이미지 정보"),
+                                       fieldWithPath("fileResponse.originalName").type(JsonFieldType.STRING).description("업로드된 파일의 원본 이름"),
+                                       fieldWithPath("fileResponse.filePath").type(JsonFieldType.STRING).description("저장된 파일의 접근 경로 (URL)")
                                )
                ));
     }
@@ -267,8 +269,8 @@ class UserControllerTest  extends ControllerTest {
                        jsonPath("$.userId").value(회원_응답.userId()),
                        jsonPath("$.gender").value(회원_응답.gender().toString()),
                        jsonPath("$.birth").value(회원_응답.birth().toString()),
-                       jsonPath("$.profileImageUrl").value(회원_응답.profileImageUrl())
-               )
+                       jsonPath("$.fileResponse.originalName").value(회원_응답.fileResponse().originalName()),
+                       jsonPath("$.fileResponse.filePath").value(회원_응답.fileResponse().filePath()))
                .andDo(document(docsPath + "user-update-profile",
                                preprocessRequest(prettyPrint()),
                                preprocessResponse(prettyPrint()),
@@ -285,7 +287,9 @@ class UserControllerTest  extends ControllerTest {
                                        fieldWithPath("userId").type(JsonFieldType.STRING).description("아이디"),
                                        fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
                                        fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
-                                       fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).description("이미지 경로")
+                                       fieldWithPath("fileResponse").type(JsonFieldType.OBJECT).description("프로필 이미지 정보"),
+                                       fieldWithPath("fileResponse.originalName").type(JsonFieldType.STRING).description("업로드된 파일의 원본 이름"),
+                                       fieldWithPath("fileResponse.filePath").type(JsonFieldType.STRING).description("저장된 파일의 접근 경로 (URL)")
                                )
                ));
     }
@@ -458,8 +462,8 @@ class UserControllerTest  extends ControllerTest {
                         jsonPath("$.userId").value(회원_응답.userId()),
                         jsonPath("$.gender").value(회원_응답.gender().toString()),
                         jsonPath("$.birth").value(회원_응답.birth().toString()),
-                        jsonPath("$.profileImageUrl").value(회원_응답.profileImageUrl())
-                )
+                        jsonPath("$.fileResponse.originalName").value(회원_응답.fileResponse().originalName()),
+                        jsonPath("$.fileResponse.filePath").value(회원_응답.fileResponse().filePath()))
                 .andDo(document(docsPath + "updateProfile",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -470,7 +474,9 @@ class UserControllerTest  extends ControllerTest {
                                 fieldWithPath("userId").type(JsonFieldType.STRING).description("아이디"),
                                 fieldWithPath("gender").type(JsonFieldType.STRING).description("성별"),
                                 fieldWithPath("birth").type(JsonFieldType.STRING).description("생년월일 (형식: YYYY-MM-DD)"),
-                                fieldWithPath("profileImageUrl").type(JsonFieldType.STRING).description("이미지 경로")
+                                fieldWithPath("fileResponse").type(JsonFieldType.OBJECT).description("프로필 이미지 정보"),
+                                fieldWithPath("fileResponse.originalName").type(JsonFieldType.STRING).description("업로드된 파일의 원본 이름"),
+                                fieldWithPath("fileResponse.filePath").type(JsonFieldType.STRING).description("저장된 파일의 접근 경로 (URL)")
                         )
                 ));
     }

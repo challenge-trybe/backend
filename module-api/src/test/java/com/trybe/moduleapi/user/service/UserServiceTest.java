@@ -106,7 +106,8 @@ class UserServiceTest {
         assertEquals(response.email(), UserFixtures.회원_이메일);
         assertEquals(response.gender(), UserFixtures.회원_성별);
         assertEquals(response.birth(), UserFixtures.회원_생년월일);
-        assertEquals(response.profileImageUrl(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().filePath(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().originalName(), UserFixtures.프로필_이미지_파일.getOriginalName());
     }
 
     @Test
@@ -180,7 +181,8 @@ class UserServiceTest {
         assertEquals(response.email(), user.getEmail());
         assertEquals(response.gender(), user.getGender());
         assertEquals(response.birth(), user.getBirth());
-        assertEquals(response.profileImageUrl(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().filePath(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().originalName(), 수정된_프로필_이미지_파일.getOriginalName());
 
         verify(userRepository, times(1)).save(user);
     }
