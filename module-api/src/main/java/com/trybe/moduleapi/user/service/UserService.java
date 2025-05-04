@@ -46,7 +46,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserResponse.Detail findById(Long id){
         User user = getUserById(id);
-        FileResponse fileResponse = toFileResponse(user);
+        FileResponse fileResponse = toFileResponse(user.getProfileImage());
         return UserResponse.Detail.from(user, fileResponse);
     }
 
@@ -68,7 +68,7 @@ public class UserService {
             checkDuplicatedEmail(userRequest.email());
         }
         user.updateProfile(userRequest.nickname(), userRequest.email(), userRequest.gender(), userRequest.birth());
-        FileResponse fileResponse = toFileResponse(user);
+        FileResponse fileResponse = toFileResponse(user.getProfileImage());
 
         return UserResponse.Detail.from(user, fileResponse);
     }
@@ -83,7 +83,7 @@ public class UserService {
         user.updateProfileImage(file);
         userRepository.save(user);
 
-        FileResponse fileResponse = toFileResponse(user);
+        FileResponse fileResponse = toFileResponse(file);
         return UserResponse.Detail.from(user, fileResponse);
     }
 
@@ -132,10 +132,7 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(NotFoundUserException::new);
     }
 
-    private FileResponse toFileResponse(User user) {
-        if (user.getProfileImage() == null) return null;
-
-        String url = fileManager.getFileUrl(user.getProfileImage().getFilePath());
-        return FileResponse.from(user.getProfileImage().getOriginalName(), url);
+    private FileResponse toFileResponse(File file) {
+        return file == null ? null : FileResponse.from(file.getOriginalName(), fileManager.getFileUrl(file.getFilePath()));
     }
 }
