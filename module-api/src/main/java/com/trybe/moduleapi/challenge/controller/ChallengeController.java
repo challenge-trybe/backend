@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,9 +26,10 @@ public class ChallengeController {
     @PostMapping
     public ChallengeResponse.Detail save(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody ChallengeRequest.Create request
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
+            @RequestPart("request") @Valid ChallengeRequest.Create request
     ) {
-        return challengeService.save(userDetails.getUser(), request);
+        return challengeService.save(userDetails.getUser(), thumbnail, request);
     }
 
     @GetMapping("/{id}")
@@ -68,9 +70,10 @@ public class ChallengeController {
     public ChallengeResponse.Detail updateContent(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("id") Long id,
-            @Valid @RequestBody ChallengeRequest.UpdateContent request
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
+            @RequestPart("request") @Valid ChallengeRequest.UpdateContent request
     ) {
-        return challengeService.updateContent(userDetails.getUser(), id, request);
+        return challengeService.updateContent(userDetails.getUser(), id, thumbnail, request);
     }
 
     @PutMapping("/{id}/proof")

@@ -176,6 +176,8 @@ class ChallengeBookmarkControllerTest extends ControllerTest {
                 status().isOk(),
                 jsonPath("$.content").isArray(),
                 jsonPath("$.content[0].id").value(response.content().get(0).id()),
+                jsonPath("$.content[0].thumbnail.originalName").value(response.content().get(0).thumbnail().originalName()),
+                jsonPath("$.content[0].thumbnail.filePath").value(response.content().get(0).thumbnail().filePath()),
                 jsonPath("$.content[0].title").value(response.content().get(0).title()),
                 jsonPath("$.content[0].description").value(response.content().get(0).description()),
                 jsonPath("$.content[0].status").value(response.content().get(0).status().name()),
@@ -196,6 +198,9 @@ class ChallengeBookmarkControllerTest extends ControllerTest {
                 responseFields(
                         fieldWithPath("content").description("챌린지 목록"),
                         fieldWithPath("content[].id").description("챌린지 ID"),
+                        fieldWithPath("content[].thumbnail").description("챌린지 썸네일 정보"),
+                        fieldWithPath("content[].thumbnail.originalName").description("썸네일 파일 원본 이름"),
+                        fieldWithPath("content[].thumbnail.filePath").description("썸네일 파일 경로"),
                         fieldWithPath("content[].title").description("챌린지 제목"),
                         fieldWithPath("content[].description").description("챌린지 설명"),
                         fieldWithPath("content[].status").description("챌린지 상태"),

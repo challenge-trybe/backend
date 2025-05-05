@@ -2,6 +2,7 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
 import com.trybe.moduleapi.challenge.event.ChallengeEvent;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
@@ -10,16 +11,18 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRol
 import com.trybe.moduleapi.challenge.fixtures.ChallengeParticipationFixtures;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.dto.FileResponse;
+import com.trybe.moduleapi.file.fixtures.FileFixtures;
+import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
-import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
-import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
+import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,13 +30,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 
 import static com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -66,6 +69,12 @@ class ChallengeServiceTest {
     @Mock
     private ChatService chatService;
 
+    @Mock
+    private ChallengeResponseAssembler challengeResponseAssembler;
+
+    @Mock
+    private FileManager fileManager;
+
     @Test
     @DisplayName("챌린지 생성 시 저장된 챌린지 정보를 반환한다.")
     void 챌린지_생성_시_저장된_챌린지_정보를_반환한다 () {
@@ -73,13 +82,19 @@ class ChallengeServiceTest {
         ChallengeRequest.Create request = 챌린지_생성_요청;
         Challenge challenge = 챌린지();
 
+        MockMultipartFile thumbnail = FileFixtures.파일_요청_생성("thumbnail");
+
         when(challengeRepository.save(any(Challenge.class)))
                 .thenReturn(challenge);
         when(challengeParticipationRepository.save(any(ChallengeParticipation.class)))
                 .thenReturn(ChallengeParticipationFixtures.챌린지_리더_참여());
+        when(fileManager.uploadFile(eq(thumbnail), any(String.class)))
+                .thenReturn(FileFixtures.파일);
+        when(challengeResponseAssembler.toInitialDetail(challenge))
+                .thenReturn(초기_챌린지_상세_응답);
 
         /* when */
-        ChallengeResponse.Detail response = challengeService.save(UserFixtures.회원, request);
+        ChallengeResponse.Detail response = challengeService.save(UserFixtures.회원, thumbnail, request);
 
         /* then */
         verifyChallengeResponse(challenge, response);
@@ -96,25 +111,24 @@ class ChallengeServiceTest {
     void 챌린지_단일_조회_시_챌린지_정보를_반환한다 () {
         /* given */
         Long challengeId = 챌린지_ID;
+        Long userId = UserFixtures.회원_PK;
+        User user = spy(UserFixtures.회원);
         Challenge challenge = 챌린지();
 
+        when(user.getId()).thenReturn(userId);
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(challenge));
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any()))
-                .thenReturn(북마크_수);
-        when(challengeBookmarkCache.isBookmarked(any(), any()))
-                .thenReturn(false);
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
+                .thenReturn(챌린지_상세_응답);
 
         /* when */
-        ChallengeResponse.Detail response = challengeService.find(UserFixtures.회원, challengeId);
+        ChallengeResponse.Detail response = challengeService.find(user, challengeId);
 
         /* then */
         verifyChallengeResponse(challenge, response);
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
-        assertEquals(false, response.bookmark().bookmarked());
+        assertEquals(북마크_여부_참, response.bookmark().bookmarked());
 
         verify(challengeViewCache, times(1)).recordView(any(), any());
         verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
@@ -125,27 +139,26 @@ class ChallengeServiceTest {
     void 챌린지_단일_조회_시_일정_시간_이내_조회_기록이_존재하는_경우_조회_처리를_하지_않고_챌린지_정보를_반환한다 () {
         /* given */
         Long challengeId = 챌린지_ID;
+        Long userId = UserFixtures.회원_PK;
+        User user = spy(UserFixtures.회원);
         Challenge challenge = 챌린지();
 
+        when(user.getId()).thenReturn(userId);
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(challenge));
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any()))
-                .thenReturn(북마크_수);
-        when(challengeBookmarkCache.isBookmarked(any(), any()))
-                .thenReturn(false);
         when(challengeViewCache.hasViewed(any(), any()))
                 .thenReturn(true);
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
+                .thenReturn(챌린지_상세_응답);
 
         /* when */
-        ChallengeResponse.Detail response = challengeService.find(UserFixtures.회원, challengeId);
+        ChallengeResponse.Detail response = challengeService.find(user, challengeId);
 
         /* then */
         verifyChallengeResponse(challenge, response);
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
-        assertEquals(false, response.bookmark().bookmarked());
+        assertEquals(북마크_여부_참, response.bookmark().bookmarked());
 
         verify(challengeViewCache, never()).recordView(any(), any());
         verify(challengeEventPublisher, never()).publish(any(ChallengeEvent.class));
@@ -160,10 +173,8 @@ class ChallengeServiceTest {
 
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(challenge));
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any()))
-                .thenReturn(북마크_수);
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
+                .thenReturn(챌린지_상세_비로그인_응답);
 
         /* when */
         ChallengeResponse.Detail response = challengeService.find(null, challengeId);
@@ -172,7 +183,7 @@ class ChallengeServiceTest {
         verifyChallengeResponse(challenge, response);
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
-        assertEquals(null, response.bookmark().bookmarked());
+        assertNull(response.bookmark().bookmarked());
     }
 
     @Test
@@ -197,12 +208,8 @@ class ChallengeServiceTest {
 
         when(challengeRepository.getFilteredChallenges(request.keyword(), request.statuses(), request.categories(), 페이지_요청))
                 .thenReturn(챌린지_페이지);
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any()))
-                .thenReturn(북마크_수);
-        when(challengeBookmarkCache.isBookmarked(any(), any()))
-                .thenReturn(false);
+        when(challengeResponseAssembler.toPreview(any(Challenge.class), any()))
+                .thenReturn(챌린지_미리보기_로그인_응답);
 
         /* when */
         PageResponse<ChallengeResponse.Preview> response = challengeService.findAll(UserFixtures.회원, request, 페이지_요청);
@@ -221,12 +228,8 @@ class ChallengeServiceTest {
         when(user.getId()).thenReturn(userId);
         when(popularChallengeService.getTopPopularChallenges(anyInt()))
                 .thenReturn(챌린지_목록);
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any()))
-                .thenReturn(북마크_수);
-        when(challengeBookmarkCache.isBookmarked(any(), any()))
-                .thenReturn(false);
+        when(challengeResponseAssembler.toPreview(any(Challenge.class), any()))
+                .thenReturn(챌린지_미리보기_로그인_응답);
 
         /* when */
         List<ChallengeResponse.Preview> response = challengeService.getPopular(user);
@@ -243,14 +246,16 @@ class ChallengeServiceTest {
         Long userId = UserFixtures.회원_PK;
 
         when(user.getId()).thenReturn(userId);
-        when(challengeRecommendationClientService.getChallengeRecommendations(any()))
-                .thenReturn(챌린지_추천_목록_응답);
+        when(challengeRecommendationClientService.getChallengeRecommendations(any(), anyInt()))
+                .thenReturn(챌린지_목록);
+        when(challengeResponseAssembler.toPreview(any(Challenge.class), any()))
+                .thenReturn(챌린지_미리보기_로그인_응답);
 
         /* when */
         List<ChallengeResponse.Preview> response = challengeService.getRecommendations(user);
 
         /* then */
-        assertEquals(챌린지_추천_목록_응답.size(), response.size());
+        assertEquals(챌린지_미리보기_목록_응답.size(), response.size());
     }
 
     @Test
@@ -258,27 +263,30 @@ class ChallengeServiceTest {
     void 챌린지_정보_수정_시_수정된_챌린지_정보를_반환한다 () {
         /* given */
         Long challengeId = 챌린지_ID;
+        Challenge challenge = 내용_수정된_챌린지;
+
         ChallengeRequest.UpdateContent request = 챌린지_내용_수정_요청;
+
+        File thumbnailFile = FileFixtures.파일;
+        MockMultipartFile thumbnail = FileFixtures.파일_요청_생성("thumbnail");
 
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(챌린지()));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(any(), eq(challengeId), eq(ChallengeRole.LEADER)))
                 .thenReturn(true);
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any()))
-                .thenReturn(북마크_수);
-        when(challengeBookmarkCache.isBookmarked(any(), any()))
-                .thenReturn(false);
+        when(fileManager.updateFile(any(File.class), eq(thumbnail), any(String.class)))
+                .thenReturn(thumbnailFile);
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
+                .thenReturn(내용_수정된_챌린지_상세_응답);
 
         /* when */
-        ChallengeResponse.Detail response = challengeService.updateContent(UserFixtures.회원, challengeId, request);
+        ChallengeResponse.Detail response = challengeService.updateContent(UserFixtures.회원, challengeId, thumbnail, request);
 
         /* then */
         verifyChallengeResponse(내용_수정된_챌린지, response);
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
-        assertEquals(false, response.bookmark().bookmarked());
+        assertEquals(북마크_여부_참, response.bookmark().bookmarked());
     }
 
     @Test
@@ -295,7 +303,7 @@ class ChallengeServiceTest {
 
         /* when */
         /* then */
-        assertThrows(InvalidChallengeRoleActionException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+        assertThrows(InvalidChallengeRoleActionException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, null, request));
     }
 
     @Test
@@ -312,7 +320,7 @@ class ChallengeServiceTest {
 
         /* when */
         /* then */
-        assertThrows(InvalidChallengeStatusException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+        assertThrows(InvalidChallengeStatusException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, null, request));
     }
 
     @Test
@@ -327,7 +335,7 @@ class ChallengeServiceTest {
 
         /* when */
         /* then */
-        assertThrows(NotFoundChallengeException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, request));
+        assertThrows(NotFoundChallengeException.class, () -> challengeService.updateContent(UserFixtures.회원, challengeId, null, request));
     }
 
     @Test
@@ -335,18 +343,16 @@ class ChallengeServiceTest {
     void 챌린지_인증_정보_수정_시_수정된_챌린지_정보를_반환한다 () {
         /* given */
         Long challengeId = 챌린지_ID;
+        Challenge challenge = 인증_내용_수정된_챌린지;
+
         ChallengeRequest.UpdateProof request = 챌린지_인증_내용_수정_요청;
 
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(챌린지()));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(UserFixtures.회원.getId(), challengeId, ChallengeRole.LEADER))
                 .thenReturn(true);
-        when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(ParticipationStatus.ACCEPTED)))
-                .thenReturn(참여자_수);
-        when(challengeBookmarkCache.getBookmarkCount(any()))
-                .thenReturn(북마크_수);
-        when(challengeBookmarkCache.isBookmarked(any(), any()))
-                .thenReturn(false);
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
+                .thenReturn(인증_내용_수정된_챌린지_상세_응답);
 
         /* when */
         ChallengeResponse.Detail response = challengeService.updateProof(UserFixtures.회원, challengeId, request);
@@ -355,7 +361,7 @@ class ChallengeServiceTest {
         verifyChallengeResponse(인증_내용_수정된_챌린지, response);
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
-        assertEquals(false, response.bookmark().bookmarked());
+        assertEquals(북마크_여부_참, response.bookmark().bookmarked());
     }
 
     @Test
@@ -480,6 +486,7 @@ class ChallengeServiceTest {
     }
 
     private void verifyChallengeResponse(Challenge challenge, ChallengeResponse.Detail response) {
+        verifyFileResponse(challenge.getThumbnail(), response.thumbnail());
         assertEquals(challenge.getTitle(), response.title());
         assertEquals(challenge.getDescription(), response.description());
         assertEquals(challenge.getStartDate(), response.startDate());
@@ -489,5 +496,15 @@ class ChallengeServiceTest {
         assertEquals(challenge.getCategory(), response.category());
         assertEquals(challenge.getProofWay(), response.proofWay());
         assertEquals(challenge.getProofCount(), response.proofCount());
+    }
+
+    private void verifyFileResponse(File file, FileResponse fileResponse) {
+        if (file == null) {
+            assertNull(fileResponse);
+            return;
+        }
+
+        assertEquals(file.getOriginalName(), fileResponse.originalName());
+        assertEquals(FileFixtures.파일_저장소_경로 + file.getFilePath(), fileResponse.filePath());
     }
 }

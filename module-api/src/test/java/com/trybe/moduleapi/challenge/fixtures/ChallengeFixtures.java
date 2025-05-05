@@ -3,6 +3,8 @@ package com.trybe.moduleapi.challenge.fixtures;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.dto.FileResponse;
+import com.trybe.moduleapi.file.fixtures.FileFixtures;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
@@ -125,7 +127,7 @@ public class ChallengeFixtures {
 
     /* Entity */
     public static final Challenge 챌린지() {
-        return new Challenge(
+        Challenge challenge = new Challenge(
                 챌린지_제목,
                 챌린지_설명,
                 챌린지_시작_날짜,
@@ -135,6 +137,10 @@ public class ChallengeFixtures {
                 챌린지_인증_방법,
                 챌린지_인증_횟수
         );
+
+        challenge.updateThumbnail(FileFixtures.파일);
+
+        return challenge;
     }
 
     public static final Challenge 내용_수정된_챌린지 = new Challenge(
@@ -147,6 +153,7 @@ public class ChallengeFixtures {
             챌린지_인증_방법,
             챌린지_인증_횟수
     );
+
     public static final Challenge 인증_내용_수정된_챌린지 = new Challenge(
             챌린지_제목,
             챌린지_설명,
@@ -173,27 +180,31 @@ public class ChallengeFixtures {
         return challenge;
     }
 
+    public static Challenge 진행예정_챌린지 = createChallenge(ChallengeStatus.PENDING);
     public static Challenge 진행중인_챌린지 = createChallenge(ChallengeStatus.ONGOING);
     public static Challenge 종료된_챌린지 = createChallenge(ChallengeStatus.DONE);
 
     public static Pageable 페이지_요청 = PageRequest.of(0, 10);
-    public static List<Challenge> 챌린지_목록 = List.of(진행중인_챌린지,진행중인_챌린지,진행중인_챌린지);
+    public static List<Challenge> 챌린지_목록 = List.of(진행예정_챌린지, 진행중인_챌린지, 종료된_챌린지);
     public static Page<Challenge> 챌린지_페이지 = new PageImpl<>(챌린지_목록, 페이지_요청, 챌린지_목록.size());
 
     public static ChallengeStatus 대기중 = ChallengeStatus.PENDING;
 
     /* Response DTO */
-    public static final ChallengeResponse.Detail 초기_챌린지_상세_응답 = 챌린지_상세_응답_생성(챌린지(), 초기_참여자_수, 초기_북마크_수, 북마크_여부_거짓);
-    public static final ChallengeResponse.Detail 챌린지_상세_응답 = 챌린지_상세_응답_생성(챌린지(), 참여자_수, 북마크_수, 북마크_여부_참);
+    private static final FileResponse 파일_응답 = FileFixtures.파일_응답;
+
+    public static final ChallengeResponse.Detail 초기_챌린지_상세_응답 = 챌린지_상세_응답_생성(챌린지(), 파일_응답, 초기_참여자_수, 초기_북마크_수, 북마크_여부_거짓);
+    public static final ChallengeResponse.Detail 챌린지_상세_응답 = 챌린지_상세_응답_생성(챌린지(), 파일_응답, 참여자_수, 북마크_수, 북마크_여부_참);
+    public static final ChallengeResponse.Detail 챌린지_상세_비로그인_응답 = 챌린지_상세_응답_생성(챌린지(), 파일_응답, 참여자_수, 북마크_수, null);
 
     public static final ChallengeResponse.Preview 챌린지_미리보기_로그아웃_응답 = 챌린지_미리보기_응답_생성(챌린지(), 참여자_수, 북마크_수, null);
     public static final ChallengeResponse.Preview 챌린지_미리보기_로그인_응답 = 챌린지_미리보기_응답_생성(챌린지(), 참여자_수, 북마크_수, 북마크_여부_참);
 
     public static final ChallengeResponse.Summary 챌린지_요약_응답 = 챌린지_요약_응답_생성(챌린지());
 
-    public static final ChallengeResponse.Detail 내용_수정된_챌린지_상세_응답 = 챌린지_상세_응답_생성(내용_수정된_챌린지, 참여자_수, 북마크_수, 북마크_여부_참);
+    public static final ChallengeResponse.Detail 내용_수정된_챌린지_상세_응답 = 챌린지_상세_응답_생성(내용_수정된_챌린지, null, 참여자_수, 북마크_수, 북마크_여부_참);
 
-    public static final ChallengeResponse.Detail 인증_내용_수정된_챌린지_상세_응답 = 챌린지_상세_응답_생성(인증_내용_수정된_챌린지, 참여자_수, 북마크_수, 북마크_여부_참);
+    public static final ChallengeResponse.Detail 인증_내용_수정된_챌린지_상세_응답 = 챌린지_상세_응답_생성(인증_내용_수정된_챌린지, null, 참여자_수, 북마크_수, 북마크_여부_참);
 
     public static final List<ChallengeResponse.Summary> 챌린지_목록_응답 = 챌린지_목록.stream().map(ChallengeResponse.Summary::from).collect(Collectors.toList());
     public static final List<ChallengeResponse.Preview> 챌린지_미리보기_목록_응답 = 챌린지_목록.stream().map(challenge -> 챌린지_미리보기_응답_생성(challenge, 참여자_수, 북마크_수, 북마크_여부_참)).collect(Collectors.toList());
@@ -201,11 +212,10 @@ public class ChallengeFixtures {
     public static final PageResponse<ChallengeResponse.Summary> 챌린지_페이지_응답 = new PageResponse<>(챌린지_페이지.map(ChallengeResponse.Summary::from));
     public static final PageResponse<ChallengeResponse.Preview> 챌린지_미리보기_페이지_응답 = new PageResponse<>(챌린지_페이지.map(challenge -> 챌린지_미리보기_응답_생성(challenge, 참여자_수, 북마크_수, 북마크_여부_참)));
 
-    public static final List<ChallengeResponse.Preview> 챌린지_추천_목록_응답 = List.of(챌린지_미리보기_로그인_응답, 챌린지_미리보기_로그인_응답, 챌린지_미리보기_로그인_응답);
-
-    private static ChallengeResponse.Detail 챌린지_상세_응답_생성(Challenge challenge, int participantCount, int bookmarkCount, boolean Bookmarked) {
+    private static ChallengeResponse.Detail 챌린지_상세_응답_생성(Challenge challenge, FileResponse thumbnail, int participantCount, int bookmarkCount, Boolean Bookmarked) {
         return new ChallengeResponse.Detail(
                 챌린지_ID,
+                thumbnail,
                 challenge.getTitle(),
                 challenge.getDescription(),
                 challenge.getStartDate(),
@@ -220,9 +230,24 @@ public class ChallengeFixtures {
         );
     }
 
+    public static ChallengeResponse.Preview 챌린지_미리보기_응답_생성(Long challengeId) {
+        return new ChallengeResponse.Preview(
+                challengeId,
+                FileFixtures.파일_응답,
+                챌린지_제목,
+                챌린지_설명,
+                대기중,
+                챌린지_카테고리,
+                챌린지_인원,
+                참여자_수,
+                new ChallengeResponse.Bookmark(북마크_수, 북마크_여부_참)
+        );
+    }
+
     private static ChallengeResponse.Preview 챌린지_미리보기_응답_생성(Challenge challenge, int participantCount, int bookmarkCount, Boolean bookmarked) {
         return new ChallengeResponse.Preview(
                 챌린지_ID,
+                FileFixtures.파일_응답,
                 challenge.getTitle(),
                 challenge.getDescription(),
                 challenge.getStatus(),

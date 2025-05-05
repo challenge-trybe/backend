@@ -34,18 +34,21 @@ public class ChallengeCustomRepositoryImpl implements ChallengeCustomRepository 
                 .and(statusIn(statuses))
                 .and(categoryIn(categories));
 
-        QueryResults<Challenge> challenges = jpaQueryFactory
+        List<Challenge> challenges = jpaQueryFactory
                 .selectFrom(challenge)
                 .where(builder)
                 .orderBy(getSort(pageable, challenge))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetchResults();
+                .fetch();
 
-        List<Challenge> content = challenges.getResults();
-        long total = challenges.getTotal();
+        Long total = jpaQueryFactory
+                .select(challenge.count())
+                .from(challenge)
+                .where(builder)
+                .fetchOne();
 
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(challenges, pageable, total == null ? 0L : total);
     }
 
     @Override

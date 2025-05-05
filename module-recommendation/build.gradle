@@ -27,10 +27,6 @@ dependencies {
 
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
-	implementation(project(':module-api')) {
-		transitive = false
-	}
-
 	implementation project(':module-core')
 }
 

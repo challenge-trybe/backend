@@ -2,6 +2,7 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
+import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
 import com.trybe.moduleapi.challenge.event.ChallengeEvent;
 import com.trybe.moduleapi.challenge.event.ChallengeEventType;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
@@ -10,6 +11,7 @@ import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ChallengeRole;
@@ -19,14 +21,15 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
+import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class ChallengeService {
@@ -38,8 +41,10 @@ public class ChallengeService {
     private final PopularChallengeService popularChallengeService;
     private final ChallengeRecommendationClientService challengeRecommendationClientService;
     private final ChatService chatService;
+    private final ChallengeResponseAssembler challengeResponseAssembler;
+    private final FileManager fileManager;
 
-    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeViewCache challengeViewCache, ChallengeEventPublisher challengeEventPublisher, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService) {
+    public ChallengeService(ChallengeRepository challengeRepository, ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, ChallengeViewCache challengeViewCache, ChallengeEventPublisher challengeEventPublisher, PopularChallengeService popularChallengeService, ChallengeRecommendationClientService challengeRecommendationClientService, ChatService chatService, ChallengeResponseAssembler challengeResponseAssembler, FileManager fileManager) {
         this.challengeRepository = challengeRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
@@ -48,68 +53,97 @@ public class ChallengeService {
         this.popularChallengeService = popularChallengeService;
         this.challengeRecommendationClientService = challengeRecommendationClientService;
         this.chatService = chatService;
+        this.challengeResponseAssembler = challengeResponseAssembler;
+        this.fileManager = fileManager;
     }
 
+    private static final int RECOMMEND_CHALLENGE_COUNT = 20;
     private static final int POPULAR_CHALLENGE_COUNT = 20;
 
+    private static final String CHALLENGE_THUMBNAIL_BASE_PATH = "/challenge/%d/thumbnail/";
+
     @Transactional
-    public ChallengeResponse.Detail save(User user, ChallengeRequest.Create request) {
+    public ChallengeResponse.Detail save(User user, MultipartFile thumbnail, ChallengeRequest.Create request) {
         Challenge challenge = request.toEntity();
         Challenge savedChallenge = challengeRepository.save(challenge);
 
         ChallengeParticipation participation = new ChallengeParticipation(user, savedChallenge, ChallengeRole.LEADER, ParticipationStatus.ACCEPTED);
+        File thumbnailFile = thumbnail == null ? null : fileManager.uploadFile(thumbnail, String.format(CHALLENGE_THUMBNAIL_BASE_PATH, challenge.getId()));
+
+        challenge.updateThumbnail(thumbnailFile);
         challengeParticipationRepository.save(participation);
         challengeEventPublisher.publish(new ChallengeEvent(savedChallenge, user.getId(), ChallengeEventType.CREATE));
         chatService.create(savedChallenge);
 
-        ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
-        return ChallengeResponse.Detail.from(savedChallenge, 1, bookmark);
+        return challengeResponseAssembler.toInitialDetail(savedChallenge);
     }
 
     @Transactional(readOnly = true)
     public ChallengeResponse.Detail find(User user, Long id) {
         Challenge challenge = getChallenge(id);
+        Long userId = user == null ? null : user.getId();
 
-        if (user != null) {
-            handleView(user.getId(), challenge);
-        }
+        handleView(userId, challenge);
 
-        return createDetail(user, challenge);
+        return challengeResponseAssembler.toDetail(challenge, userId);
     }
 
     @Transactional(readOnly = true)
     public PageResponse<ChallengeResponse.Preview> findAll(User user, ChallengeRequest.Read request, Pageable pageable) {
         Page<Challenge> challenges = challengeRepository.getFilteredChallenges(request.keyword(), request.statuses(), request.categories(), pageable);
+        Long userId = user == null ? null : user.getId();
 
-        Page<ChallengeResponse.Preview> challengeSummaries = challenges.map(challenge -> createPreview(user, challenge));
+        Page<ChallengeResponse.Preview> challengePreviews = challenges.map(challenge -> challengeResponseAssembler.toPreview(challenge, userId));
 
-        return new PageResponse<>(challengeSummaries);
+        return new PageResponse<>(challengePreviews);
     }
 
     @Transactional(readOnly = true)
     public List<ChallengeResponse.Preview> getPopular(User user) {
         List<Challenge> challenges = popularChallengeService.getTopPopularChallenges(POPULAR_CHALLENGE_COUNT);
+        Long userId = user == null ? null : user.getId();
 
         return challenges.stream()
-                .map(challenge -> createPreview(user, challenge))
-                .collect(Collectors.toList());
+                .map(challenge -> challengeResponseAssembler.toPreview(challenge, userId))
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public List<ChallengeResponse.Preview> getRecommendations(User user) {
-        return challengeRecommendationClientService.getChallengeRecommendations(user.getId());
+        List<Challenge> challenges = challengeRecommendationClientService.getChallengeRecommendations(user.getId(), RECOMMEND_CHALLENGE_COUNT);
+
+        if (challenges.size() < RECOMMEND_CHALLENGE_COUNT) {
+            Set<Challenge> challengeSet = new LinkedHashSet<>(challenges);
+
+            List<Challenge> popularChallenges = popularChallengeService.getTopPopularChallenges(RECOMMEND_CHALLENGE_COUNT);
+            challengeSet.addAll(popularChallenges);
+
+            challenges = new ArrayList<>(challengeSet);
+        }
+
+        if (challenges.size() > RECOMMEND_CHALLENGE_COUNT) {
+            challenges = challenges.subList(0, RECOMMEND_CHALLENGE_COUNT);
+        }
+
+        Collections.shuffle(challenges);
+
+        return challenges.stream()
+                .map(challenge -> challengeResponseAssembler.toPreview(challenge, user.getId()))
+                .toList();
     }
 
     @Transactional
-    public ChallengeResponse.Detail updateContent(User user, Long id, ChallengeRequest.UpdateContent request) {
+    public ChallengeResponse.Detail updateContent(User user, Long id, MultipartFile thumbnail, ChallengeRequest.UpdateContent request) {
         Challenge challenge = getChallenge(id);
 
         validateLeader(user.getId(), id, "리더만 챌린지 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 정보를 수정할 수 있습니다.");
 
+        File thumbnailFile = updateThumbnail(challenge, thumbnail);
+        challenge.updateThumbnail(thumbnailFile);
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
-        return createDetail(user, challenge);
+        return challengeResponseAssembler.toDetail(challenge, user.getId());
     }
 
     @Transactional
@@ -121,7 +155,7 @@ public class ChallengeService {
 
         challenge.updateProof(request.proofWay(), request.proofCount());
 
-        return createDetail(user, challenge);
+        return challengeResponseAssembler.toDetail(challenge, user.getId());
     }
 
     @Transactional
@@ -131,37 +165,16 @@ public class ChallengeService {
         validateLeader(user.getId(), id, "리더만 챌린지를 삭제할 수 있습니다.");
         validateChallengeStatus(challenge, false, ChallengeStatus.ONGOING, "진행 중인 챌린지는 삭제할 수 없습니다.");
 
+        fileManager.deleteFile(challenge.getThumbnail());
         challengeBookmarkCache.removeBookmarksByChallenge(id);
         challengeParticipationRepository.deleteAllByChallengeId(id);
         chatService.delete(id);
         challengeRepository.delete(challenge);
     }
 
-    private ChallengeResponse.Detail createDetail(User user, Challenge challenge) {
-        int participantCount = getParticipantCount(challenge.getId());
-        ChallengeResponse.Bookmark bookmark = createBookmark(user, challenge.getId());
-        return ChallengeResponse.Detail.from(challenge, participantCount, bookmark);
-    }
-
-    private ChallengeResponse.Preview createPreview(User user, Challenge challenge) {
-        int participantCount = getParticipantCount(challenge.getId());
-        ChallengeResponse.Bookmark bookmark = createBookmark(user, challenge.getId());
-        return ChallengeResponse.Preview.from(challenge, participantCount, bookmark);
-    }
-
-    private ChallengeResponse.Bookmark createBookmark(User user, Long challengeId) {
-        int bookmarkCount = challengeBookmarkCache.getBookmarkCount(challengeId);
-        Boolean bookmarked = user == null ? null : challengeBookmarkCache.isBookmarked(user.getId(), challengeId);
-        return new ChallengeResponse.Bookmark(bookmarkCount, bookmarked);
-    }
-
     private Challenge getChallenge(Long id) {
         return challengeRepository.findById(id)
                 .orElseThrow(NotFoundChallengeException::new);
-    }
-
-    private int getParticipantCount(Long challengeId) {
-        return challengeParticipationRepository.countByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED);
     }
 
     private void validateChallengeStatus(Challenge challenge, boolean shouldBe, ChallengeStatus status, String message) {
@@ -178,9 +191,27 @@ public class ChallengeService {
 
     private void handleView(Long userId, Challenge challenge) {
         Long challengeId = challenge.getId();
-        if (!challengeViewCache.hasViewed(userId, challengeId)) {
+        if (userId != null && !challengeViewCache.hasViewed(userId, challengeId)) {
             challengeViewCache.recordView(userId, challengeId);
             challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.VIEW));
+        }
+    }
+
+    private File updateThumbnail(Challenge challenge, MultipartFile newThumbnail) {
+        File oldThumbnail = challenge.getThumbnail();
+        String basePath = String.format(CHALLENGE_THUMBNAIL_BASE_PATH, challenge.getId());
+
+        if (newThumbnail == null) {
+            if (oldThumbnail != null) {
+                fileManager.deleteFile(oldThumbnail);
+            }
+            return null;
+        }
+
+        if (oldThumbnail != null) {
+            return fileManager.updateFile(oldThumbnail, newThumbnail, basePath);
+        } else {
+            return fileManager.uploadFile(newThumbnail, basePath);
         }
     }
 }

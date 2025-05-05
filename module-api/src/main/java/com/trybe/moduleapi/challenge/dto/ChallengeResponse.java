@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.challenge.dto;
 
+import com.trybe.moduleapi.file.dto.FileResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ChallengeCategory;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 public class ChallengeResponse {
     public record Detail(
             Long id,
+            FileResponse thumbnail,
             String title,
             String description,
             LocalDate startDate,
@@ -21,9 +23,10 @@ public class ChallengeResponse {
             int proofCount,
             Bookmark bookmark
     ) {
-        public static Detail from(Challenge challenge, int participantCount, Bookmark bookmark) {
+        public static Detail from(Challenge challenge, FileResponse thumbnail, int participantCount, Bookmark bookmark) {
             return new Detail(
                     challenge.getId(),
+                    thumbnail,
                     challenge.getTitle(),
                     challenge.getDescription(),
                     challenge.getStartDate(),
@@ -41,6 +44,7 @@ public class ChallengeResponse {
 
     public record Preview(
             Long id,
+            FileResponse thumbnail,
             String title,
             String description,
             ChallengeStatus status,
@@ -49,9 +53,10 @@ public class ChallengeResponse {
             int participantCount,
             Bookmark bookmark
     ) {
-        public static Preview from(Challenge challenge, int participantCount, Bookmark bookmark) {
+        public static Preview from(Challenge challenge, FileResponse thumbnail, int participantCount, Bookmark bookmark) {
             return new Preview(
                     challenge.getId(),
+                    thumbnail,
                     challenge.getTitle(),
                     challenge.getDescription(),
                     challenge.getStatus(),
