@@ -42,3 +42,6 @@ jenkins
 redis
 files
 **/application*.yml
+logs
+.env
+loki
