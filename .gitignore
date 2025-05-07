@@ -42,3 +42,4 @@ jenkins
 redis
 files
 **/application*.yml
+module-api/http/testImg

@@ -5,7 +5,6 @@ import com.trybe.moduleapi.file.exception.FileUploadException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -54,10 +53,8 @@ public class LocalFileService implements FileService {
 
     private String generateFileName(MultipartFile file) {
         String originalName = file.getOriginalFilename();
-        String extension = StringUtils.getFilenameExtension(originalName);
-        return UUID.randomUUID() + "-" + originalName + "." + extension;
+        return UUID.randomUUID() + "-" + originalName;
     }
-
     private void createDirIfNotExists(String dirPath) {
         java.io.File file = new java.io.File(dirPath);
 

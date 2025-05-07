@@ -56,6 +56,18 @@ Authorization: {{accessToken}}
   "birth": null
 }
 
+### 3.2 프로필 이미지 업로드
+PUT http://localhost:8080/api/v1/users/update-profile
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: {{accessToken}}
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="test.jpeg"
+Content-Type: image/jpeg
+
+< ./testImg/test.jpeg
+--boundary--
+
 ### 4. 비밀번호 수정 API
 PUT http://localhost:8080/api/v1/users/change-password
 Content-Type: application/json
@@ -94,11 +106,11 @@ GET http://localhost:8080/api/v1/users/check-email?email=test2@google.com
 GET http://localhost:8080/api/v1/users/check-email?email=test@google.com
 
 ### 7.1 회원탈퇴 API
-DELETE http://localhost:8080/api/v1/users/1
+DELETE http://localhost:8080/api/v1/users
 Authorization: {{accessToken}}
 
 ### 7.1 회원탈퇴 API (인증 실패)
-DELETE http://localhost:8080/api/v1/users/1
+DELETE http://localhost:8080/api/v1/users
 
 
 

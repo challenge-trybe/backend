@@ -1,12 +1,14 @@
 package com.trybe.moduleapi.user.service;
 
 import com.trybe.moduleapi.auth.CustomUserDetails;
+import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.moduleapi.user.dto.request.UserRequest;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
 import com.trybe.moduleapi.user.exception.DuplicatedUserException;
 import com.trybe.moduleapi.user.exception.NotFoundUserException;
 import com.trybe.moduleapi.user.exception.UpdatePasswordFailException;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
+import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import com.trybe.modulecore.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -16,14 +18,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -35,6 +38,9 @@ class UserServiceTest {
 
     @Mock
     private CustomUserDetails customUserDetails;
+
+    @Mock
+    private FileManager fileManager;
 
     @InjectMocks
     private UserService userService;
@@ -61,6 +67,7 @@ class UserServiceTest {
     void 회원가입_중복_아이디_가입_시_에러를_반환한다() {
         /* given */
         UserRequest.Create request = UserFixtures.회원가입_요청;
+
         Mockito.when(userRepository.existsByUserId(any(String.class))).thenReturn(true);
 
         /* when, then */
@@ -74,6 +81,7 @@ class UserServiceTest {
     void 회원가입_중복_이메일_가입_시_에러를_반환한다() {
         /* given */
         UserRequest.Create request = UserFixtures.회원가입_요청;
+
         Mockito.when(userRepository.existsByUserId(any(String.class))).thenReturn(true);
 
         /* when, then */
@@ -86,7 +94,8 @@ class UserServiceTest {
     @DisplayName("회원조회 시 유저를 반환한다.")
     void 회원조회_시_유저를_반환한다() {
         /* given */
-        Mockito.when(userRepository.findById(UserFixtures.회원_PK)).thenReturn(Optional.of(UserFixtures.회원));
+        when(userRepository.findById(UserFixtures.회원_PK)).thenReturn(Optional.of(UserFixtures.회원));
+        when(fileManager.getFileUrl(UserFixtures.프로필_이미지_파일.getFilePath())).thenReturn(UserFixtures.프로필_이미지_URL);
 
         /* when */
         UserResponse.Detail response = userService.findById(UserFixtures.회원_PK);
@@ -97,6 +106,8 @@ class UserServiceTest {
         assertEquals(response.email(), UserFixtures.회원_이메일);
         assertEquals(response.gender(), UserFixtures.회원_성별);
         assertEquals(response.birth(), UserFixtures.회원_생년월일);
+        assertEquals(response.fileResponse().filePath(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().originalName(), UserFixtures.프로필_이미지_파일.getOriginalName());
     }
 
     @Test
@@ -116,7 +127,11 @@ class UserServiceTest {
     void 회원정보_수정_시_성공하면_수정된_회원_정보를_반환한다() {
         /* given */
         UserRequest.Update request = UserFixtures.회원정보_수정_요청;
-        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원());
+        User 회원 = UserFixtures.회원();
+
+        when(customUserDetails.getUser()).thenReturn(회원);
+        when(userRepository.findById(회원.getId())).thenReturn(Optional.of(회원));
+        when(fileManager.getFileUrl(UserFixtures.프로필_이미지_파일.getFilePath())).thenReturn(UserFixtures.프로필_이미지_URL);
 
         /* when */
         UserResponse.Detail response = userService.updateProfile(customUserDetails, request);
@@ -126,6 +141,8 @@ class UserServiceTest {
         assertEquals(response.email(), UserFixtures.수정된_회원_이메일);
         assertEquals(response.gender(), UserFixtures.수정된_회원_성별);
         assertEquals(response.birth(), UserFixtures.수정된_회원_생년월일);
+        assertEquals(response.fileResponse().filePath(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().originalName(), UserFixtures.프로필_이미지_파일.getOriginalName());
     }
 
     @Test
@@ -133,22 +150,51 @@ class UserServiceTest {
     void 회원정보_수정_시_이메일이_중복이면_에러를_반환한다() {
         /* given */
         UserRequest.Update request = UserFixtures.회원정보_수정_요청;
-        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
-        Mockito.when(userRepository.existsByEmail(any(String.class))).thenReturn(true);
-        UserFixtures.회원.updateProfile(UserFixtures.수정된_회원_닉네임,
-                                      UserFixtures.회원_이메일,
-                                      UserFixtures.수정된_회원_성별,
-                                      UserFixtures.수정된_회원_생년월일);
+        User 회원 = UserFixtures.회원();
+
+        when(customUserDetails.getUser()).thenReturn(회원);
+        when(userRepository.findById(회원.getId())).thenReturn(Optional.of(회원));
+        when(userRepository.existsByEmail(request.email())).thenReturn(true);
 
         /* when , then */
         assertThrows(DuplicatedUserException.class, () -> {
             userService.updateProfile(customUserDetails, request);
         }, "이미 존재하는 이메일입니다.");
     }
+
+    @Test
+    @DisplayName("프로필 이미지 수정 시 수정된 프로필 정보를 반환한다.")
+    void 프로필_이미지_수정_시_수정된_프로필_정보를_반환한다 () {
+        /* given */
+        User user = UserFixtures.회원();
+        MockMultipartFile 프로필_이미지_업로드_요청 = UserFixtures.프로필_이미지_요청;
+        File 프로필_이미지_파일 = UserFixtures.프로필_이미지_파일;
+        File 수정된_프로필_이미지_파일 = UserFixtures.수정된_프로필_이미지_파일;
+        String 프로필_기본_경로 = UserFixtures.프로필_기본_경로;
+        String 프로필_이미지_Url = UserFixtures.프로필_이미지_URL;
+
+        when(fileManager.updateFile(프로필_이미지_파일,프로필_이미지_업로드_요청,프로필_기본_경로)).thenReturn(수정된_프로필_이미지_파일);
+        when(fileManager.getFileUrl(수정된_프로필_이미지_파일.getFilePath())).thenReturn(프로필_이미지_Url);
+
+        /* when */
+        UserResponse.Detail response = userService.updateProfileImage(user, 프로필_이미지_업로드_요청);
+
+        /* then */
+        assertEquals(response.id(), user.getId());
+        assertEquals(response.userId(), user.getUserId());
+        assertEquals(response.nickname(), user.getNickname());
+        assertEquals(response.email(), user.getEmail());
+        assertEquals(response.gender(), user.getGender());
+        assertEquals(response.birth(), user.getBirth());
+        assertEquals(response.fileResponse().filePath(), UserFixtures.프로필_이미지_URL);
+        assertEquals(response.fileResponse().originalName(), 수정된_프로필_이미지_파일.getOriginalName());
+
+        verify(userRepository, times(1)).save(user);
+    }
     
     @Test
-    @DisplayName("정상적인 비밀번호 변경")
-    void 정상적인_비밀번호_변경() {
+    @DisplayName("정상적인 비밀번호 변경 시 비밀번호는 변경된다.")
+    void 정상적인_비밀번호_변경_시_비밀번호는_변경된다() {
         /* given */
         Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
         UserFixtures.회원.updatePassword(UserFixtures.회원_암호화된_비밀번호);
@@ -200,16 +246,20 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("회원탈퇴 성공시 DB에서 유저를 삭제한다.")
+    @DisplayName("회원탈퇴 성공 시 DB에서 유저를 삭제한다.")
     void 회원탈퇴_성공_시_DB에서_유저를_삭제한다() {
         /* given */
-        Mockito.when(customUserDetails.getUser()).thenReturn(UserFixtures.회원);
+        User 회원 = UserFixtures.회원;
+        File 프로필_이미지_파일 = UserFixtures.프로필_이미지_파일;
+
+        when(customUserDetails.getUser()).thenReturn(회원);
+        when(userRepository.findById(회원.getId())).thenReturn(Optional.of(회원));
 
         /* when */
         userService.delete(customUserDetails);
 
         /* then */
-        Mockito.verify(userRepository, times(1)).deleteById(any());
-
+        verify(userRepository, times(1)).deleteById(any());
+        verify(fileManager, times(1)).deleteFile(프로필_이미지_파일);
     }
 }

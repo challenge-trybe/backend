@@ -97,6 +97,16 @@ include::{snippets}/user-controller-test/user-update-password/invalid/bad-reques
 include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/http-response.adoc[]
 include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/response-fields.adoc[]
 
+=== 프로필 이미지 수정 API
+프로필 이미지 수정 시 다음과 같이 응답합니다.
+
+==== 정상 요청
+include::{snippets}/user-controller-test/updateProfile/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/updateProfile/http-response.adoc[]
+include::{snippets}/user-controller-test/updateProfile/response-fields.adoc[]
+
 === 회원탈퇴
 회원탈퇴 기능
 
