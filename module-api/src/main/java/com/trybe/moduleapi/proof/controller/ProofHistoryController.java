@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/proofs/histories")
@@ -23,9 +26,10 @@ public class ProofHistoryController {
     public ProofHistoryResponse.Summary save(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("proofId") Long proofId,
-            @Valid @RequestBody ProofHistoryRequest.Create request
+            @RequestPart("files") List<MultipartFile> files,
+            @RequestPart("request") @Valid ProofHistoryRequest.Create request
     ) {
-        return proofHistoryService.save(userDetails.getUser(),proofId, request);
+        return proofHistoryService.save(userDetails.getUser(),proofId, files, request);
     }
 
     @GetMapping("/all/{proofId}")
@@ -41,9 +45,10 @@ public class ProofHistoryController {
     public ProofHistoryResponse.Summary update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("proofHistoryId") Long proofHistoryId,
-            @Valid @RequestBody ProofHistoryRequest.Update request
+            @RequestPart("files") List<MultipartFile> files,
+            @RequestPart("request") @Valid ProofHistoryRequest.Update request
     ) {
-        return proofHistoryService.update(userDetails.getUser(), proofHistoryId, request);
+        return proofHistoryService.update(userDetails.getUser(), proofHistoryId, files, request);
     }
 
     @DeleteMapping("/{proofHistoryId}")
