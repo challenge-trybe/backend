@@ -15,8 +15,7 @@ public class ProofHistoryRequest {
     public record Create(
             @NotBlank(message = CONTENT_NOT_BLANK_MESSAGE)
             @Size(max = 1000, message = CONTENT_MAX_LENGTH_MESSAGE)
-            String content,
-            List<Integer> fileOrder
+            String content
     ) {
         public ProofHistory toEntity(Proof proof, User user, String content) {
             return new ProofHistory(proof, user, content);
