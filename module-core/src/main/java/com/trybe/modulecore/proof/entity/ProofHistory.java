@@ -11,6 +11,8 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "proof_histories")
@@ -40,6 +42,10 @@ public class ProofHistory extends BaseEntity {
     @Column(name = "content", nullable = false)
     private String content;
 
+    @OneToMany(mappedBy = "proofHistory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("fileOrder ASC")
+    private List<ProofHistoryFile> files = new ArrayList<>();
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private ProofHistoryStatus status = ProofHistoryStatus.PENDING;
@@ -53,5 +59,21 @@ public class ProofHistory extends BaseEntity {
 
     public void updateStatus(ProofHistoryStatus status) {
         this.status = status;
+    }
+
+    public void addFile(ProofHistoryFile file) {
+        if (!files.contains(file)) {
+            files.add(file);
+        }
+        if (file.getProofHistory() != this) {
+            file.setProofHistory(this);
+        }
+    }
+
+    public void removeFile(ProofHistoryFile file) {
+        files.remove(file);
+        if (file.getProofHistory() == this) {
+            file.setProofHistory(null);
+        }
     }
 }
