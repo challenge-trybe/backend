@@ -26,6 +26,6 @@ public class ProofHistoryRequest {
             @NotBlank(message = CONTENT_NOT_BLANK_MESSAGE)
             @Size(max = 1000, message = CONTENT_MAX_LENGTH_MESSAGE)
             String content,
-            List<Integer> fileOrder
+            List<Long> fileOrder
     ) {}
 }
