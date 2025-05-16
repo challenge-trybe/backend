@@ -18,6 +18,7 @@ import com.trybe.modulecore.proof.entity.Proof;
 import com.trybe.modulecore.proof.entity.ProofHistory;
 import com.trybe.modulecore.proof.entity.ProofHistoryFile;
 import com.trybe.modulecore.proof.enums.ProofHistoryStatus;
+import com.trybe.modulecore.proof.repository.ProofHistoryFileRepository;
 import com.trybe.modulecore.proof.repository.ProofHistoryRepository;
 import com.trybe.modulecore.proof.repository.ProofRepository;
 import com.trybe.modulecore.user.entity.User;
@@ -34,18 +35,20 @@ import java.util.stream.Collectors;
 @Service
 public class ProofHistoryService {
     private final ProofHistoryRepository proofHistoryRepository;
+    private final ProofHistoryFileRepository proofHistoryFileRepository;
     private final ProofRepository proofRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
     private final FileManager fileManager;
 
-    public ProofHistoryService(ProofHistoryRepository proofHistoryRepository, ProofRepository proofRepository, ChallengeParticipationRepository challengeParticipationRepository, FileManager fileManager) {
+    public ProofHistoryService(ProofHistoryRepository proofHistoryRepository, ProofHistoryFileRepository proofHistoryFileRepository, ProofRepository proofRepository, ChallengeParticipationRepository challengeParticipationRepository, FileManager fileManager) {
         this.proofHistoryRepository = proofHistoryRepository;
+        this.proofHistoryFileRepository = proofHistoryFileRepository;
         this.proofRepository = proofRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.fileManager = fileManager;
     }
 
-    private static final String FILE_BASE_PATH_FORMAT = "/challenge/%d/proofhistory/%d/";
+    private static final String FILE_BASE_PATH_FORMAT = "/challenge/%d/proofhistory/%d";
 
     @Transactional
     public ProofHistoryResponse.Summary save(User user, Long proofId, List<MultipartFile> files, ProofHistoryRequest.Create request) {
@@ -57,10 +60,9 @@ public class ProofHistoryService {
         validateDuplicateProofHistory(proof.getId(), user.getId());
 
         ProofHistory savedProofHistory = proofHistoryRepository.save(request.toEntity(proof, user, request.content()));
+        List<ProofHistoryFile> savedFiles = saveFiles(savedProofHistory, files);
 
-        List<ProofHistoryFile> proofHistoryFiles = saveFiles(savedProofHistory, files);
-
-        return ProofHistoryResponse.Summary.from(savedProofHistory, toFileResponses(proofHistoryFiles));
+        return ProofHistoryResponse.Summary.from(savedProofHistory, toFileResponses(savedFiles));
     }
 
     @Transactional(readOnly = true)
@@ -72,7 +74,7 @@ public class ProofHistoryService {
         Page<ProofHistory> proofHistories = proofHistoryRepository.findAllByProofId(proofId, pageable);
 
         Page<ProofHistoryResponse.Summary> responses = proofHistories.map(proofHistory -> {
-            List<ProofHistoryFile> files = proofHistory.getFiles();
+            List<ProofHistoryFile> files = getFiles(proofHistory.getId());
             List<FileWithIdResponse> fileResponses = toFileResponses(files);
             return ProofHistoryResponse.Summary.from(proofHistory, fileResponses);
         });
@@ -88,10 +90,9 @@ public class ProofHistoryService {
         validateProofHistoryStatus(proofHistory, ProofHistoryStatus.PENDING, "이미 처리된 인증 기록은 수정할 수 없습니다.");
 
         proofHistory.updateContent(request.content());
+        List<ProofHistoryFile> savedFiles = updateFiles(proofHistory, request.fileOrder(), files);
 
-        updateFiles(proofHistory, request.fileOrder(), files);
-
-        return ProofHistoryResponse.Summary.from(proofHistory, toFileResponses(proofHistory.getFiles()));
+        return ProofHistoryResponse.Summary.from(proofHistory, toFileResponses(savedFiles));
     }
 
     @Transactional
@@ -118,6 +119,10 @@ public class ProofHistoryService {
         Long proofHistoryId = proofHistory.getId();
 
         return String.format(FILE_BASE_PATH_FORMAT, challengeId, proofHistoryId);
+    }
+
+    private List<ProofHistoryFile> getFiles(Long proofHistoryId) {
+        return proofHistoryFileRepository.findAllByProofHistoryIdOrderByFileOrder(proofHistoryId);
     }
 
     private void validateMemberParticipation(Long userId, Long challengeId, String message) {
@@ -152,36 +157,38 @@ public class ProofHistoryService {
 
     private List<ProofHistoryFile> saveFiles(ProofHistory proofHistory, List<MultipartFile> files) {
         List<File> uploadedFiles = fileManager.uploadFiles(files, getBasePath(proofHistory));
+        List<ProofHistoryFile> fileEntities = new ArrayList<>();
 
-        List<ProofHistoryFile> proofHistoryFiles = new ArrayList<>();
         int order = 1;
 
         for (File file : uploadedFiles) {
-            ProofHistoryFile proofHistoryFile = new ProofHistoryFile(proofHistory, file, order++);
-            proofHistory.addFile(proofHistoryFile);
-            proofHistoryFiles.add(proofHistoryFile);
+            fileEntities.add(new ProofHistoryFile(proofHistory, file, order++));
         }
 
-        return proofHistoryFiles;
+        return proofHistoryFileRepository.saveAll(fileEntities);
     }
 
-    private void updateFiles(ProofHistory proofHistory, List<Long> fileOrder, List<MultipartFile> newFiles) {
-        Map<Long, ProofHistoryFile> existingFile = proofHistory.getFiles().stream()
+    private List<ProofHistoryFile> updateFiles(ProofHistory proofHistory, List<Long> fileOrder, List<MultipartFile> newFiles) {
+        List<ProofHistoryFile> files = getFiles(proofHistory.getId());
+        Map<Long, ProofHistoryFile> existingFile = files.stream()
                 .collect(Collectors.toMap(ProofHistoryFile::getId, file -> file));
 
         Set<Long> remainingIds = fileOrder.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        for (ProofHistoryFile file : new ArrayList<>(proofHistory.getFiles())) {
-            if (!remainingIds.contains(file.getId())) {
-                proofHistory.removeFile(file);
+        for (ProofHistoryFile proofHistoryFile: new ArrayList<>(files)) {
+            if (!remainingIds.contains(proofHistoryFile.getId())) {
+                File file = proofHistoryFile.getFile();
+                proofHistoryFileRepository.delete(proofHistoryFile);
+                fileManager.deleteFile(file);
             }
         }
 
         List<File> uploadedFiles = fileManager.uploadFiles(newFiles, getBasePath(proofHistory));
         Iterator<File> iterator = uploadedFiles.iterator();
 
+        List<ProofHistoryFile> fileEntities = new ArrayList<>();
         int order = 1;
 
         for (Long fileId : fileOrder) {
@@ -190,20 +197,24 @@ public class ProofHistoryService {
                 if (file != null && file.getFileOrder() != order) {
                     file.updateFileOrder(order++);
                 }
+                fileEntities.add(file);
             } else {
                 if (iterator.hasNext()) {
                     File file = iterator.next();
-                    proofHistory.addFile(new ProofHistoryFile(proofHistory, file, order++));
+                    ProofHistoryFile proofHistoryFile =proofHistoryFileRepository.save(new ProofHistoryFile(proofHistory, file, order++));
+                    fileEntities.add(proofHistoryFile);
                 }
             }
         }
+
+        return fileEntities;
     }
 
     private List<FileWithIdResponse> toFileResponses(List<ProofHistoryFile> files) {
         return files.stream()
                 .map(proofHistoryFile -> {
                     File file = proofHistoryFile.getFile();
-                    return FileWithIdResponse.from(file, fileManager.getFileUrl(file.getFilePath()));
+                    return FileWithIdResponse.from(proofHistoryFile.getId(), file, fileManager.getFileUrl(file.getFilePath()));
                 })
                 .toList();
     }
