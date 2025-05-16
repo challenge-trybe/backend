@@ -26,7 +26,7 @@ public class ProofHistoryController {
     public ProofHistoryResponse.Summary save(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("proofId") Long proofId,
-            @RequestPart("files") List<MultipartFile> files,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestPart("request") @Valid ProofHistoryRequest.Create request
     ) {
         return proofHistoryService.save(userDetails.getUser(),proofId, files, request);
@@ -45,7 +45,7 @@ public class ProofHistoryController {
     public ProofHistoryResponse.Summary update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("proofHistoryId") Long proofHistoryId,
-            @RequestPart("files") List<MultipartFile> files,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestPart("request") @Valid ProofHistoryRequest.Update request
     ) {
         return proofHistoryService.update(userDetails.getUser(), proofHistoryId, files, request);
