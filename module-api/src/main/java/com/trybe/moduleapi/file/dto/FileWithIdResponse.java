@@ -7,7 +7,7 @@ public record FileWithIdResponse (
         String originalName,
         String filePath
 ) {
-    public static FileWithIdResponse from(File file, String path) {
-        return new FileWithIdResponse(file.getId(), file.getOriginalName(), path);
+    public static FileWithIdResponse from(Long id, File file, String path) {
+        return new FileWithIdResponse(id, file.getOriginalName(), path);
     }
 }
