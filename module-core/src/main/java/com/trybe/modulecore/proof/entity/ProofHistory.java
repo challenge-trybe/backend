@@ -42,7 +42,7 @@ public class ProofHistory extends BaseEntity {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @OneToMany(mappedBy = "proofHistory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "proofHistory", cascade = CascadeType.ALL)
     @OrderBy("fileOrder ASC")
     private List<ProofHistoryFile> files = new ArrayList<>();
 
@@ -59,21 +59,5 @@ public class ProofHistory extends BaseEntity {
 
     public void updateStatus(ProofHistoryStatus status) {
         this.status = status;
-    }
-
-    public void addFile(ProofHistoryFile file) {
-        if (!files.contains(file)) {
-            files.add(file);
-        }
-        if (file.getProofHistory() != this) {
-            file.setProofHistory(this);
-        }
-    }
-
-    public void removeFile(ProofHistoryFile file) {
-        files.remove(file);
-        if (file.getProofHistory() == this) {
-            file.setProofHistory(null);
-        }
     }
 }

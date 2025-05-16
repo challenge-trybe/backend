@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "proof_history_files")
@@ -13,15 +12,14 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProofHistoryFile {
     public ProofHistoryFile(ProofHistory proofHistory, File file, int fileOrder) {
+        this.proofHistory = proofHistory;
         this.file = file;
         this.fileOrder = fileOrder;
-        proofHistory.addFile(this);
     }
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proof_history_id", nullable = false, updatable = false)
     private ProofHistory proofHistory;
