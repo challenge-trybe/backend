@@ -11,8 +11,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "proof_histories")
@@ -41,10 +39,6 @@ public class ProofHistory extends BaseEntity {
 
     @Column(name = "content", nullable = false)
     private String content;
-
-    @OneToMany(mappedBy = "proofHistory", cascade = CascadeType.ALL)
-    @OrderBy("fileOrder ASC")
-    private List<ProofHistoryFile> files = new ArrayList<>();
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
