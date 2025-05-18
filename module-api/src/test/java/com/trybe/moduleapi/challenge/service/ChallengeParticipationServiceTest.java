@@ -8,6 +8,7 @@ import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.*;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
+import com.trybe.moduleapi.chat.fixture.ChatFixtures;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.user.dto.response.UserResponse;
@@ -15,7 +16,7 @@ import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
-import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
+import com.trybe.modulecore.chat.entity.ChatRoom;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,8 @@ import java.util.Optional;
 import static com.trybe.moduleapi.challenge.fixtures.ChallengeParticipationFixtures.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -259,6 +261,7 @@ class ChallengeParticipationServiceTest {
     void 챌린지_참여_처리_시_처리된_챌린지_참여_정보를_반환한다 () {
         /* given */
         Long participationId = 챌린지_참여_ID;
+        ChatRoom chatRoom = ChatFixtures.채팅방();
 
         when(challengeParticipationRepository.findById(participationId))
                 .thenReturn(Optional.of(챌린지_멤버_참여_대기()));
@@ -266,13 +269,16 @@ class ChallengeParticipationServiceTest {
                 .thenReturn(Optional.of(챌린지_리더_참여()));
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(챌린지_참여_수락_상태)))
                 .thenReturn(ChallengeFixtures.챌린지().getCapacity() - 1);
+        when(chatService.findChatRoomByChallengeId(any()))
+                .thenReturn(chatRoom);
 
         /* when */
         ChallengeParticipationResponse.Detail result = challengeParticipationService.confirm(리더, participationId, 챌린지_참여_수락_상태);
 
         /* then */
         verifyChallengeParticipationResponse(챌린지_멤버_참여(), result);
-        verify(chatService, times(1)).enter(any(), any());
+        verify(chatService, times(1)).addUserToChatRoom(any(), any());
+        verify(chatService, times(1)).broadcastEnterMessage(any(), any());
     }
     
     @Test
@@ -397,8 +403,11 @@ class ChallengeParticipationServiceTest {
                 .thenReturn(Optional.of(챌린지_멤버_참여()));
 
         /* when */
-        /* then */
         challengeParticipationService.leave(멤버, challengeId);
+
+        /* then */
+        verify(chatService, times(1)).deleteUserToChatRoom(any(), any());
+        verify(chatService, times(1)).broadcastExitMessage(any(), any());
     }
 
     @Test
