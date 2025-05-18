@@ -21,6 +21,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
+import com.trybe.modulecore.chat.entity.ChatRoom;
 import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -73,19 +74,21 @@ public class ChallengeService {
         challenge.updateThumbnail(thumbnailFile);
         challengeParticipationRepository.save(participation);
         challengeEventPublisher.publish(new ChallengeEvent(savedChallenge, user.getId(), ChallengeEventType.CREATE));
-        chatService.create(savedChallenge);
+        Long chatRoomId = chatService.create(savedChallenge);
+        chatService.addUserToChatRoom(chatRoomId, user.getUserId());
 
-        return challengeResponseAssembler.toInitialDetail(savedChallenge);
+        return challengeResponseAssembler.toInitialDetail(savedChallenge, chatRoomId);
     }
 
     @Transactional(readOnly = true)
     public ChallengeResponse.Detail find(User user, Long id) {
         Challenge challenge = getChallenge(id);
+        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(id);
         Long userId = user == null ? null : user.getId();
 
         handleView(userId, challenge);
 
-        return challengeResponseAssembler.toDetail(challenge, userId);
+        return challengeResponseAssembler.toDetail(challenge, userId, chatRoom.getId());
     }
 
     @Transactional(readOnly = true)
@@ -139,11 +142,12 @@ public class ChallengeService {
         validateLeader(user.getId(), id, "리더만 챌린지 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 정보를 수정할 수 있습니다.");
 
+        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(id);
         File thumbnailFile = updateThumbnail(challenge, thumbnail);
         challenge.updateThumbnail(thumbnailFile);
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
-        return challengeResponseAssembler.toDetail(challenge, user.getId());
+        return challengeResponseAssembler.toDetail(challenge, user.getId(), chatRoom.getId());
     }
 
     @Transactional
@@ -154,8 +158,9 @@ public class ChallengeService {
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 인증 정보를 수정할 수 있습니다.");
 
         challenge.updateProof(request.proofWay(), request.proofCount());
+        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(id);
 
-        return challengeResponseAssembler.toDetail(challenge, user.getId());
+        return challengeResponseAssembler.toDetail(challenge, user.getId(), chatRoom.getId());
     }
 
     @Transactional
