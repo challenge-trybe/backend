@@ -20,21 +20,21 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    @MessageMapping("/chat/{challengeId}/send")
+    @MessageMapping("/chat/{chatRoomId}/send")
     public void send(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @DestinationVariable Long challengeId,
+            @DestinationVariable Long chatRoomId,
             @Payload ChatRequest.Send request) {
-        chatService.sendMessage(challengeId, userDetails.getUser(), request);
+        chatService.sendMessage(chatRoomId, userDetails.getUser(), request);
     }
 
-    @GetMapping("/{challengeId}")
+    @GetMapping("/{chatRoomId}")
     public CursorResponse<ChatResponse.Message> findAll(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("challengeId") Long challengeId,
+            @PathVariable("chatRoomId") Long chatRoomId,
             @RequestParam(value = "cursor", required = false) Long cursorId
     ){
-        return chatService.findMessages(userDetails.getUser(), challengeId, cursorId);
+        return chatService.findMessages(userDetails.getUser(), chatRoomId, cursorId);
     }
 
 }
