@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     ChatRoom findByChallengeId(Long challengeId);
-    boolean existsByChallengeId(Long challengeId);
 }
