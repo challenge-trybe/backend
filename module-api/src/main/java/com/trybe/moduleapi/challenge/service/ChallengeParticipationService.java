@@ -15,6 +15,7 @@ import com.trybe.modulecore.challenge.enums.ChallengeStatus;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
+import com.trybe.modulecore.chat.entity.ChatRoom;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -86,7 +87,10 @@ public class ChallengeParticipationService {
         validateStatus(participation, status);
 
         participation.updateStatus(status);
-        chatService.enter(participation.getUser(), participation.getChallenge().getId());
+
+        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(participation.getChallenge().getId());
+        chatService.addUserToChatRoom(chatRoom.getId(), participation.getUser().getUserId());
+        chatService.broadcastEnterMessage(participation.getUser(), participation.getChallenge().getId());
         return ChallengeParticipationResponse.Detail.from(participation);
     }
 
@@ -97,7 +101,8 @@ public class ChallengeParticipationService {
         validateRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
 
         participation.updateStatus(ParticipationStatus.DISABLED);
-        chatService.exit(user, challengeId);
+        chatService.deleteUserToChatRoom(participation.getChallenge().getId(), user.getUserId());
+        chatService.broadcastExitMessage(user, challengeId);
     }
 
     @Transactional
