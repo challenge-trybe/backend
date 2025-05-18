@@ -17,6 +17,7 @@ public class ChatFixtures {
     public static final ChatRoom 채팅방(Challenge challenge){
         return new ChatRoom(challenge);
     }
+    public static final Long 채팅방_ID = 1L;
     public static final ChatRoom 채팅방(){
         return new ChatRoom(ChallengeFixtures.챌린지());
     }
