@@ -21,9 +21,10 @@ public class ChallengeResponse {
             int participantCount,
             String proofWay,
             int proofCount,
+            Long chatRoomId,
             Bookmark bookmark
     ) {
-        public static Detail from(Challenge challenge, FileResponse thumbnail, int participantCount, Bookmark bookmark) {
+        public static Detail from(Challenge challenge, FileResponse thumbnail, int participantCount, Long chatRoomId, Bookmark bookmark) {
             return new Detail(
                     challenge.getId(),
                     thumbnail,
@@ -37,6 +38,7 @@ public class ChallengeResponse {
                     participantCount,
                     challenge.getProofWay(),
                     challenge.getProofCount(),
+                    chatRoomId,
                     bookmark
             );
         }

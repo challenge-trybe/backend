@@ -21,21 +21,21 @@ public class ChallengeResponseAssembler {
         this.fileManager = fileManager;
     }
 
-    public ChallengeResponse.Detail toInitialDetail(Challenge challenge) {
+    public ChallengeResponse.Detail toInitialDetail(Challenge challenge, Long chatRoomId) {
         FileResponse thumbnail = toFileResponse(challenge.getThumbnail());
         ChallengeResponse.Bookmark bookmark = new ChallengeResponse.Bookmark(0, false);
 
-        return ChallengeResponse.Detail.from(challenge, thumbnail, 0, bookmark);
+        return ChallengeResponse.Detail.from(challenge, thumbnail, 0, chatRoomId, bookmark);
     }
 
-    public ChallengeResponse.Detail toDetail(Challenge challenge, Long userId) {
+    public ChallengeResponse.Detail toDetail(Challenge challenge, Long userId, Long chatRoomId) {
         Long challengeId = challenge.getId();
 
         int participantCount = getParticipantCount(challengeId);
         ChallengeResponse.Bookmark bookmark = toBookmark(challengeId, userId);
         FileResponse thumbnail = toFileResponse(challenge.getThumbnail());
 
-        return ChallengeResponse.Detail.from(challenge, thumbnail, participantCount, bookmark);
+        return ChallengeResponse.Detail.from(challenge, thumbnail, participantCount, chatRoomId, bookmark);
     }
 
     public ChallengeResponse.Preview toPreview(Challenge challenge, Long userId) {
