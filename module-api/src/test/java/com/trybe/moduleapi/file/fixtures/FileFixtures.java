@@ -1,9 +1,12 @@
 package com.trybe.moduleapi.file.fixtures;
 
 import com.trybe.moduleapi.file.dto.FileResponse;
+import com.trybe.moduleapi.file.dto.FileWithIdResponse;
+import com.trybe.moduleapi.proof.fixtures.ProofHistoryFixtures;
 import com.trybe.modulecore.file.entity.File;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 public class FileFixtures {
@@ -38,4 +41,6 @@ public class FileFixtures {
 
     /* Response DTO */
     public static final FileResponse 파일_응답 = new FileResponse(파일_원본_이름, 파일_전체_경로);
+    public static final FileWithIdResponse 아이디_포함_파일_응답 = FileWithIdResponse.from(ProofHistoryFixtures.인증_기록_ID, 파일, 파일_전체_경로);
+    public static final List<FileWithIdResponse> 아이디_포함_파일_목록_응답 = List.of(아이디_포함_파일_응답);
 }
