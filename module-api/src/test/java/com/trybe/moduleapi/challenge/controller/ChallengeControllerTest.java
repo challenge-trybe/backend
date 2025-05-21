@@ -1,6 +1,5 @@
 package com.trybe.moduleapi.challenge.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.trybe.moduleapi.annotation.WithCustomMockUser;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
@@ -39,15 +38,6 @@ class ChallengeControllerTest extends ControllerTest {
     private String endpoint = "/api/v1/challenges";
 
     private String docsPath = "challenge-controller-test/";
-
-    private MockMultipartFile createJsonRequestPart(Object request) throws JsonProcessingException {
-        return new MockMultipartFile(
-                "request",
-                null,
-                "application/json",
-                objectMapper.writeValueAsBytes(request)
-        );
-    }
 
     @Test
     @WithCustomMockUser
