@@ -201,7 +201,7 @@ public class ProofHistoryService {
             } else {
                 if (iterator.hasNext()) {
                     File file = iterator.next();
-                    ProofHistoryFile proofHistoryFile =proofHistoryFileRepository.save(new ProofHistoryFile(proofHistory, file, order++));
+                    ProofHistoryFile proofHistoryFile = proofHistoryFileRepository.save(new ProofHistoryFile(proofHistory, file, order++));
                     fileEntities.add(proofHistoryFile);
                 }
             }
