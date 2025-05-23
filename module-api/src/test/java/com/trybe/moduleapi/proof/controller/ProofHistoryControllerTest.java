@@ -105,10 +105,10 @@ public class ProofHistoryControllerTest extends ControllerTest {
                         fieldWithPath("writer.userId").description("작성자 아이디"),
                         fieldWithPath("writer.nickname").description("작성자 닉네임"),
                         fieldWithPath("content").description("인증 기록 내용"),
-                        fieldWithPath("files").description("인증 기록 첨부파일 목록"),
-                        fieldWithPath("files.id").description("인증 기록 파일 PK"),
-                        fieldWithPath("files.originalName").description("첨부파일 원본 이름"),
-                        fieldWithPath("files.filePath").description("첨부파일 경로"),
+                        fieldWithPath("files[]").description("인증 기록 첨부파일 목록"),
+                        fieldWithPath("files[].id").description("인증 기록 파일 PK"),
+                        fieldWithPath("files[].originalName").description("첨부파일 원본 이름"),
+                        fieldWithPath("files[].filePath").description("첨부파일 경로"),
                         fieldWithPath("status").description("인증 기록 상태"),
                         fieldWithPath("createdAt").description("인증 기록 생성 시간")
                 )
@@ -351,10 +351,10 @@ public class ProofHistoryControllerTest extends ControllerTest {
                         fieldWithPath("content[].writer.userId").description("작성자 아이디"),
                         fieldWithPath("content[].writer.nickname").description("작성자 닉네임"),
                         fieldWithPath("content[].content").description("인증 기록 내용"),
-                        fieldWithPath("content[].files").description("인증 기록 첨부파일 목록"),
-                        fieldWithPath("content[].files.id").description("인증 기록 파일 PK"),
-                        fieldWithPath("content[].files.originalName").description("첨부파일 원본 이름"),
-                        fieldWithPath("content[].files.filePath").description("첨부파일 경로"),
+                        fieldWithPath("content[].files[]").description("인증 기록 첨부파일 목록"),
+                        fieldWithPath("content[].files[].id").description("인증 기록 파일 PK"),
+                        fieldWithPath("content[].files[].originalName").description("첨부파일 원본 이름"),
+                        fieldWithPath("content[].files[].filePath").description("첨부파일 경로"),
                         fieldWithPath("content[].status").description("인증 기록 상태"),
                         fieldWithPath("content[].createdAt").description("인증 기록 생성 시간"),
                         fieldWithPath("totalPages").description("총 페이지 수"),
@@ -436,7 +436,7 @@ public class ProofHistoryControllerTest extends ControllerTest {
     void 정상적인_인증_기록_수정_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
         Long proofHistoryId = 인증_기록_ID;
-        ProofHistoryRequest.Update request =인증_기록_수정_요청;
+        ProofHistoryRequest.Update request = 인증_기록_수정_요청;
 
         MockMultipartFile jsonPart = createJsonRequestPart(request);
         MockMultipartFile file = FileFixtures.파일_요청_생성("files");
@@ -488,10 +488,10 @@ public class ProofHistoryControllerTest extends ControllerTest {
                         fieldWithPath("writer.userId").description("작성자 아이디"),
                         fieldWithPath("writer.nickname").description("작성자 닉네임"),
                         fieldWithPath("content").description("인증 기록 내용"),
-                        fieldWithPath("files").description("인증 기록 첨부파일 목록"),
-                        fieldWithPath("files.id").description("인증 기록 파일 PK"),
-                        fieldWithPath("files.originalName").description("첨부파일 원본 이름"),
-                        fieldWithPath("files.filePath").description("첨부파일 경로"),
+                        fieldWithPath("files[]").description("인증 기록 첨부파일 목록"),
+                        fieldWithPath("files[].id").description("인증 기록 파일 PK"),
+                        fieldWithPath("files[].originalName").description("첨부파일 원본 이름"),
+                        fieldWithPath("files[].filePath").description("첨부파일 경로"),
                         fieldWithPath("status").description("인증 기록 상태"),
                         fieldWithPath("createdAt").description("인증 기록 생성 시간")
                 )
@@ -590,9 +590,13 @@ public class ProofHistoryControllerTest extends ControllerTest {
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{proofHistoryId}", proofHistoryId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofHistoryId}", proofHistoryId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isForbidden(),
@@ -626,9 +630,13 @@ public class ProofHistoryControllerTest extends ControllerTest {
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{proofHistoryId}", proofHistoryId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofHistoryId}", proofHistoryId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isConflict(),

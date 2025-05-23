@@ -1,6 +1,7 @@
 package com.trybe.moduleapi.proof.fixtures;
 
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.dto.FileWithIdResponse;
 import com.trybe.moduleapi.file.fixtures.FileFixtures;
 import com.trybe.moduleapi.proof.dto.request.ProofHistoryRequest;
 import com.trybe.moduleapi.proof.dto.response.ProofHistoryResponse;
@@ -68,7 +69,7 @@ public class ProofHistoryFixtures {
     public static final Page<ProofHistory> 인증_기록_목록_페이지 = new PageImpl<>(인증_기록_목록, 페이지_요청, 인증_기록_목록.size());
 
     /* Response DTO */
-    public static final ProofHistoryResponse.Summary 대기_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, UserFixtures.요약_회원_응답, 인증_기록_내용, FileFixtures.아이디_포함_파일_목록_응답, 인증_기록_대기_상태, 인증_기록_생성_시간);
+    public static final ProofHistoryResponse.Summary 대기_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, UserFixtures.요약_회원_응답, 인증_기록_내용, FileFixtures.아이디_포함_파일_목록_응답 , 인증_기록_대기_상태, 인증_기록_생성_시간);
     public static final ProofHistoryResponse.Summary 성공_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, UserFixtures.요약_회원_응답, 인증_기록_내용, FileFixtures.아이디_포함_파일_목록_응답, 인증_기록_성공_상태, 인증_기록_생성_시간);
     public static final ProofHistoryResponse.Summary 실패_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, UserFixtures.요약_회원_응답, 인증_기록_내용, FileFixtures.아이디_포함_파일_목록_응답, 인증_기록_실패_상태, 인증_기록_생성_시간);
 
