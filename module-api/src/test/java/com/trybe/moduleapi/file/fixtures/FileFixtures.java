@@ -20,6 +20,8 @@ public class FileFixtures {
     public static final String 파일_저장소_경로 = "http://trybe.test/file";
     public static final String 파일_전체_경로 = 파일_저장소_경로 + 파일_경로;
 
+    public static final int 파일_순서 = 1;
+
     /* Request */
     public static MockMultipartFile 파일_요청_생성(String parameterName) {
         return new MockMultipartFile(
