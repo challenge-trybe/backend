@@ -7,6 +7,7 @@ import com.trybe.moduleapi.proof.dto.response.ProofHistoryResponse;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.proof.entity.Proof;
 import com.trybe.modulecore.proof.entity.ProofHistory;
+import com.trybe.modulecore.proof.entity.ProofHistoryFile;
 import com.trybe.modulecore.proof.enums.ProofHistoryStatus;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class ProofHistoryFixtures {
@@ -31,7 +33,7 @@ public class ProofHistoryFixtures {
 
     public static final LocalDateTime 인증_기록_생성_시간 = LocalDateTime.now().withNano(0);
 
-    public static final List<Long> 인증_기록_파일_순서 = List.of(FileFixtures.파일_ID, null);
+    public static final List<Long> 인증_기록_파일_순서 = Arrays.asList((Long) null);
 
     /* Request DTO */
     public static final ProofHistoryRequest.Create 인증_기록_생성_요청 = new ProofHistoryRequest.Create(인증_기록_내용);
@@ -52,6 +54,8 @@ public class ProofHistoryFixtures {
     public static final ProofHistory 대기_인증_기록 = 인증_기록_생성(오늘_인증, UserFixtures.회원, 인증_기록_내용, 인증_기록_대기_상태);
     public static final ProofHistory 성공_인증_기록 = 인증_기록_생성(오늘_인증, UserFixtures.회원, 인증_기록_내용, 인증_기록_성공_상태);
     public static final ProofHistory 실패_인증_기록 = 인증_기록_생성(오늘_인증, UserFixtures.회원, 인증_기록_내용, 인증_기록_실패_상태);
+
+    public static final ProofHistoryFile 인증_기록_파일 = new ProofHistoryFile(ProofHistoryFixtures.대기_인증_기록, FileFixtures.파일, FileFixtures.파일_순서);
 
     public static Pageable 페이지_요청 = PageRequest.of(0, 10);
 
