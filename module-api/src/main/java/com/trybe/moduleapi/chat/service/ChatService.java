@@ -119,43 +119,30 @@ public class ChatService {
         chatRoomRepository.deleteById(chatRoomId);
     }
 
-    public void addUserToChatRoom(Long chatRoomId, String userName){
-        chatRoomUserCache.addUserToChatRoom(chatRoomId,userName);
-    }
-
-    public void deleteUserToChatRoom(Long chatRoomId, String userName){
-        chatRoomUserCache.deleteUserToChatRoom(chatRoomId,userName);
-    }
-
-    public ChatRoom findChatRoomByChallengeId(Long challengeId) {
-        return chatRoomRepository.findByChallengeId(challengeId);
-    }
-
-    public void broadcastEnterMessage(User user, Long chatRoomId) {
+    public void addUserToChatRoom(Long chatRoomId, User user){
         ChatRoom chatRoom = getChatRoom(chatRoomId);
         String message = createEnterMessage(user.getNickname());
 
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.ENTER);
         chatMessageRepository.save(chatMessage);
 
-        ChatResponse.Message enterMessage = ChatResponse.Message.from(chatMessage);
-        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX + chatRoomId, enterMessage);
-
-        notifyOfflineUsers(chatRoom, chatRoom.getChallenge(), null);
+        chatRoomUserCache.addUserToChatRoom(chatRoomId, user.getUserId());
     }
 
-    public void broadcastExitMessage(User user, Long chatRoomId) {
+    public void deleteUserToChatRoom(Long chatRoomId, User user){
         ChatRoom chatRoom = getChatRoom(chatRoomId);
         String message = createExitMessage(user.getNickname());
 
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.EXIT);
         chatMessageRepository.save(chatMessage);
 
-        ChatResponse.Message exitMessage = ChatResponse.Message.from(chatMessage);
-        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX + chatRoomId, exitMessage);
-
-        notifyOfflineUsers(chatRoom, chatRoom.getChallenge(), null);
+        chatRoomUserCache.deleteUserToChatRoom(chatRoomId, user.getUserId());
     }
+
+    public ChatRoom findChatRoomByChallengeId(Long challengeId) {
+        return chatRoomRepository.findByChallengeId(challengeId);
+    }
+
     public void challengeStartMessage(Challenge challenge) {
         String message = String.format(CHALLENGE_START_MESSAGE, challenge.getTitle());
         ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challenge.getId());
