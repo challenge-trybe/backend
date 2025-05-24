@@ -89,8 +89,7 @@ public class ChallengeParticipationService {
         participation.updateStatus(status);
 
         ChatRoom chatRoom = chatService.findChatRoomByChallengeId(participation.getChallenge().getId());
-        chatService.addUserToChatRoom(chatRoom.getId(), participation.getUser().getUserId());
-        chatService.broadcastEnterMessage(participation.getUser(), participation.getChallenge().getId());
+        chatService.addUserToChatRoom(chatRoom.getId(), participation.getUser());
         return ChallengeParticipationResponse.Detail.from(participation);
     }
 
@@ -101,8 +100,7 @@ public class ChallengeParticipationService {
         validateRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
 
         participation.updateStatus(ParticipationStatus.DISABLED);
-        chatService.deleteUserToChatRoom(participation.getChallenge().getId(), user.getUserId());
-        chatService.broadcastExitMessage(user, challengeId);
+        chatService.deleteUserToChatRoom(participation.getChallenge().getId(), user);
     }
 
     @Transactional
