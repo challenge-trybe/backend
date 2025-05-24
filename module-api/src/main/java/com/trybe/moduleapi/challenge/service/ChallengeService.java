@@ -75,7 +75,7 @@ public class ChallengeService {
         challengeParticipationRepository.save(participation);
         challengeEventPublisher.publish(new ChallengeEvent(savedChallenge, user.getId(), ChallengeEventType.CREATE));
         Long chatRoomId = chatService.create(savedChallenge);
-        chatService.addUserToChatRoom(chatRoomId, user.getUserId());
+        chatService.addUserToChatRoom(chatRoomId, user);
 
         return challengeResponseAssembler.toInitialDetail(savedChallenge, chatRoomId);
     }
