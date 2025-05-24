@@ -12,7 +12,7 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     ports:
-      - "${MYSQL_PORT}:3306"
+      - "${MYSQL_PORT}:${MYSQL_DOCKER_PORT}"
     volumes:
       - ${MYSQL_VOLUME_PATH}:/var/lib/mysql
 
@@ -22,14 +22,14 @@ services:
     volumes:
       - ${REDIS_VOLUME_PATH}:/data
     ports:
-      - "${REDIS_PORT}:6379"
+      - "${REDIS_PORT}:${REDIS_DOCKER_PORT}"
     restart: always
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: trybe-zookeeper
     ports:
-      - "${ZOOKEEPER_PORT}:2181"
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_DOCKER_PORT}"
     environment:
       ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
 
@@ -39,14 +39,14 @@ services:
       - zookeeper
     container_name: trybe-kafka
     ports:
-      - "${KAFKA_PORT}:9092"
+      - "${KAFKA_PORT}:${KAFKA_DOCKER_PORT}"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_CLIENT_PORT}
       KAFKA_LISTENERS: EXTERNAL://0.0.0.0:${KAFKA_PORT}
-      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: ${KAFKA_LISTENER_SECURITY_PROTOCOL_MAP}
-      KAFKA_INTER_BROKER_LISTENER_NAME: ${KAFKA_INTER_BROKER_LISTENER_NAME}
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://${KAFKA_ADVERTISED_HOST}:${KAFKA_PORT}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: EXTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   jenkins:
     container_name: trybe-jenkins
@@ -54,13 +54,13 @@ services:
     volumes:
       - ${JENKINS_VOLUME_PATH}:/var/jenkins_home
     ports:
-      - "${JENKINS_PORT}:8080"
+      - "${JENKINS_PORT}:${JENKINS_DOCKER_PORT}"
 
   prometheus:
     image: prom/prometheus:latest
     container_name: trybe-prometheus
     ports:
-      - "${PROMETHEUS_PORT}:9090"
+      - "${PROMETHEUS_PORT}:${PROMETHEUS_DOCKER_PORT}"
     volumes:
       - ${PROMETHEUS_CONFIG_PATH}:/etc/prometheus/prometheus.yml
     restart: always
@@ -69,7 +69,7 @@ services:
     image: grafana/grafana:latest
     container_name: trybe-grafana
     ports:
-      - "${GRAFANA_PORT}:3000"
+      - "${GRAFANA_PORT}:${GRAFANA_DOCKER_PORT}"
     restart: always
     depends_on:
       - prometheus
@@ -78,10 +78,10 @@ services:
     image: prom/mysqld-exporter:latest
     container_name: trybe-mysql-exporter
     ports:
-      - "${MYSQL_EXPORTER_PORT}:9104"
+      - "${MYSQL_EXPORTER_PORT}:${MYSQL_EXPORTER_DOCKER_PORT}"
     command:
       - "--mysqld.username=${MYSQL_EXPORTER_USER}"
-      - "--mysqld.address=${MYSQL_EXPORTER_ADDRESS}"
+      - "--mysqld.address=trybe-db:${MYSQL_DOCKER_PORT}"
     restart: always
     depends_on:
       - mysql
@@ -90,8 +90,8 @@ services:
     image: grafana/loki:latest
     container_name: trybe-loki
     ports:
-      - "${LOKI_PORT}:3100"
+      - "${LOKI_PORT}:${LOKI_DOCKER_PORT}"
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
-      - ${LOKI_VOLUME_PATH}
+      - ${LOKI_VOLUME_PATH}:/loki
 
