@@ -6,4 +6,5 @@ public enum NotificationType {
     CHALLENGE_PARTICIPATION,
     PROOF,
     PROOF_HISTORY,
+    POST_COMMENT
 }
