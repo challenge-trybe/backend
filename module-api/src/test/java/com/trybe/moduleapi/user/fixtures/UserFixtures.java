@@ -10,6 +10,7 @@ import com.trybe.modulecore.user.enums.Role;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class UserFixtures {
     public static final Long 회원_PK = 1L;
@@ -99,4 +100,8 @@ public class UserFixtures {
     public static UserRequest.UpdatePassword 현재_비밀번호_잘못된_비밀번호_변경_요청 = new UserRequest.UpdatePassword(새로운_비밀번호,새로운_비밀번호,확인_비밀번호);
     public static UserRequest.UpdatePassword 새로운_확인용_비밀번호_다른_변경_요청 = new UserRequest.UpdatePassword(현재_비밀번호,새로운_비밀번호,현재_비밀번호);
 
+    public static List<User> 채팅_오프라인_유저 = List.of(회원_생성("test1" , "test1@test.com"),
+                                               회원_생성("test2" , "test2@test.com"),
+                                               회원_생성("test3" , "test3@test.com"),
+                                               회원_생성("test4" , "test4@test.com"));
 }
