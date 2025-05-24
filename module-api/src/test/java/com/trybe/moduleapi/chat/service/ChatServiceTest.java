@@ -19,18 +19,20 @@ import com.trybe.modulecore.chat.enums.MessageType;
 import com.trybe.modulecore.chat.repository.ChatMessageRepository;
 import com.trybe.modulecore.chat.repository.ChatRoomRepository;
 import com.trybe.modulecore.chat.repository.ChatRoomUserCache;
+import com.trybe.modulecore.notification.entity.Notification;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Limit;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -56,6 +58,9 @@ class ChatServiceTest {
     @InjectMocks
     ChatService chatService;
 
+    @Captor
+    private ArgumentCaptor<Map<UUID, Notification>> notificationMapCaptor;
+
     @Test
     @DisplayName("해당 채팅방에 속한 회원이 메시지를 보내면 성공한다.")
     void 해당_채팅방에_속한_회원이_메시지를_보내면_성공한다 () {
@@ -65,12 +70,19 @@ class ChatServiceTest {
         Long 채팅방_ID = ChatFixtures.채팅방_ID;
         ChatRequest.Send 채팅_메시지_전송_요청 = ChatFixtures.채팅_메시지_전송_요청;
 
+        Set<String> 오프라인_유저_아이디 = ChatFixtures.오프라인_유저_아이디;
+        List<User> 오프라인_유저 = UserFixtures.채팅_오프라인_유저;
+
         when(chatRoomRepository.existsById(채팅방_ID))
                 .thenReturn(true);
         when(chatRoomRepository.findById(채팅방_ID))
                 .thenReturn(Optional.of(채팅방));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(any(), any(), any(ParticipationStatus.class)))
                 .thenReturn(true);
+        when(chatRoomUserCache.findOfflineUserIds(any()))
+                .thenReturn(오프라인_유저_아이디);
+        when(userService.findByUserIdIn(오프라인_유저_아이디))
+                .thenReturn(오프라인_유저);
 
         /* when */
         chatService.sendMessage(채팅방_ID, 회원, 채팅_메시지_전송_요청);
@@ -78,7 +90,9 @@ class ChatServiceTest {
         /* then */
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
         verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
-        // notifyOfflineUsers
+        verify(notificationProducerService, times(1)).publishChatNotification(notificationMapCaptor.capture());
+        Map<UUID, Notification> 캡쳐된_채팅_알림맵 = notificationMapCaptor.getValue();
+        assertEquals(캡쳐된_채팅_알림맵.size() , 오프라인_유저.size());
     }
 
     @Test
@@ -208,11 +222,10 @@ class ChatServiceTest {
     }
 
     @Test
-    @DisplayName("챌린지 참여 수락 시 입장 메시지가 전송된다.")
-    void 챌린지_참여_수락_시_입장_메시지가_전송된다 () {
+    @DisplayName("챌린지 참여 수락 시 채팅방에 입장한다.")
+    void 챌린지_참여_수락_시_채팅방에_입장한다 () {
         /* given */
         User 회원 = UserFixtures.회원;
-        Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
 
         ChatRoom 채팅방 = ChatFixtures.채팅방();
         Long 채팅방_ID = ChatFixtures.채팅방_ID;
@@ -221,19 +234,17 @@ class ChatServiceTest {
                 .thenReturn(Optional.of(채팅방));
 
         /* when */
-        chatService.broadcastEnterMessage(회원, 챌린지_ID);
+        chatService.addUserToChatRoom(채팅방_ID, 회원);
 
         /* then */
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
-        verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
     }
 
     @Test
-    @DisplayName("챌린지 탈퇴 시 채팅방에 탈퇴 메시지가 전송된다.")
-    void 챌린지_탈퇴_시_채팅방에_탈퇴_메시지가_전송된다 () {
+    @DisplayName("챌린지 탈퇴 시 채팅방에서 나간다.")
+    void 챌린지_탈퇴_시_채팅방에서_나간다 () {
         /* given */
         User 회원 = UserFixtures.회원;
-        Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
 
         ChatRoom 채팅방 = ChatFixtures.채팅방();
         Long 채팅방_ID = ChatFixtures.채팅방_ID;
@@ -242,11 +253,10 @@ class ChatServiceTest {
                 .thenReturn(Optional.of(채팅방));
 
         /* when */
-        chatService.broadcastExitMessage(회원, 챌린지_ID);
+        chatService.deleteUserToChatRoom(채팅방_ID, 회원);
 
         /* then */
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
-        verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
     }
 
     @Test
@@ -271,13 +281,25 @@ class ChatServiceTest {
         Challenge 챌린지 = ChallengeFixtures.챌린지();
         ChatRoom 채팅방 = ChatFixtures.채팅방();
 
-        when(chatRoomRepository.findByChallengeId(챌린지.getId())).thenReturn(채팅방);
+        Set<String> 오프라인_유저_아이디 = ChatFixtures.오프라인_유저_아이디;
+        List<User> 오프라인_유저 = UserFixtures.채팅_오프라인_유저;
+
+        when(chatRoomRepository.findByChallengeId(챌린지.getId()))
+                .thenReturn(채팅방);
+        when(chatRoomUserCache.findOfflineUserIds(any()))
+                .thenReturn(오프라인_유저_아이디);
+        when(userService.findByUserIdIn(오프라인_유저_아이디))
+                .thenReturn(오프라인_유저);
+
 
         /* when */
         chatService.challengeStartMessage(챌린지);
 
         /* then */
         verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
+        verify(notificationProducerService, times(1)).publishChatNotification(notificationMapCaptor.capture());
+        Map<UUID, Notification> 캡쳐된_채팅_알림맵 = notificationMapCaptor.getValue();
+        assertEquals(캡쳐된_채팅_알림맵.size() , 오프라인_유저.size());
     }
 
     @Test
@@ -287,12 +309,23 @@ class ChatServiceTest {
         Challenge 챌린지 = ChallengeFixtures.챌린지();
         ChatRoom 채팅방 = ChatFixtures.채팅방();
 
-        when(chatRoomRepository.findByChallengeId(챌린지.getId())).thenReturn(채팅방);
+        Set<String> 오프라인_유저_아이디 = ChatFixtures.오프라인_유저_아이디;
+        List<User> 오프라인_유저 = UserFixtures.채팅_오프라인_유저;
+
+        when(chatRoomRepository.findByChallengeId(챌린지.getId()))
+                .thenReturn(채팅방);
+        when(chatRoomUserCache.findOfflineUserIds(any()))
+                .thenReturn(오프라인_유저_아이디);
+        when(userService.findByUserIdIn(오프라인_유저_아이디))
+                .thenReturn(오프라인_유저);
 
         /* when */
         chatService.challengeClosedMessage(챌린지);
 
         /* then */
         verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
+        verify(notificationProducerService, times(1)).publishChatNotification(notificationMapCaptor.capture());
+        Map<UUID, Notification> 캡쳐된_채팅_알림맵 = notificationMapCaptor.getValue();
+        assertEquals(캡쳐된_채팅_알림맵.size() , 오프라인_유저.size());
     }
 }
