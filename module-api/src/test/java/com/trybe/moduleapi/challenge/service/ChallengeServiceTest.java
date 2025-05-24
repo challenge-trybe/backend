@@ -108,7 +108,7 @@ class ChallengeServiceTest {
         assertEquals(초기_북마크_수, response.bookmark().bookmarkCount());
         assertEquals(false, response.bookmark().bookmarked());
 
-        verify(chatService, times(1)).addUserToChatRoom(any(Long.class), any(String.class));
+        verify(chatService, times(1)).addUserToChatRoom(any(Long.class), any(User.class));
         verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 

@@ -278,7 +278,6 @@ class ChallengeParticipationServiceTest {
         /* then */
         verifyChallengeParticipationResponse(챌린지_멤버_참여(), result);
         verify(chatService, times(1)).addUserToChatRoom(any(), any());
-        verify(chatService, times(1)).broadcastEnterMessage(any(), any());
     }
     
     @Test
@@ -407,7 +406,6 @@ class ChallengeParticipationServiceTest {
 
         /* then */
         verify(chatService, times(1)).deleteUserToChatRoom(any(), any());
-        verify(chatService, times(1)).broadcastExitMessage(any(), any());
     }
 
     @Test
