@@ -12,6 +12,7 @@ import com.trybe.modulecore.chat.enums.MessageType;
 import com.trybe.modulecore.user.entity.User;
 
 import java.util.List;
+import java.util.Set;
 
 public class ChatFixtures {
     public static final ChatRoom 채팅방(Challenge challenge){
@@ -47,6 +48,8 @@ public class ChatFixtures {
                 .message("채팅 메시지")
                 .build();
     }
+
+    public static final Set<String> 오프라인_유저_아이디 = Set.of("test1", "test2", "test3", "test4");
 
     public static final List<ChatMessage> 채팅_메시지_내역 = List.of(채팅_메시지(시스템),채팅_메시지(입장),채팅_메시지(퇴장),채팅_메시지(대화),채팅_메시지(대화), 채팅_메시지(대화));
     public static final CursorResponse<ChatResponse.Message> 채팅_메시지_내역_응답 = CursorResponse.of(채팅_메시지_내역.stream().map(ChatResponse.Message::from).toList(), null, 채팅_메시지_내역.size(), false);
