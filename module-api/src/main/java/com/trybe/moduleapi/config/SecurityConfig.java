@@ -1,8 +1,9 @@
 package com.trybe.moduleapi.config;
 
+import com.trybe.moduleapi.auth.jwt.JwtAuthenticationFilter;
 import com.trybe.moduleapi.auth.jwt.exception.CustomAccessDeniedHandler;
 import com.trybe.moduleapi.auth.jwt.exception.CustomAuthenticationEntryPoint;
-import com.trybe.moduleapi.auth.jwt.JwtAuthenticationFilter;
+import com.trybe.moduleapi.common.api.RequestLoggingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,11 +22,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final RequestLoggingFilter requestLoggingFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler, RequestLoggingFilter requestLoggingFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.requestLoggingFilter = requestLoggingFilter;
     }
 
     @Bean
@@ -54,6 +57,7 @@ public class SecurityConfig {
                 .anyRequest()
                 .authenticated());
 
+        http.addFilterBefore(requestLoggingFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.exceptionHandling((exceptionHandling) -> exceptionHandling.
                 authenticationEntryPoint(customAuthenticationEntryPoint)

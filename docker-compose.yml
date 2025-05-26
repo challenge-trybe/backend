@@ -2,36 +2,36 @@ services:
   mysql:
     image: mysql:latest
     container_name: trybe-db
-    restart: always # 컨테이너가 종료되면 재실행
+    restart: always
     environment:
-      MYSQL_DATABASE: trybe
-      MYSQL_ROOT_USER: root
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_USER: ${MYSQL_ROOT_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       TZ: Asia/Seoul
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
     ports:
-      - "33306:3306"
+      - "${MYSQL_PORT}:${MYSQL_DOCKER_PORT}"
     volumes:
-      - ./data/:/var/lib/mysql
+      - ${MYSQL_VOLUME_PATH}:/var/lib/mysql
 
   redis:
     image: redis:latest
     container_name: "trybe-redis"
     volumes:
-      - ./redis/redis-data:/data
+      - ${REDIS_VOLUME_PATH}:/data
     ports:
-      - "16379:6379"
+      - "${REDIS_PORT}:${REDIS_DOCKER_PORT}"
     restart: always
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: trybe-zookeeper
     ports:
-      - "12181:2181"
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_DOCKER_PORT}"
     environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -39,11 +39,11 @@ services:
       - zookeeper
     container_name: trybe-kafka
     ports:
-      - "9092:9092"
+      - "${KAFKA_PORT}:${KAFKA_DOCKER_PORT}"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: EXTERNAL://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:${ZOOKEEPER_CLIENT_PORT}
+      KAFKA_LISTENERS: EXTERNAL://0.0.0.0:${KAFKA_PORT}
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://${KAFKA_ADVERTISED_HOST}:${KAFKA_PORT}
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: EXTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -52,24 +52,24 @@ services:
     container_name: trybe-jenkins
     image: jenkins/jenkins
     volumes:
-      - ./jenkins/:/var/jenkins_home
+      - ${JENKINS_VOLUME_PATH}:/var/jenkins_home
     ports:
-      - "18080:8080"
+      - "${JENKINS_PORT}:${JENKINS_DOCKER_PORT}"
 
   prometheus:
     image: prom/prometheus:latest
     container_name: trybe-prometheus
     ports:
-      - "19090:9090"
+      - "${PROMETHEUS_PORT}:${PROMETHEUS_DOCKER_PORT}"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ${PROMETHEUS_CONFIG_PATH}:/etc/prometheus/prometheus.yml
     restart: always
 
   grafana:
     image: grafana/grafana:latest
     container_name: trybe-grafana
     ports:
-      - "13000:3000"
+      - "${GRAFANA_PORT}:${GRAFANA_DOCKER_PORT}"
     restart: always
     depends_on:
       - prometheus
@@ -78,10 +78,20 @@ services:
     image: prom/mysqld-exporter:latest
     container_name: trybe-mysql-exporter
     ports:
-      - "19104:9104"
+      - "${MYSQL_EXPORTER_PORT}:${MYSQL_EXPORTER_DOCKER_PORT}"
     command:
-      - "--mysqld.username=exporter:exporter"
-      - "--mysqld.address=trybe-db:3306"
+      - "--mysqld.username=${MYSQL_EXPORTER_USER}"
+      - "--mysqld.address=trybe-db:${MYSQL_DOCKER_PORT}"
     restart: always
     depends_on:
       - mysql
+
+  loki:
+    image: grafana/loki:latest
+    container_name: trybe-loki
+    ports:
+      - "${LOKI_PORT}:${LOKI_DOCKER_PORT}"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ${LOKI_VOLUME_PATH}:/loki
+
