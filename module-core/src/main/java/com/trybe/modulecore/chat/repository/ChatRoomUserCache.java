@@ -17,59 +17,59 @@ public class ChatRoomUserCache {
     }
 
     public void online(String chatRoomId, String userId, String sessionId) {
-        String sessionIdAndUserMapping = createRedisKey(sessionId);
-        redisTemplate.opsForValue().set(sessionIdAndUserMapping, userId);
+        String sessionRoomKey = createSessionRoomKey(sessionId);
+        redisTemplate.opsForValue().set(sessionRoomKey, chatRoomId);
 
         Long longChatRoomId = Long.valueOf(chatRoomId);
-        String offlineUserRedisKey = createRedisKey(longChatRoomId);
-        redisTemplate.opsForSet().remove(offlineUserRedisKey, userId);
+        String offlineUserKey = createOfflineUserRedisKey(longChatRoomId);
+        redisTemplate.opsForSet().remove(offlineUserKey, userId);
     }
 
     public void offline(String userId, String sessionId) {
         String chatRoomId = getChatRoomIdBySessionId(sessionId);
 
         Long longChatRoomId = Long.valueOf(chatRoomId);
-        String offlineUserRedisKey = createRedisKey(longChatRoomId);
-        redisTemplate.opsForSet().add(offlineUserRedisKey, userId);
+        String offlineUserKey = createOfflineUserRedisKey(longChatRoomId);
+        redisTemplate.opsForSet().add(offlineUserKey, userId);
 
-        String sessionIdAndUserMapping = createRedisKey(sessionId);
-        redisTemplate.delete(sessionIdAndUserMapping);
+        String sessionRoomKey = createSessionRoomKey(sessionId);
+        redisTemplate.delete(sessionRoomKey);
     }
 
     public void addUserToChatRoom(Long chatRoomId, String userId){
         Long longChatRoomId = Long.valueOf(chatRoomId);
-        String offlineUserRedisKey = createRedisKey(longChatRoomId);
-        redisTemplate.opsForSet().add(offlineUserRedisKey, userId);
+        String offlineUserKey = createOfflineUserRedisKey(longChatRoomId);
+        redisTemplate.opsForSet().add(offlineUserKey, userId);
 
     }
 
-    public void deleteUserToChatRoom(Long chatRoomId, String userName){
+    public void deleteUserFromChatRoom(Long chatRoomId, String userName){
         Long longChatRoomId = Long.valueOf(chatRoomId);
-        String offlineUserRedisKey = createRedisKey(longChatRoomId);
+        String offlineUserRedisKey = createOfflineUserRedisKey(longChatRoomId);
         redisTemplate.opsForSet().add(offlineUserRedisKey, userName);
     }
 
     public void clear(Long chatRoomId){
-        String offlineUserRedisKey = createRedisKey(chatRoomId);
+        String offlineUserRedisKey = createOfflineUserRedisKey(chatRoomId);
         redisTemplate.delete(offlineUserRedisKey);
 
     }
 
     public Set<String> findOfflineUserIds(Long chatRoomId){
-        String redisKey = createRedisKey(chatRoomId);
+        String redisKey = createOfflineUserRedisKey(chatRoomId);
         return redisTemplate.opsForSet().members(redisKey);
     }
 
     private String getChatRoomIdBySessionId(String sessionId){
-        String redisKey = createRedisKey(sessionId);
+        String redisKey = createSessionRoomKey(sessionId);
         return redisTemplate.opsForValue().get(redisKey);
     }
 
-    private String createRedisKey(Long chatRoomId){
+    private String createOfflineUserRedisKey(Long chatRoomId){
         return String.format(CHATROOM_OFFLINE_USERS_REDIS_KEY, chatRoomId);
     }
 
-    private String createRedisKey(String sessionId){
+    private String createSessionRoomKey(String sessionId){
         return String.format(CHATROOM_SESSION_ID_REDIS_KEY, sessionId);
     }
 }
