@@ -129,14 +129,14 @@ public class ChatService {
         chatRoomUserCache.addUserToChatRoom(chatRoomId, user.getUserId());
     }
 
-    public void deleteUserToChatRoom(Long chatRoomId, User user){
+    public void deleteUserFromChatRoom(Long chatRoomId, User user){
         ChatRoom chatRoom = getChatRoom(chatRoomId);
         String message = createExitMessage(user.getNickname());
 
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.EXIT);
         chatMessageRepository.save(chatMessage);
 
-        chatRoomUserCache.deleteUserToChatRoom(chatRoomId, user.getUserId());
+        chatRoomUserCache.deleteUserFromChatRoom(chatRoomId, user.getUserId());
     }
 
     public ChatRoom findChatRoomByChallengeId(Long challengeId) {

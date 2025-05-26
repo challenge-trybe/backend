@@ -253,7 +253,7 @@ class ChatServiceTest {
                 .thenReturn(Optional.of(채팅방));
 
         /* when */
-        chatService.deleteUserToChatRoom(채팅방_ID, 회원);
+        chatService.deleteUserFromChatRoom(채팅방_ID, 회원);
 
         /* then */
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));

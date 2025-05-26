@@ -405,7 +405,7 @@ class ChallengeParticipationServiceTest {
         challengeParticipationService.leave(멤버, challengeId);
 
         /* then */
-        verify(chatService, times(1)).deleteUserToChatRoom(any(), any());
+        verify(chatService, times(1)).deleteUserFromChatRoom(any(), any());
     }
 
     @Test
