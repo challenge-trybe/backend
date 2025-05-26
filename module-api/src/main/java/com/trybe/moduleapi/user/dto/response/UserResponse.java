@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.user.dto.response;
 
+import com.trybe.moduleapi.file.dto.FileResponse;
 import com.trybe.modulecore.user.entity.User;
 import com.trybe.modulecore.user.enums.Gender;
 
@@ -13,15 +14,19 @@ public class UserResponse {
             String userId,
             String email,
             Gender gender,
-            LocalDate birth
+            LocalDate birth,
+            FileResponse fileResponse
     ) {
-        public static Detail from(User user) {
-            return new Detail(user.getId(),
-                              user.getNickname(),
-                              user.getUserId(),
-                              user.getEmail(),
-                              user.getGender(),
-                              user.getBirth());
+        public static Detail from(User user, FileResponse fileResponse) {
+            return new Detail(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getUserId(),
+                    user.getEmail(),
+                    user.getGender(),
+                    user.getBirth(),
+                    fileResponse
+            );
         }
     }
 
@@ -31,9 +36,11 @@ public class UserResponse {
             String nickname
     ){
         public static Summary from(User user) {
-            return new Summary(user.getId(),
-                              user.getUserId(),
-                              user.getNickname());
+            return new Summary(
+                    user.getId(),
+                    user.getUserId(),
+                    user.getNickname()
+            );
         }
     }
 }

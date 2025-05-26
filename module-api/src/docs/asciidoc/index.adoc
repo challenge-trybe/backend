@@ -14,7 +14,6 @@ include::{snippets}/user-controller-test/save/request-fields.adoc[]
 
 - 응답
 include::{snippets}/user-controller-test/save/http-response.adoc[]
-include::{snippets}/user-controller-test/save/response-fields.adoc[]
 
 ==== 비정상 요청 (잘못된 요청)
 요청 필드가 누락되거나 잘못된 형식으로 전달되었을 때:
@@ -97,6 +96,16 @@ include::{snippets}/user-controller-test/user-update-password/invalid/bad-reques
 - 응답
 include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/http-response.adoc[]
 include::{snippets}/user-controller-test/user-update-password/invalid/bad-request/response-fields.adoc[]
+
+=== 프로필 이미지 수정 API
+프로필 이미지 수정 시 다음과 같이 응답합니다.
+
+==== 정상 요청
+include::{snippets}/user-controller-test/updateProfile/http-request.adoc[]
+
+- 응답
+include::{snippets}/user-controller-test/updateProfile/http-response.adoc[]
+include::{snippets}/user-controller-test/updateProfile/response-fields.adoc[]
 
 === 회원탈퇴
 회원탈퇴 기능
@@ -195,7 +204,10 @@ include::{snippets}/auth-controller-test/token-reissue/http-response.adoc[]
 
 ==== 정상 요청
 include::{snippets}/challenge-controller-test/create/http-request.adoc[]
-include::{snippets}/challenge-controller-test/create/request-fields.adoc[]
+include::{snippets}/challenge-controller-test/create/request-parts.adoc[]
+
+- JSON fields
+include::{snippets}/challenge-controller-test/create/request-part-request-fields.adoc[]
 
 - 응답
 include::{snippets}/challenge-controller-test/create/http-response.adoc[]
@@ -279,7 +291,10 @@ include::{snippets}/challenge-controller-test/popular/response-fields.adoc[]
 ==== 정상 요청
 include::{snippets}/challenge-controller-test/update-content/http-request.adoc[]
 include::{snippets}/challenge-controller-test/update-content/path-parameters.adoc[]
-include::{snippets}/challenge-controller-test/update-content/request-fields.adoc[]
+include::{snippets}/challenge-controller-test/update-content/request-parts.adoc[]
+
+- JSON fields
+include::{snippets}/challenge-controller-test/update-content/request-part-request-fields.adoc[]
 
 - 응답
 include::{snippets}/challenge-controller-test/update-content/http-response.adoc[]

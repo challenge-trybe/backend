@@ -1,6 +1,7 @@
 package com.trybe.modulecore.user.entity;
 
 import com.trybe.modulecore.common.entity.BaseEntity;
+import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.enums.Gender;
 import com.trybe.modulecore.user.enums.Role;
 import jakarta.persistence.*;
@@ -10,8 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.annotations.SoftDelete;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +27,10 @@ public class User extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, updatable = false)
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "profile_image_id")
+    private File profileImage;
 
     @Column(name = "uuid", nullable = false, updatable = false, unique = true)
     private UUID uuid = UUID.randomUUID();
@@ -76,5 +79,8 @@ public class User extends BaseEntity {
 
     public void updatePassword(String newEncodedPassword){
         this.encodedPassword = newEncodedPassword;
+    }
+    public void updateProfileImage(File newProfileImage){
+        this.profileImage = newProfileImage;
     }
 }

@@ -40,8 +40,12 @@ out/
 data
 jenkins
 redis
-files
+
 **/application*.yml
+
 logs
 .env
 loki
+
+files
+module-api/http/testImg
