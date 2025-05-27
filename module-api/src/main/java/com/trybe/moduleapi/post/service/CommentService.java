@@ -45,7 +45,7 @@ public class CommentService {
         commentRepository.save(comment);
 
         String message = createNotifyMessage(user.getNickname());
-        Notification notification = new Notification(user.getId(), NotificationType.POST_COMMENT, postId, COMMENT_TITLE, message);
+        Notification notification = new Notification(post.getUser().getId(), NotificationType.POST_COMMENT, postId, COMMENT_TITLE, message);
         notificationProducerService.publishPostCommentNotification(post.getUser().getUuid(), notification);
 
         eventPublisher.publish(PostEvent.from(post.getId(), PostEventType.COMMENT_CREATED));
