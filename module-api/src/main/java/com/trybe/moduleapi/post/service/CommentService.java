@@ -29,8 +29,9 @@ public class CommentService {
     private final PostEventPublisher eventPublisher;
     private final NotificationProducerService notificationProducerService;
 
+    private static final int MAX_TITLE_LENGTH = 25;
     private static final String COMMENT_TITLE = "새로운 댓글이 달렸습니다.";
-    private static final String COMMENT_NOTIFICATION_MESSAGE_FORMAT = "[%s] 님이 게시글에 댓글을 달았습니다.";
+    private static final String COMMENT_NOTIFICATION_MESSAGE_FORMAT = "[%s]님이 [%s] 게시글에 댓글을 달았습니다.";
     public CommentService(CommentRepository commentRepository, PostRepository postRepository, PostEventPublisher eventPublisher, NotificationProducerService notificationProducerService) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
@@ -44,7 +45,7 @@ public class CommentService {
         Comment comment = request.toEntity(user, post, request.content());
         commentRepository.save(comment);
 
-        String message = createNotificationMessage(user.getNickname());
+        String message = createNotificationMessage(user.getNickname(), post.getTitle());
         Notification notification = new Notification(post.getUser().getId(), NotificationType.POST_COMMENT, postId, COMMENT_TITLE, message);
         notificationProducerService.publishPostCommentNotification(post.getUser().getUuid(), notification);
 
@@ -95,8 +96,9 @@ public class CommentService {
         return postRepository.findById(id).orElseThrow(() -> new NotFoundPostException());
     }
 
-    private String createNotificationMessage(String nickName) {
-        return String.format(COMMENT_NOTIFICATION_MESSAGE_FORMAT, nickName);
+    private String createNotificationMessage(String nickName, String title) {
+        String shortTitle = title.length() > MAX_TITLE_LENGTH ? title.substring(0, MAX_TITLE_LENGTH) + "..." : title;
+        return String.format(COMMENT_NOTIFICATION_MESSAGE_FORMAT, nickName, shortTitle);
     }
 
 }
