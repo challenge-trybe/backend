@@ -150,7 +150,7 @@ public class ChatService {
 
     public ChatRoom getChatRoomByChallengeId(Long challengeId) {
         return chatRoomRepository.findByChallengeId(challengeId)
-                                 .orElseThrow(() -> new NotFoundChatRoomException());
+                                 .orElseThrow(NotFoundChatRoomException::new);
     }
 
     public void challengeStartMessage(Challenge challenge) {
