@@ -9,7 +9,6 @@ import com.trybe.moduleapi.chat.fixture.ChatFixtures;
 import com.trybe.moduleapi.common.dto.CursorResponse;
 import com.trybe.moduleapi.notification.service.NotificationProducerService;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
-import com.trybe.moduleapi.user.service.UserService;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
@@ -21,6 +20,7 @@ import com.trybe.modulecore.chat.repository.ChatRoomRepository;
 import com.trybe.modulecore.chat.repository.ChatRoomUserCache;
 import com.trybe.modulecore.notification.entity.Notification;
 import com.trybe.modulecore.user.entity.User;
+import com.trybe.modulecore.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +51,7 @@ class ChatServiceTest {
     @Mock
     ChatRoomUserCache chatRoomUserCache;
     @Mock
-    UserService userService;
+    UserRepository userRepository;
     @Mock
     NotificationProducerService notificationProducerService;
 
@@ -81,7 +81,7 @@ class ChatServiceTest {
                 .thenReturn(true);
         when(chatRoomUserCache.findOfflineUserIds(any()))
                 .thenReturn(오프라인_유저_아이디);
-        when(userService.findByUserIdIn(오프라인_유저_아이디))
+        when(userRepository.findByUserIdIn(오프라인_유저_아이디))
                 .thenReturn(오프라인_유저);
 
         /* when */
@@ -294,7 +294,7 @@ class ChatServiceTest {
                 .thenReturn(Optional.of(채팅방));
         when(chatRoomUserCache.findOfflineUserIds(any()))
                 .thenReturn(오프라인_유저_아이디);
-        when(userService.findByUserIdIn(오프라인_유저_아이디))
+        when(userRepository.findByUserIdIn(오프라인_유저_아이디))
                 .thenReturn(오프라인_유저);
 
 
@@ -322,7 +322,7 @@ class ChatServiceTest {
                 .thenReturn(Optional.of(채팅방));
         when(chatRoomUserCache.findOfflineUserIds(any()))
                 .thenReturn(오프라인_유저_아이디);
-        when(userService.findByUserIdIn(오프라인_유저_아이디))
+        when(userRepository.findByUserIdIn(오프라인_유저_아이디))
                 .thenReturn(오프라인_유저);
 
         /* when */
