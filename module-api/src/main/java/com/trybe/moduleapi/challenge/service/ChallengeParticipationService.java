@@ -88,7 +88,7 @@ public class ChallengeParticipationService {
 
         participation.updateStatus(status);
 
-        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(participation.getChallenge().getId());
+        ChatRoom chatRoom = chatService.getChatRoomByChallengeId(participation.getChallenge().getId());
         chatService.addUserToChatRoom(chatRoom.getId(), participation.getUser());
         return ChallengeParticipationResponse.Detail.from(participation);
     }

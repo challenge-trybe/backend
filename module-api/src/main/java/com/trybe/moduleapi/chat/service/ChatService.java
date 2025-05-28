@@ -139,13 +139,14 @@ public class ChatService {
         chatRoomUserCache.deleteUserFromChatRoom(chatRoomId, user.getUserId());
     }
 
-    public ChatRoom findChatRoomByChallengeId(Long challengeId) {
-        return chatRoomRepository.findByChallengeId(challengeId);
+    public ChatRoom getChatRoomByChallengeId(Long challengeId) {
+        return chatRoomRepository.findByChallengeId(challengeId)
+                                 .orElseThrow(() -> new NotFoundChatRoomException());
     }
 
     public void challengeStartMessage(Challenge challenge) {
         String message = String.format(CHALLENGE_START_MESSAGE, challenge.getTitle());
-        ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challenge.getId());
+        ChatRoom chatRoom = getChatRoomByChallengeId(challenge.getId());
 
         ChatMessage chatMessage = createChatMessage(chatRoom, null, message, MessageType.SYSTEM);
         ChatResponse.Message startMessage = ChatResponse.Message.from(chatMessage);
@@ -156,7 +157,7 @@ public class ChatService {
 
     public void challengeClosedMessage(Challenge challenge) {
         String message = String.format(CHALLENGE_CLOSED_MESSAGE, challenge.getTitle());
-        ChatRoom chatRoom = chatRoomRepository.findByChallengeId(challenge.getId());
+        ChatRoom chatRoom = getChatRoomByChallengeId(challenge.getId());
 
         ChatMessage chatMessage = createChatMessage(chatRoom, null, message, MessageType.SYSTEM);
         ChatResponse.Message closedMessage = ChatResponse.Message.from(chatMessage);
