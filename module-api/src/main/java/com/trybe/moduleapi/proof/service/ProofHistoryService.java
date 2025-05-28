@@ -170,7 +170,7 @@ public class ProofHistoryService {
 
     private List<ProofHistoryFile> updateFiles(ProofHistory proofHistory, List<Long> fileOrder, List<MultipartFile> newFiles) {
         List<ProofHistoryFile> files = getFiles(proofHistory.getId());
-        Map<Long, ProofHistoryFile> existingFile = files.stream()
+        Map<Long, ProofHistoryFile> existingFiles = files.stream()
                 .collect(Collectors.toMap(ProofHistoryFile::getId, file -> file));
 
         Set<Long> remainingIds = fileOrder.stream()
@@ -193,7 +193,7 @@ public class ProofHistoryService {
 
         for (Long fileId : fileOrder) {
             if (fileId != null) {
-                ProofHistoryFile file = existingFile.get(fileId);
+                ProofHistoryFile file = existingFiles.get(fileId);
                 if (file != null && file.getFileOrder() != order) {
                     file.updateFileOrder(order++);
                 }
