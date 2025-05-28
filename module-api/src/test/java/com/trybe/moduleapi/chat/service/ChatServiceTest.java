@@ -299,7 +299,7 @@ class ChatServiceTest {
 
 
         /* when */
-        chatService.challengeStartMessage(챌린지);
+        chatService.sendChallengeStartMessage(챌린지);
 
         /* then */
         verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
@@ -326,7 +326,7 @@ class ChatServiceTest {
                 .thenReturn(오프라인_유저);
 
         /* when */
-        chatService.challengeClosedMessage(챌린지);
+        chatService.sendChallengeClosedMessage(챌린지);
 
         /* then */
         verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
