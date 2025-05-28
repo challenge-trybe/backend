@@ -173,7 +173,6 @@ public class ChatService {
         messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX + challenge.getId(), closedMessage);
 
         notifyOfflineUsers(chatRoom, challenge, null);
-        chatRoomUserCache.clear(chatRoom.getId());
     }
 
     private void notifyOfflineUsers(ChatRoom chatRoom, Challenge challenge, User sender) {
