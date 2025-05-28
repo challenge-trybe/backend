@@ -113,7 +113,10 @@ public class ChatService {
         return savedChatRoom.getId();
     }
 
-    public void delete(Long chatRoomId) {
+    public void delete(Long challengeId) {
+        ChatRoom chatRoom = getChatRoomByChallengeId(challengeId);
+        Long chatRoomId = chatRoom.getId();
+
         chatRoomUserCache.clear(chatRoomId);
         chatMessageRepository.deleteByChatRoomId(chatRoomId);
         chatRoomRepository.deleteById(chatRoomId);

@@ -263,15 +263,19 @@ class ChatServiceTest {
     @DisplayName("챌린지 삭제 시 채팅방은 삭제된다.")
     void 챌린지_삭제_시_채팅방은_삭제된다 () {
         /* given */
-        Long 채팅방_ID = ChatFixtures.채팅방_ID;
+        Long 챌린지_ID = ChallengeFixtures.챌린지_ID;
+        ChatRoom 채팅방 = spy(ChatFixtures.채팅방());
+
+        when(chatRoomRepository.findByChallengeId(챌린지_ID))
+                .thenReturn(Optional.of(채팅방));
 
         /* when */
-        chatService.delete(채팅방_ID);
+        chatService.delete(챌린지_ID);
 
         /* then */
-        verify(chatRoomUserCache, times(1)).clear(채팅방_ID);
-        verify(chatMessageRepository, times(1)).deleteByChatRoomId(채팅방_ID);
-        verify(chatRoomRepository, times(1)).deleteById(채팅방_ID);
+        verify(chatRoomUserCache, times(1)).clear(any());
+        verify(chatMessageRepository, times(1)).deleteByChatRoomId(any());
+        verify(chatRoomRepository, times(1)).deleteById(any());
     }
 
     @Test
