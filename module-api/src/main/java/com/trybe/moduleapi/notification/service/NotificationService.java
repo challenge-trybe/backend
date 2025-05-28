@@ -30,8 +30,8 @@ public class NotificationService {
     }
 
     @Transactional
-    public List<Notification> saveAll(List<Notification> notification) {
-        return notificationRepository.saveAll(notification);
+    public List<Notification> saveAll(List<Notification> notifications) {
+        return notificationRepository.saveAll(notifications);
     }
     @Transactional(readOnly = true)
     public PageResponse<NotificationResponse> getNotifications(User user, Pageable pageable) {
