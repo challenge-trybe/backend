@@ -101,6 +101,7 @@ public class ProofHistoryService {
 
         validateProofHistoryOwner(user, true, proofHistory, "인증 기록의 작성자만 삭제할 수 있습니다.");
 
+        deleteFiles(getFiles(proofHistory.getId()));
         proofHistoryRepository.delete(proofHistory);
     }
 
@@ -212,6 +213,12 @@ public class ProofHistoryService {
         File file = proofHistoryFile.getFile();
         proofHistoryFileRepository.delete(proofHistoryFile);
         fileManager.deleteFile(file);
+    }
+
+    private void deleteFiles(List<ProofHistoryFile> files) {
+        for (ProofHistoryFile proofHistoryFile : files) {
+            deleteFile(proofHistoryFile);
+        }
     }
 
     private List<FileWithIdResponse> toFileResponses(List<ProofHistoryFile> files) {
