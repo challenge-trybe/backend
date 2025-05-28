@@ -124,22 +124,28 @@ public class ChatService {
 
     public void addUserToChatRoom(Long chatRoomId, User user){
         ChatRoom chatRoom = getChatRoom(chatRoomId);
+        Long challengeId = chatRoom.getChallenge().getId();
         String message = createEnterMessage(user.getNickname());
 
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.ENTER);
         chatMessageRepository.save(chatMessage);
 
         chatRoomUserCache.addUserToChatRoom(chatRoomId, user.getUserId());
+        ChatResponse.Message enterMessage = ChatResponse.Message.from(chatMessage);
+        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, enterMessage);
     }
 
     public void deleteUserFromChatRoom(Long chatRoomId, User user){
         ChatRoom chatRoom = getChatRoom(chatRoomId);
+        Long challengeId = chatRoom.getChallenge().getId();
         String message = createExitMessage(user.getNickname());
 
         ChatMessage chatMessage = createChatMessage(chatRoom, user, message, MessageType.EXIT);
         chatMessageRepository.save(chatMessage);
 
         chatRoomUserCache.deleteUserFromChatRoom(chatRoomId, user.getUserId());
+        ChatResponse.Message exitMessage = ChatResponse.Message.from(chatMessage);
+        messagingTemplate.convertAndSend(CHAT_DESTINATION_PREFIX +  challengeId, exitMessage);
     }
 
     public ChatRoom getChatRoomByChallengeId(Long challengeId) {

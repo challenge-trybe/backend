@@ -238,6 +238,7 @@ class ChatServiceTest {
 
         /* then */
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
+        verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
     }
 
     @Test
@@ -257,6 +258,7 @@ class ChatServiceTest {
 
         /* then */
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
+        verify(messagingTemplate, times(1)).convertAndSend(any(String.class), any(ChatResponse.Message.class));
     }
 
     @Test
