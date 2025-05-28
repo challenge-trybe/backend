@@ -125,9 +125,7 @@ class ChallengeServiceTest {
         when(user.getId()).thenReturn(userId);
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(challenge));
-        when(chatService.findChatRoomByChallengeId(challengeId))
-                .thenReturn(chatRoom);
-        when(challengeResponseAssembler.toDetail(any(Challenge.class), any(), any()))
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
                 .thenReturn(챌린지_상세_응답);
 
         /* when */
@@ -159,9 +157,7 @@ class ChallengeServiceTest {
                 .thenReturn(Optional.of(challenge));
         when(challengeViewCache.hasViewed(any(), any()))
                 .thenReturn(true);
-        when(chatService.findChatRoomByChallengeId(challengeId))
-                .thenReturn(chatRoom);
-        when(challengeResponseAssembler.toDetail(any(Challenge.class), any(), any()))
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
                 .thenReturn(챌린지_상세_응답);
 
         /* when */
@@ -188,9 +184,7 @@ class ChallengeServiceTest {
 
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(challenge));
-        when(chatService.findChatRoomByChallengeId(challengeId))
-                .thenReturn(chatRoom);
-        when(challengeResponseAssembler.toDetail(any(Challenge.class), any(), any()))
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
                 .thenReturn(챌린지_상세_비로그인_응답);
 
         /* when */
@@ -294,11 +288,9 @@ class ChallengeServiceTest {
                 .thenReturn(Optional.of(챌린지()));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(any(), eq(challengeId), eq(ChallengeRole.LEADER)))
                 .thenReturn(true);
-        when(chatService.findChatRoomByChallengeId(challengeId))
-                .thenReturn(chatRoom);
         when(fileManager.updateFile(any(File.class), eq(thumbnail), any(String.class)))
                 .thenReturn(thumbnailFile);
-        when(challengeResponseAssembler.toDetail(any(Challenge.class), any(), any()))
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
                 .thenReturn(내용_수정된_챌린지_상세_응답);
 
         /* when */
@@ -375,9 +367,7 @@ class ChallengeServiceTest {
                 .thenReturn(Optional.of(챌린지()));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndRole(UserFixtures.회원.getId(), challengeId, ChallengeRole.LEADER))
                 .thenReturn(true);
-        when(chatService.findChatRoomByChallengeId(challengeId))
-                .thenReturn(chatRoom);
-        when(challengeResponseAssembler.toDetail(any(Challenge.class), any(), any()))
+        when(challengeResponseAssembler.toDetail(any(Challenge.class), any()))
                 .thenReturn(인증_내용_수정된_챌린지_상세_응답);
 
         /* when */
