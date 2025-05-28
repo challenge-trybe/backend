@@ -269,7 +269,7 @@ class ChallengeParticipationServiceTest {
                 .thenReturn(Optional.of(챌린지_리더_참여()));
         when(challengeParticipationRepository.countByChallengeIdAndStatus(any(), eq(챌린지_참여_수락_상태)))
                 .thenReturn(ChallengeFixtures.챌린지().getCapacity() - 1);
-        when(chatService.findChatRoomByChallengeId(any()))
+        when(chatService.getChatRoomByChallengeId(any()))
                 .thenReturn(chatRoom);
 
         /* when */

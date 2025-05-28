@@ -285,7 +285,7 @@ class ChatServiceTest {
         List<User> 오프라인_유저 = UserFixtures.채팅_오프라인_유저;
 
         when(chatRoomRepository.findByChallengeId(챌린지.getId()))
-                .thenReturn(채팅방);
+                .thenReturn(Optional.of(채팅방));
         when(chatRoomUserCache.findOfflineUserIds(any()))
                 .thenReturn(오프라인_유저_아이디);
         when(userService.findByUserIdIn(오프라인_유저_아이디))
@@ -313,7 +313,7 @@ class ChatServiceTest {
         List<User> 오프라인_유저 = UserFixtures.채팅_오프라인_유저;
 
         when(chatRoomRepository.findByChallengeId(챌린지.getId()))
-                .thenReturn(채팅방);
+                .thenReturn(Optional.of(채팅방));
         when(chatRoomUserCache.findOfflineUserIds(any()))
                 .thenReturn(오프라인_유저_아이디);
         when(userService.findByUserIdIn(오프라인_유저_아이디))
