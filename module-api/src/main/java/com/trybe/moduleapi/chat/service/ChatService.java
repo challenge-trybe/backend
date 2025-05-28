@@ -153,7 +153,7 @@ public class ChatService {
                                  .orElseThrow(NotFoundChatRoomException::new);
     }
 
-    public void challengeStartMessage(Challenge challenge) {
+    public void sendChallengeStartMessage(Challenge challenge) {
         String message = String.format(CHALLENGE_START_MESSAGE, challenge.getTitle());
         ChatRoom chatRoom = getChatRoomByChallengeId(challenge.getId());
 
@@ -164,7 +164,7 @@ public class ChatService {
         notifyOfflineUsers(chatRoom, chatRoom.getChallenge(), null);
     }
 
-    public void challengeClosedMessage(Challenge challenge) {
+    public void sendChallengeClosedMessage(Challenge challenge) {
         String message = String.format(CHALLENGE_CLOSED_MESSAGE, challenge.getTitle());
         ChatRoom chatRoom = getChatRoomByChallengeId(challenge.getId());
 
