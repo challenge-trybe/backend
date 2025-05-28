@@ -1,6 +1,7 @@
 package com.trybe.moduleapi.post.service;
 
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.notification.service.NotificationProducerService;
 import com.trybe.moduleapi.post.dto.CommentRequest;
 import com.trybe.moduleapi.post.dto.CommentResponse;
 import com.trybe.moduleapi.post.exception.ForbiddenCommentException;
@@ -10,6 +11,7 @@ import com.trybe.moduleapi.post.fixtures.CommentFixtures;
 import com.trybe.moduleapi.post.fixtures.PostFixtures;
 import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
+import com.trybe.modulecore.notification.entity.Notification;
 import com.trybe.modulecore.post.entity.Comment;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.repository.CommentRepository;
@@ -25,6 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,12 +37,12 @@ import static org.mockito.Mockito.*;
 class CommentServiceTest {
     @Mock
     private CommentRepository commentRepository;
-
     @Mock
     private PostRepository postRepository;
-
     @Mock
     private PostEventPublisher eventPublisher;
+    @Mock
+    private NotificationProducerService notificationProducerService;
 
     @InjectMocks
     private CommentService commentService;
@@ -61,6 +64,7 @@ class CommentServiceTest {
         /* then */
         assertEquals(response.content(), 댓글_등록.content());
         verify(eventPublisher, times(1)).publish(CommentFixtures.댓글_생성_이벤트(게시글.getId()));
+        verify(notificationProducerService, times(1)).publishPostCommentNotification(any(UUID.class), any(Notification.class));
     }
 
     @Test
