@@ -1,22 +1,27 @@
 package com.trybe.moduleapi.challenge.dto;
 
+import com.trybe.moduleapi.chat.exception.NotFoundChatRoomException;
 import com.trybe.moduleapi.file.dto.FileResponse;
 import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
+import com.trybe.modulecore.chat.entity.ChatRoom;
+import com.trybe.modulecore.chat.repository.ChatRoomRepository;
 import com.trybe.modulecore.file.entity.File;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ChallengeResponseAssembler {
     private final ChallengeParticipationRepository challengeParticipationRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final ChallengeBookmarkCache challengeBookmarkCache;
     private final FileManager fileManager;
 
-    public ChallengeResponseAssembler(ChallengeParticipationRepository challengeParticipationRepository, ChallengeBookmarkCache challengeBookmarkCache, FileManager fileManager) {
+    public ChallengeResponseAssembler(ChallengeParticipationRepository challengeParticipationRepository, ChatRoomRepository chatRoomRepository, ChallengeBookmarkCache challengeBookmarkCache, FileManager fileManager) {
         this.challengeParticipationRepository = challengeParticipationRepository;
+        this.chatRoomRepository = chatRoomRepository;
         this.challengeBookmarkCache = challengeBookmarkCache;
         this.fileManager = fileManager;
     }
@@ -28,8 +33,10 @@ public class ChallengeResponseAssembler {
         return ChallengeResponse.Detail.from(challenge, thumbnail, 0, chatRoomId, bookmark);
     }
 
-    public ChallengeResponse.Detail toDetail(Challenge challenge, Long userId, Long chatRoomId) {
+    public ChallengeResponse.Detail toDetail(Challenge challenge, Long userId) {
         Long challengeId = challenge.getId();
+        ChatRoom chatRoom = getChatRoomByChallengeId(challengeId);
+        Long chatRoomId = chatRoom.getId();
 
         int participantCount = getParticipantCount(challengeId);
         ChallengeResponse.Bookmark bookmark = toBookmark(challengeId, userId);
@@ -64,5 +71,10 @@ public class ChallengeResponseAssembler {
 
     private FileResponse toFileResponse(File file) {
         return file == null ? null : FileResponse.from(file.getOriginalName(), fileManager.getFileUrl(file.getFilePath()));
+    }
+
+    private ChatRoom getChatRoomByChallengeId(Long challengeId) {
+        return chatRoomRepository.findByChallengeId(challengeId)
+                                 .orElseThrow(() -> new NotFoundChatRoomException());
     }
 }

@@ -83,12 +83,11 @@ public class ChallengeService {
     @Transactional(readOnly = true)
     public ChallengeResponse.Detail find(User user, Long id) {
         Challenge challenge = getChallenge(id);
-        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(id);
         Long userId = user == null ? null : user.getId();
 
         handleView(userId, challenge);
 
-        return challengeResponseAssembler.toDetail(challenge, userId, chatRoom.getId());
+        return challengeResponseAssembler.toDetail(challenge, userId);
     }
 
     @Transactional(readOnly = true)
@@ -142,12 +141,11 @@ public class ChallengeService {
         validateLeader(user.getId(), id, "리더만 챌린지 정보를 수정할 수 있습니다.");
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 정보를 수정할 수 있습니다.");
 
-        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(id);
         File thumbnailFile = updateThumbnail(challenge, thumbnail);
         challenge.updateThumbnail(thumbnailFile);
         challenge.updateContent(request.title(), request.description(), request.startDate(), request.endDate(), request.capacity(), request.category());
 
-        return challengeResponseAssembler.toDetail(challenge, user.getId(), chatRoom.getId());
+        return challengeResponseAssembler.toDetail(challenge, user.getId());
     }
 
     @Transactional
@@ -158,9 +156,8 @@ public class ChallengeService {
         validateChallengeStatus(challenge, true, ChallengeStatus.PENDING, "진행 예정인 챌린지만 인증 정보를 수정할 수 있습니다.");
 
         challenge.updateProof(request.proofWay(), request.proofCount());
-        ChatRoom chatRoom = chatService.findChatRoomByChallengeId(id);
 
-        return challengeResponseAssembler.toDetail(challenge, user.getId(), chatRoom.getId());
+        return challengeResponseAssembler.toDetail(challenge, user.getId());
     }
 
     @Transactional
