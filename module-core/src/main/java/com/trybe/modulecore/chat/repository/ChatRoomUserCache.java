@@ -43,10 +43,10 @@ public class ChatRoomUserCache {
 
     }
 
-    public void deleteUserFromChatRoom(Long chatRoomId, String userName){
+    public void deleteUserFromChatRoom(Long chatRoomId, String userId){
         Long longChatRoomId = Long.valueOf(chatRoomId);
-        String offlineUserRedisKey = createOfflineUserRedisKey(longChatRoomId);
-        redisTemplate.opsForSet().add(offlineUserRedisKey, userName);
+        String offlineUserKey = createOfflineUserRedisKey(longChatRoomId);
+        redisTemplate.opsForSet().remove(offlineUserKey, userId);
     }
 
     public void clear(Long chatRoomId){
