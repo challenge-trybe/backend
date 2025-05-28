@@ -46,13 +46,13 @@ public class ChatRoomUserCache {
     }
 
     public void clear(Long chatRoomId){
-        String offlineUserRedisKey = createOfflineUserRedisKey(chatRoomId);
-        redisTemplate.delete(offlineUserRedisKey);
+        String offlineUserKey = createOfflineUserRedisKey(chatRoomId);
+        redisTemplate.delete(offlineUserKey);
     }
 
     public Set<String> findOfflineUserIds(Long chatRoomId){
-        String redisKey = createOfflineUserRedisKey(chatRoomId);
-        return redisTemplate.opsForSet().members(redisKey);
+        String offlineUserKey = createOfflineUserRedisKey(chatRoomId);
+        return redisTemplate.opsForSet().members(offlineUserKey);
     }
 
     private Long getChatRoomIdBySessionId(String sessionId){
