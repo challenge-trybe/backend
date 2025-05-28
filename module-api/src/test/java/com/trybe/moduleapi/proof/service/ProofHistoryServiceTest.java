@@ -2,6 +2,8 @@ package com.trybe.moduleapi.proof.service;
 
 import com.trybe.moduleapi.challenge.exception.participation.InvalidParticipationStatusActionException;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.fixtures.FileFixtures;
+import com.trybe.moduleapi.file.service.FileManager;
 import com.trybe.moduleapi.proof.dto.request.ProofHistoryRequest;
 import com.trybe.moduleapi.proof.dto.response.ProofHistoryResponse;
 import com.trybe.moduleapi.proof.exception.InvalidProofDateException;
@@ -14,8 +16,9 @@ import com.trybe.moduleapi.proof.fixtures.ProofFixtures;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
-import com.trybe.modulecore.proof.entity.Proof;
 import com.trybe.modulecore.proof.entity.ProofHistory;
+import com.trybe.modulecore.proof.entity.ProofHistoryFile;
+import com.trybe.modulecore.proof.repository.ProofHistoryFileRepository;
 import com.trybe.modulecore.proof.repository.ProofHistoryRepository;
 import com.trybe.modulecore.proof.repository.ProofRepository;
 import com.trybe.modulecore.user.entity.User;
@@ -25,7 +28,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static com.trybe.moduleapi.proof.fixtures.ProofHistoryFixtures.*;
@@ -42,10 +48,16 @@ public class ProofHistoryServiceTest {
     private ProofHistoryRepository proofHistoryRepository;
 
     @Mock
+    private ProofHistoryFileRepository proofHistoryFileRepository;
+
+    @Mock
     private ProofRepository proofRepository;
 
     @Mock
     private ChallengeParticipationRepository challengeParticipationRepository;
+
+    @Mock
+    private FileManager fileManager;
 
     @Test
     @DisplayName("인증 기록 생성 시 저장된 인증 기록 정보를 반환한다.")
@@ -55,6 +67,8 @@ public class ProofHistoryServiceTest {
         ProofHistoryRequest.Create request = 인증_기록_생성_요청;
         ProofHistory proofHistory = 대기_인증_기록;
 
+        List<MultipartFile> files = List.of(FileFixtures.파일_요청_생성("files"));
+
         when(proofRepository.findById(proofId))
                 .thenReturn(Optional.of(오늘_인증));
         when(challengeParticipationRepository.existsByUserIdAndChallengeIdAndStatus(any(), any(), eq(ParticipationStatus.ACCEPTED)))
@@ -63,13 +77,19 @@ public class ProofHistoryServiceTest {
                 .thenReturn(false);
         when(proofHistoryRepository.save(any(ProofHistory.class)))
                 .thenReturn(proofHistory);
+        when(fileManager.uploadFiles(eq(files), any(String.class)))
+                .thenReturn(List.of(FileFixtures.파일));
+        when(proofHistoryFileRepository.saveAll(anyList()))
+                .thenReturn(List.of(인증_기록_파일));
 
         /* when */
-        ProofHistoryResponse.Summary result = proofHistoryService.save(UserFixtures.회원, proofId, request);
+        ProofHistoryResponse.Summary result = proofHistoryService.save(UserFixtures.회원, proofId, files, request);
 
         /* then */
         assertEquals(proofHistory.getId(), result.id());
+        assertEquals(proofHistory.getUser().getId(), result.writer().id());
         assertEquals(proofHistory.getContent(), result.content());
+        assertEquals(files.size(), result.files().size());
         assertEquals(proofHistory.getStatus(), result.status());
 //        assertEquals(proofHistory.getCreatedAt(), result.createdAt());
     }
@@ -86,7 +106,7 @@ public class ProofHistoryServiceTest {
         
         /* when */
         /* then */
-        assertThrows(NotFoundProofException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, request));
+        assertThrows(NotFoundProofException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, null, request));
     }
     
     @Test
@@ -103,7 +123,7 @@ public class ProofHistoryServiceTest {
         
         /* when */
         /* then */
-        assertThrows(InvalidParticipationStatusActionException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, request));
+        assertThrows(InvalidParticipationStatusActionException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, null, request));
     }
     
     @Test
@@ -120,7 +140,7 @@ public class ProofHistoryServiceTest {
 
         /* when */
         /* then */
-        assertThrows(InvalidProofDateException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, request));
+        assertThrows(InvalidProofDateException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, null, request));
     }
 
     @Test
@@ -139,7 +159,7 @@ public class ProofHistoryServiceTest {
 
         /* when */
         /* then */
-        assertThrows(DuplicatedProofHistoryException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, request));
+        assertThrows(DuplicatedProofHistoryException.class, () -> proofHistoryService.save(UserFixtures.회원, proofId, null, request));
     }
 
     @Test
@@ -176,6 +196,7 @@ public class ProofHistoryServiceTest {
         /* then */
         assertThrows(NotFoundProofException.class, () -> proofHistoryService.findAll(UserFixtures.회원, proofId, 페이지_요청));
     }
+
     @Test
     @DisplayName("인증 기록 목록 조회 시 챌린지 멤버가 아닌 경우 예외를 던진다.")
     void 인증_기록_목록_조회_시_챌린지_멤버가_아닌_경우_예외를_던진다 () {
@@ -199,15 +220,25 @@ public class ProofHistoryServiceTest {
         Long proofHistoryId = 인증_기록_ID;
         ProofHistoryRequest.Update request = 인증_기록_수정_요청;
 
+        List<MultipartFile> files = List.of(FileFixtures.파일_요청_생성("files"));
+
         when(proofHistoryRepository.findById(proofHistoryId))
                 .thenReturn(Optional.of(대기_인증_기록));
+        when(proofHistoryFileRepository.findAllByProofHistoryIdOrderByFileOrder(any()))
+                .thenReturn(Collections.emptyList());
+        when(fileManager.uploadFiles(any(), any(String.class)))
+                .thenReturn(List.of(FileFixtures.파일));
+        when(proofHistoryFileRepository.save(any(ProofHistoryFile.class)))
+                .thenReturn(인증_기록_파일);
 
         /* when */
-        ProofHistoryResponse.Summary result = proofHistoryService.update(UserFixtures.회원, proofHistoryId, request);
+        ProofHistoryResponse.Summary result = proofHistoryService.update(UserFixtures.회원, proofHistoryId, null, request);
 
         /* then */
         assertEquals(대기_인증_기록.getId(), result.id());
+        assertEquals(대기_인증_기록.getUser().getId(), result.writer().id());
         assertEquals(request.content(), result.content());
+        assertEquals(files.size(), result.files().size());
         assertEquals(대기_인증_기록.getStatus(), result.status());
 //        assertEquals(대기_인증_기록.getCreatedAt(), result.createdAt());
     }
@@ -224,7 +255,7 @@ public class ProofHistoryServiceTest {
 
         /* when */
         /* then */
-        assertThrows(NotFoundProofHistoryException.class, () -> proofHistoryService.update(UserFixtures.회원, proofHistoryId, request));
+        assertThrows(NotFoundProofHistoryException.class, () -> proofHistoryService.update(UserFixtures.회원, proofHistoryId, null, request));
     }
 
     @Test
@@ -242,7 +273,7 @@ public class ProofHistoryServiceTest {
 
         /* when */
         /* then */
-        assertThrows(ForbiddenProofHistoryException.class, () -> proofHistoryService.update(user, proofHistoryId, request));
+        assertThrows(ForbiddenProofHistoryException.class, () -> proofHistoryService.update(user, proofHistoryId, null, request));
     }
 
     @Test
@@ -257,7 +288,7 @@ public class ProofHistoryServiceTest {
 
         /* when */
         /* then */
-        assertThrows(InvalidProofHistoryStatusException.class, () -> proofHistoryService.update(UserFixtures.회원, proofHistoryId, request));
+        assertThrows(InvalidProofHistoryStatusException.class, () -> proofHistoryService.update(UserFixtures.회원, proofHistoryId, null, request));
     }
 
     @Test

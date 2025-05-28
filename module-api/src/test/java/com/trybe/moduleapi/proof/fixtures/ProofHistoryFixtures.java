@@ -1,11 +1,14 @@
 package com.trybe.moduleapi.proof.fixtures;
 
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.dto.FileWithIdResponse;
+import com.trybe.moduleapi.file.fixtures.FileFixtures;
 import com.trybe.moduleapi.proof.dto.request.ProofHistoryRequest;
 import com.trybe.moduleapi.proof.dto.response.ProofHistoryResponse;
 import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.proof.entity.Proof;
 import com.trybe.modulecore.proof.entity.ProofHistory;
+import com.trybe.modulecore.proof.entity.ProofHistoryFile;
 import com.trybe.modulecore.proof.enums.ProofHistoryStatus;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 public class ProofHistoryFixtures {
@@ -30,12 +34,14 @@ public class ProofHistoryFixtures {
 
     public static final LocalDateTime 인증_기록_생성_시간 = LocalDateTime.now().withNano(0);
 
+    public static final List<Long> 인증_기록_파일_순서 = Arrays.asList((Long) null);
+
     /* Request DTO */
     public static final ProofHistoryRequest.Create 인증_기록_생성_요청 = new ProofHistoryRequest.Create(인증_기록_내용);
-    public static final ProofHistoryRequest.Update 인증_기록_수정_요청 = new ProofHistoryRequest.Update(수정된_인증_기록_내용);
+    public static final ProofHistoryRequest.Update 인증_기록_수정_요청 = new ProofHistoryRequest.Update(수정된_인증_기록_내용, 인증_기록_파일_순서);
 
     public static final ProofHistoryRequest.Create 잘못된_인증_기록_생성_요청 = new ProofHistoryRequest.Create(잘못된_인증_기록_내용);
-    public static final ProofHistoryRequest.Update 잘못된_인증_기록_수정_요청 = new ProofHistoryRequest.Update(잘못된_인증_기록_내용);
+    public static final ProofHistoryRequest.Update 잘못된_인증_기록_수정_요청 = new ProofHistoryRequest.Update(잘못된_인증_기록_내용, 인증_기록_파일_순서);
 
     /* Entity */
     private static ProofHistory 인증_기록_생성(Proof proof, User user, String content, ProofHistoryStatus status) {
@@ -50,6 +56,8 @@ public class ProofHistoryFixtures {
     public static final ProofHistory 성공_인증_기록 = 인증_기록_생성(오늘_인증, UserFixtures.회원, 인증_기록_내용, 인증_기록_성공_상태);
     public static final ProofHistory 실패_인증_기록 = 인증_기록_생성(오늘_인증, UserFixtures.회원, 인증_기록_내용, 인증_기록_실패_상태);
 
+    public static final ProofHistoryFile 인증_기록_파일 = new ProofHistoryFile(ProofHistoryFixtures.대기_인증_기록, FileFixtures.파일, FileFixtures.파일_순서);
+
     public static Pageable 페이지_요청 = PageRequest.of(0, 10);
 
     private static final List<ProofHistory> 인증_기록_목록 = List.of(
@@ -61,9 +69,9 @@ public class ProofHistoryFixtures {
     public static final Page<ProofHistory> 인증_기록_목록_페이지 = new PageImpl<>(인증_기록_목록, 페이지_요청, 인증_기록_목록.size());
 
     /* Response DTO */
-    public static final ProofHistoryResponse.Summary 대기_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, 인증_기록_내용, 인증_기록_대기_상태, 인증_기록_생성_시간);
-    public static final ProofHistoryResponse.Summary 성공_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, 인증_기록_내용, 인증_기록_성공_상태, 인증_기록_생성_시간);
-    public static final ProofHistoryResponse.Summary 실패_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, 인증_기록_내용, 인증_기록_실패_상태, 인증_기록_생성_시간);
+    public static final ProofHistoryResponse.Summary 대기_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, UserFixtures.요약_회원_응답, 인증_기록_내용, FileFixtures.아이디_포함_파일_목록_응답 , 인증_기록_대기_상태, 인증_기록_생성_시간);
+    public static final ProofHistoryResponse.Summary 성공_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, UserFixtures.요약_회원_응답, 인증_기록_내용, FileFixtures.아이디_포함_파일_목록_응답, 인증_기록_성공_상태, 인증_기록_생성_시간);
+    public static final ProofHistoryResponse.Summary 실패_인증_기록_요약_응답 = new ProofHistoryResponse.Summary(인증_기록_ID, UserFixtures.요약_회원_응답, 인증_기록_내용, FileFixtures.아이디_포함_파일_목록_응답, 인증_기록_실패_상태, 인증_기록_생성_시간);
 
-    public static final PageResponse<ProofHistoryResponse.Summary> 인증_기록_목록_페이지_응답 = new PageResponse<>(인증_기록_목록_페이지.map(ProofHistoryResponse.Summary::from));
+    public static final PageResponse<ProofHistoryResponse.Summary> 인증_기록_목록_페이지_응답 = new PageResponse<>(인증_기록_목록_페이지.map(proofHistory -> ProofHistoryResponse.Summary.from(proofHistory, FileFixtures.아이디_포함_파일_목록_응답)));
 }
