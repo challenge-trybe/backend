@@ -81,7 +81,7 @@ public class ChatService {
     @Transactional(readOnly = true)
     public CursorResponse<ChatResponse.Message> findMessages(User user, Long chatRoomId, Long cursorId) {
         validateExistsChatRoom(chatRoomId);
-        validateExistsUserInChatRoom(chatRoomId, user.getId(), "해당 채팅방에 속한 회원만 메시지를 보낼 수 있습니다.");
+        validateExistsUserInChatRoom(chatRoomId, user.getId(), "해당 채팅방에 속한 회원만 메시지를 조회할 수 있습니다.");
 
         ChatRoom chatRoom = getChatRoom(chatRoomId);
         ChatMessage enterMessage = chatMessageRepository.findByChatRoomIdAndUserIdAndMessageType(user.getId(), chatRoom.getId(), MessageType.ENTER);
