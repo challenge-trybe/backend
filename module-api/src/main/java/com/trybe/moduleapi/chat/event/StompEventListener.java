@@ -26,7 +26,7 @@ public class StompEventListener {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
         String sessionId = accessor.getSessionId();
-        String chatRoomId = getChatRoomId(accessor);
+        Long chatRoomId = getChatRoomId(accessor);
         String userId = accessor.getUser().getName();
 
         chatRoomUserCache.online(chatRoomId, userId, sessionId);
@@ -42,7 +42,7 @@ public class StompEventListener {
         chatRoomUserCache.offline(userId, sessionId);
     }
 
-    private String getChatRoomId(StompHeaderAccessor accessor){
+    private Long getChatRoomId(StompHeaderAccessor accessor){
         MessageHeaders messageHeaders = accessor.getMessageHeaders();
         Object simpConnectMessage = messageHeaders.get("simpConnectMessage");
 
@@ -54,7 +54,7 @@ public class StompEventListener {
             if (nativeHeaders != null && nativeHeaders.containsKey("chatRoomId")) {
                 List<String> chatRoomIds = nativeHeaders.get("chatRoomId");
                 if (!chatRoomIds.isEmpty()) {
-                    return chatRoomIds.get(0);
+                    return Long.valueOf(chatRoomIds.get(0));
                 }
             }
         }
