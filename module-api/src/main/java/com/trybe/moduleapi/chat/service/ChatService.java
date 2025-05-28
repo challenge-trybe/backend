@@ -6,7 +6,6 @@ import com.trybe.moduleapi.chat.dto.ChatResponse;
 import com.trybe.moduleapi.chat.exception.NotFoundChatRoomException;
 import com.trybe.moduleapi.common.dto.CursorResponse;
 import com.trybe.moduleapi.notification.service.NotificationProducerService;
-import com.trybe.moduleapi.user.service.UserService;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
@@ -19,6 +18,7 @@ import com.trybe.modulecore.chat.repository.ChatRoomUserCache;
 import com.trybe.modulecore.notification.entity.Notification;
 import com.trybe.modulecore.notification.enums.NotificationType;
 import com.trybe.modulecore.user.entity.User;
+import com.trybe.modulecore.user.repository.UserRepository;
 import org.springframework.data.domain.Limit;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -38,16 +38,16 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomUserCache chatRoomUserCache;
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final NotificationProducerService notificationProducerService;
 
-    public ChatService(ChallengeParticipationRepository challengeParticipationRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, SimpMessagingTemplate messagingTemplate, ChatRoomUserCache chatRoomUserCache, UserService userService, NotificationProducerService notificationProducerService) {
+    public ChatService(ChallengeParticipationRepository challengeParticipationRepository, ChatRoomRepository chatRoomRepository, ChatMessageRepository chatMessageRepository, SimpMessagingTemplate messagingTemplate, ChatRoomUserCache chatRoomUserCache, UserRepository userRepository, NotificationProducerService notificationProducerService) {
         this.challengeParticipationRepository = challengeParticipationRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.messagingTemplate = messagingTemplate;
         this.chatRoomUserCache = chatRoomUserCache;
-        this.userService = userService;
+        this.userRepository = userRepository;
         this.notificationProducerService = notificationProducerService;
     }
 
@@ -180,7 +180,7 @@ public class ChatService {
         String message = createNotifyMessage(challenge.getTitle(), sender);
 
         Set<String> offlineUserUserIds = chatRoomUserCache.findOfflineUserIds(chatRoom.getId());
-        List<User> offlineUsers = userService.findByUserIdIn(offlineUserUserIds);
+        List<User> offlineUsers = userRepository.findByUserIdIn(offlineUserUserIds);
 
         Map<UUID, Notification> notificationMap = offlineUsers.stream()
                 .collect(Collectors.toMap(

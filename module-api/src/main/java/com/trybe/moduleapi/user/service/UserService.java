@@ -16,9 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Set;
-
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -51,11 +48,6 @@ public class UserService {
         User user = getUserById(id);
         FileResponse fileResponse = toFileResponse(user.getProfileImage());
         return UserResponse.Detail.from(user, fileResponse);
-    }
-
-    @Transactional(readOnly = true)
-    public List<User> findByUserIdIn(Set<String> userIds){
-        return userRepository.findByUserIdIn(userIds);
     }
 
     @Transactional
