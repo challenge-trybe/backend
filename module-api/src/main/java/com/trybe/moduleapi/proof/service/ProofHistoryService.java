@@ -179,9 +179,7 @@ public class ProofHistoryService {
 
         for (ProofHistoryFile proofHistoryFile: new ArrayList<>(files)) {
             if (!remainingIds.contains(proofHistoryFile.getId())) {
-                File file = proofHistoryFile.getFile();
-                proofHistoryFileRepository.delete(proofHistoryFile);
-                fileManager.deleteFile(file);
+                deleteFile(proofHistoryFile);
             }
         }
 
@@ -208,6 +206,12 @@ public class ProofHistoryService {
         }
 
         return fileEntities;
+    }
+
+    private void deleteFile(ProofHistoryFile proofHistoryFile) {
+        File file = proofHistoryFile.getFile();
+        proofHistoryFileRepository.delete(proofHistoryFile);
+        fileManager.deleteFile(file);
     }
 
     private List<FileWithIdResponse> toFileResponses(List<ProofHistoryFile> files) {
