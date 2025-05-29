@@ -178,8 +178,8 @@ public class ChatService {
     private void notifyOfflineUsers(ChatRoom chatRoom, Challenge challenge, User sender) {
         String message = createNotifyMessage(challenge.getTitle(), sender);
 
-        Set<String> offlineUserUserIds = chatRoomUserCache.findOfflineUserIds(chatRoom.getId());
-        List<User> offlineUsers = userRepository.findByUserIdIn(offlineUserUserIds);
+        Set<String> offlineUserIds = chatRoomUserCache.findOfflineUserIds(chatRoom.getId());
+        List<User> offlineUsers = userRepository.findByUserIdIn(offlineUserIds);
 
         Map<UUID, Notification> notificationMap = offlineUsers.stream()
                 .collect(Collectors.toMap(
