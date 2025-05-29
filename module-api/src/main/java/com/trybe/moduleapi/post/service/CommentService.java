@@ -1,14 +1,17 @@
 package com.trybe.moduleapi.post.service;
 
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.notification.service.NotificationProducerService;
 import com.trybe.moduleapi.post.dto.CommentRequest;
 import com.trybe.moduleapi.post.dto.CommentResponse;
-import com.trybe.moduleapi.post.service.event.PostEvent;
-import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
-import com.trybe.moduleapi.post.service.event.PostEventType;
 import com.trybe.moduleapi.post.exception.ForbiddenCommentException;
 import com.trybe.moduleapi.post.exception.NotFoundCommentException;
 import com.trybe.moduleapi.post.exception.NotFoundPostException;
+import com.trybe.moduleapi.post.service.event.PostEvent;
+import com.trybe.moduleapi.post.service.event.PostEventType;
+import com.trybe.moduleapi.post.service.event.pub.PostEventPublisher;
+import com.trybe.modulecore.notification.entity.Notification;
+import com.trybe.modulecore.notification.enums.NotificationType;
 import com.trybe.modulecore.post.entity.Comment;
 import com.trybe.modulecore.post.entity.Post;
 import com.trybe.modulecore.post.repository.CommentRepository;
@@ -24,11 +27,16 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final PostEventPublisher eventPublisher;
+    private final NotificationProducerService notificationProducerService;
 
-    public CommentService(CommentRepository commentRepository, PostRepository postRepository, PostEventPublisher eventPublisher) {
+    private static final int MAX_TITLE_LENGTH = 25;
+    private static final String COMMENT_TITLE = "새로운 댓글이 달렸습니다.";
+    private static final String COMMENT_NOTIFICATION_MESSAGE_FORMAT = "[%s]님이 [%s] 게시글에 댓글을 달았습니다.";
+    public CommentService(CommentRepository commentRepository, PostRepository postRepository, PostEventPublisher eventPublisher, NotificationProducerService notificationProducerService) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
         this.eventPublisher = eventPublisher;
+        this.notificationProducerService = notificationProducerService;
     }
 
     @Transactional
@@ -36,6 +44,11 @@ public class CommentService {
         Post post = getPostById(postId);
         Comment comment = request.toEntity(user, post, request.content());
         commentRepository.save(comment);
+
+        String message = createNotificationMessage(user.getNickname(), post.getTitle());
+        Notification notification = new Notification(post.getUser().getId(), NotificationType.POST_COMMENT, postId, COMMENT_TITLE, message);
+        notificationProducerService.publishPostCommentNotification(post.getUser().getUuid(), notification);
+
         eventPublisher.publish(PostEvent.from(post.getId(), PostEventType.COMMENT_CREATED));
         return CommentResponse.Summary.from(comment);
     }
@@ -81,6 +94,11 @@ public class CommentService {
 
     private Post getPostById(Long id){
         return postRepository.findById(id).orElseThrow(() -> new NotFoundPostException());
+    }
+
+    private String createNotificationMessage(String nickName, String title) {
+        String shortTitle = title.length() > MAX_TITLE_LENGTH ? title.substring(0, MAX_TITLE_LENGTH) + "..." : title;
+        return String.format(COMMENT_NOTIFICATION_MESSAGE_FORMAT, nickName, shortTitle);
     }
 
 }

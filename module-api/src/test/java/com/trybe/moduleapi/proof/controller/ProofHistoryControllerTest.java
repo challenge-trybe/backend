@@ -4,6 +4,7 @@ import com.trybe.moduleapi.annotation.WithCustomMockUser;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidParticipationStatusActionException;
 import com.trybe.moduleapi.common.ControllerTest;
 import com.trybe.moduleapi.common.dto.PageResponse;
+import com.trybe.moduleapi.file.fixtures.FileFixtures;
 import com.trybe.moduleapi.proof.dto.request.ProofHistoryRequest;
 import com.trybe.moduleapi.proof.dto.response.ProofHistoryResponse;
 import com.trybe.moduleapi.proof.exception.InvalidProofDateException;
@@ -14,17 +15,20 @@ import com.trybe.moduleapi.proof.exception.history.InvalidProofHistoryStatusExce
 import com.trybe.moduleapi.proof.exception.history.NotFoundProofHistoryException;
 import com.trybe.moduleapi.proof.fixtures.ProofFixtures;
 import com.trybe.moduleapi.proof.service.ProofHistoryService;
+import com.trybe.moduleapi.user.fixtures.UserFixtures;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static com.trybe.moduleapi.proof.fixtures.ProofHistoryFixtures.*;
@@ -32,6 +36,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,10 +48,6 @@ public class ProofHistoryControllerTest extends ControllerTest {
     private final String endpoint = "/api/v1/proofs/histories";
 
     private final String docsPath = "proof-history-controller-test/";
-    private final String invalidBadRequestPath = "/invalid/bad-request/";
-    private final String invalidNotFoundPath = "/invalid/not-found/";
-    private final String invalidConflictPath = "/invalid/conflict/";
-    private final String invalidForbiddenPath = "/invalid/forbidden/";
 
     @Test
     @WithCustomMockUser
@@ -56,19 +57,30 @@ public class ProofHistoryControllerTest extends ControllerTest {
         Long proofId = ProofFixtures.인증_ID;
         ProofHistoryRequest.Create request = 인증_기록_생성_요청;
 
-        when(proofHistoryService.save(any(User.class), eq(proofId), eq(request)))
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+        MockMultipartFile file = FileFixtures.파일_요청_생성("files");
+
+        when(proofHistoryService.save(any(User.class), eq(proofId), eq(List.of(file)), eq(request)))
                 .thenReturn(대기_인증_기록_요약_응답);
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/{proofId}", proofId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofId}", proofId)
+                        .file(jsonPart)
+                        .file(file)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isOk(),
                 jsonPath("$.id").value(대기_인증_기록_요약_응답.id()),
+                jsonPath("$.writer.id").value(UserFixtures.회원_PK),
+                jsonPath("$.writer.userId").value(UserFixtures.회원_아이디),
+                jsonPath("$.writer.nickname").value(UserFixtures.회원_닉네임),
                 jsonPath("$.content").value(대기_인증_기록_요약_응답.content()),
+                jsonPath("$.files").isArray(),
                 jsonPath("$.status").value(대기_인증_기록_요약_응답.status().toString()),
                 jsonPath("$.createdAt").value(대기_인증_기록_요약_응답.createdAt().toString())
         );
@@ -79,18 +91,30 @@ public class ProofHistoryControllerTest extends ControllerTest {
                 pathParameters(
                         parameterWithName("proofId").description("인증 ID")
                 ),
-                requestFields(
+                requestParts(
+                        partWithName("request").description("인증 기록 생성 요청 데이터 (JSON)"),
+                        partWithName("files").description("인증 기록 첨부파일 (선택)")
+                ),
+                requestPartFields("request",
                         fieldWithPath("content").description("인증 기록 내용 (최대 1,000자)")
                 ),
                 responseFields(
                         fieldWithPath("id").description("인증 기록 ID"),
+                        fieldWithPath("writer").description("인증 기록 작성자"),
+                        fieldWithPath("writer.id").description("작성자 PK"),
+                        fieldWithPath("writer.userId").description("작성자 아이디"),
+                        fieldWithPath("writer.nickname").description("작성자 닉네임"),
                         fieldWithPath("content").description("인증 기록 내용"),
+                        fieldWithPath("files[]").description("인증 기록 첨부파일 목록"),
+                        fieldWithPath("files[].id").description("인증 기록 파일 PK"),
+                        fieldWithPath("files[].originalName").description("첨부파일 원본 이름"),
+                        fieldWithPath("files[].filePath").description("첨부파일 경로"),
                         fieldWithPath("status").description("인증 기록 상태"),
                         fieldWithPath("createdAt").description("인증 기록 생성 시간")
                 )
         ));
     }
-    
+
     @Test
     @WithCustomMockUser
     @DisplayName("비정상적인 인증 기록 생성 요청 시 응답코드 400을 반환한다.")
@@ -98,13 +122,18 @@ public class ProofHistoryControllerTest extends ControllerTest {
         /* given */
         Long proofId = ProofFixtures.인증_ID;
         ProofHistoryRequest.Create request = 잘못된_인증_기록_생성_요청;
-        
+
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/{proofId}", proofId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
-        
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofId}", proofId)
+                        .file(jsonPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
+
         result.andExpectAll(
                 status().isBadRequest(),
                 jsonPath("$.status").value(400),
@@ -129,16 +158,21 @@ public class ProofHistoryControllerTest extends ControllerTest {
         /* given */
         Long proofId = ProofFixtures.인증_ID;
         ProofHistoryRequest.Create request = 인증_기록_생성_요청;
-        
-        when(proofHistoryService.save(any(User.class), eq(proofId), eq(request)))
+
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        when(proofHistoryService.save(any(User.class), eq(proofId), any(), eq(request)))
                 .thenThrow(new NotFoundProofException());
         
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/{proofId}", proofId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
-        
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofId}", proofId)
+                        .file(jsonPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
+
         result.andExpectAll(
                 status().isNotFound(),
                 jsonPath("$.status").value(404),
@@ -163,16 +197,21 @@ public class ProofHistoryControllerTest extends ControllerTest {
         /* given */
         Long proofId = ProofFixtures.인증_ID;
         ProofHistoryRequest.Create request = 인증_기록_생성_요청;
-        
-        when(proofHistoryService.save(any(User.class), eq(proofId), eq(request)))
+
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        when(proofHistoryService.save(any(User.class), eq(proofId), any(), eq(request)))
                 .thenThrow(new InvalidParticipationStatusActionException("멤버만 인증 기록을 등록할 수 있습니다."));
         
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/{proofId}", proofId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
-        
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofId}", proofId)
+                        .file(jsonPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
+
         result.andExpectAll(
                 status().isForbidden(),
                 jsonPath("$.status").value(403),
@@ -197,16 +236,21 @@ public class ProofHistoryControllerTest extends ControllerTest {
         /* given */
         Long proofId = ProofFixtures.인증_ID;
         ProofHistoryRequest.Create request = 인증_기록_생성_요청;
-        
-        when(proofHistoryService.save(any(User.class), eq(proofId), eq(request)))
+
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        when(proofHistoryService.save(any(User.class), eq(proofId), any(), eq(request)))
                 .thenThrow(new InvalidProofDateException());
         
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/{proofId}", proofId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
-        
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofId}", proofId)
+                        .file(jsonPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
+
         result.andExpectAll(
                 status().isBadRequest(),
                 jsonPath("$.status").value(400),
@@ -231,16 +275,21 @@ public class ProofHistoryControllerTest extends ControllerTest {
         /* given */
         Long proofId = ProofFixtures.인증_ID;
         ProofHistoryRequest.Create request = 인증_기록_생성_요청;
-        
-        when(proofHistoryService.save(any(User.class), eq(proofId), eq(request)))
+
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        when(proofHistoryService.save(any(User.class), eq(proofId), any(), eq(request)))
                 .thenThrow(new DuplicatedProofHistoryException());
         
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(endpoint + "/{proofId}", proofId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
-        
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofId}", proofId)
+                        .file(jsonPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
+
         result.andExpectAll(
                 status().isConflict(),
                 jsonPath("$.status").value(409),
@@ -297,7 +346,15 @@ public class ProofHistoryControllerTest extends ControllerTest {
                 responseFields(
                         fieldWithPath("content").description("인증 기록 요약 목록"),
                         fieldWithPath("content[].id").description("인증 기록 ID"),
+                        fieldWithPath("content[].writer").description("인증 기록 작성자"),
+                        fieldWithPath("content[].writer.id").description("작성자 PK"),
+                        fieldWithPath("content[].writer.userId").description("작성자 아이디"),
+                        fieldWithPath("content[].writer.nickname").description("작성자 닉네임"),
                         fieldWithPath("content[].content").description("인증 기록 내용"),
+                        fieldWithPath("content[].files[]").description("인증 기록 첨부파일 목록"),
+                        fieldWithPath("content[].files[].id").description("인증 기록 파일 PK"),
+                        fieldWithPath("content[].files[].originalName").description("첨부파일 원본 이름"),
+                        fieldWithPath("content[].files[].filePath").description("첨부파일 경로"),
                         fieldWithPath("content[].status").description("인증 기록 상태"),
                         fieldWithPath("content[].createdAt").description("인증 기록 생성 시간"),
                         fieldWithPath("totalPages").description("총 페이지 수"),
@@ -379,21 +436,33 @@ public class ProofHistoryControllerTest extends ControllerTest {
     void 정상적인_인증_기록_수정_요청_시_응답코드_200을_반환한다 () throws Exception {
         /* given */
         Long proofHistoryId = 인증_기록_ID;
-        ProofHistoryRequest.Update request =인증_기록_수정_요청;
+        ProofHistoryRequest.Update request = 인증_기록_수정_요청;
 
-        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), eq(request)))
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+        MockMultipartFile file = FileFixtures.파일_요청_생성("files");
+
+        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), eq(List.of(file)), eq(request)))
                 .thenReturn(대기_인증_기록_요약_응답);
-        
+
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{proofHistoryId}", proofHistoryId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofHistoryId}", proofHistoryId)
+                        .file(jsonPart)
+                        .file(file)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isOk(),
                 jsonPath("$.id").value(대기_인증_기록_요약_응답.id()),
+                jsonPath("$.writer.id").value(UserFixtures.회원_PK),
+                jsonPath("$.writer.userId").value(UserFixtures.회원_아이디),
+                jsonPath("$.writer.nickname").value(UserFixtures.회원_닉네임),
                 jsonPath("$.content").value(대기_인증_기록_요약_응답.content()),
+                jsonPath("$.files").isArray(),
                 jsonPath("$.status").value(대기_인증_기록_요약_응답.status().toString()),
                 jsonPath("$.createdAt").value(대기_인증_기록_요약_응답.createdAt().toString())
         );
@@ -404,12 +473,25 @@ public class ProofHistoryControllerTest extends ControllerTest {
                 pathParameters(
                         parameterWithName("proofHistoryId").description("인증 기록 ID")
                 ),
-                requestFields(
-                        fieldWithPath("content").description("인증 기록 내용 (최대 1,000자)")
+                requestParts(
+                        partWithName("request").description("인증 기록 수정 요청 데이터 (JSON)"),
+                        partWithName("files").description("인증 기록 추가 첨부파일 (선택)")
+                ),
+                requestPartFields("request",
+                        fieldWithPath("content").description("인증 기록 내용 (최대 1,000자)"),
+                        fieldWithPath("fileOrder").description("인증 기록 첨부파일 순서")
                 ),
                 responseFields(
                         fieldWithPath("id").description("인증 기록 ID"),
+                        fieldWithPath("writer").description("인증 기록 작성자"),
+                        fieldWithPath("writer.id").description("작성자 PK"),
+                        fieldWithPath("writer.userId").description("작성자 아이디"),
+                        fieldWithPath("writer.nickname").description("작성자 닉네임"),
                         fieldWithPath("content").description("인증 기록 내용"),
+                        fieldWithPath("files[]").description("인증 기록 첨부파일 목록"),
+                        fieldWithPath("files[].id").description("인증 기록 파일 PK"),
+                        fieldWithPath("files[].originalName").description("첨부파일 원본 이름"),
+                        fieldWithPath("files[].filePath").description("첨부파일 경로"),
                         fieldWithPath("status").description("인증 기록 상태"),
                         fieldWithPath("createdAt").description("인증 기록 생성 시간")
                 )
@@ -424,11 +506,17 @@ public class ProofHistoryControllerTest extends ControllerTest {
         Long proofHistoryId = 인증_기록_ID;
         ProofHistoryRequest.Update request = 잘못된_인증_기록_수정_요청;
 
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{proofHistoryId}", proofHistoryId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofHistoryId}", proofHistoryId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isBadRequest(),
@@ -455,14 +543,20 @@ public class ProofHistoryControllerTest extends ControllerTest {
         Long proofHistoryId = 인증_기록_ID;
         ProofHistoryRequest.Update request = 인증_기록_수정_요청;
 
-        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), eq(request)))
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), any(), eq(request)))
                 .thenThrow(new NotFoundProofHistoryException());
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{proofHistoryId}", proofHistoryId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofHistoryId}", proofHistoryId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isNotFound(),
@@ -489,14 +583,20 @@ public class ProofHistoryControllerTest extends ControllerTest {
         Long proofHistoryId = 인증_기록_ID;
         ProofHistoryRequest.Update request = 인증_기록_수정_요청;
 
-        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), eq(request)))
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), any(), eq(request)))
                 .thenThrow(new ForbiddenProofHistoryException("인증 기록의 작성자만 수정할 수 있습니다."));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{proofHistoryId}", proofHistoryId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofHistoryId}", proofHistoryId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isForbidden(),
@@ -523,14 +623,20 @@ public class ProofHistoryControllerTest extends ControllerTest {
         Long proofHistoryId = 인증_기록_ID;
         ProofHistoryRequest.Update request = 인증_기록_수정_요청;
 
-        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), eq(request)))
+        MockMultipartFile jsonPart = createJsonRequestPart(request);
+
+        when(proofHistoryService.update(any(User.class), eq(proofHistoryId), any(), eq(request)))
                 .thenThrow(new InvalidProofHistoryStatusException("이미 처리된 인증 기록은 수정할 수 없습니다."));
 
         /* when */
         /* then */
-        ResultActions result = mockMvc.perform(MockMvcRequestBuilders.put(endpoint + "/{proofHistoryId}", proofHistoryId)
-                .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8)
-                .content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                multipart(endpoint + "/{proofHistoryId}", proofHistoryId)
+                        .file(jsonPart)
+                        .with(mockRequest -> { mockRequest.setMethod("PUT"); return mockRequest; })
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .characterEncoding(StandardCharsets.UTF_8)
+        );
 
         result.andExpectAll(
                 status().isConflict(),

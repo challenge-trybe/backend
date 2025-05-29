@@ -61,7 +61,7 @@ public class ChallengeService {
     private static final int RECOMMEND_CHALLENGE_COUNT = 20;
     private static final int POPULAR_CHALLENGE_COUNT = 20;
 
-    private static final String CHALLENGE_THUMBNAIL_BASE_PATH = "/challenge/%d/thumbnail/";
+    private static final String CHALLENGE_THUMBNAIL_BASE_PATH = "/challenge/%d/thumbnail";
 
     @Transactional
     public ChallengeResponse.Detail save(User user, MultipartFile thumbnail, ChallengeRequest.Create request) {

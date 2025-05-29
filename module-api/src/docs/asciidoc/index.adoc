@@ -765,7 +765,10 @@ include::{snippets}/proof-controller-test/delete/invalid/bad-request/response-fi
 ==== 정상 요청
 include::{snippets}/proof-history-controller-test/save/http-request.adoc[]
 include::{snippets}/proof-history-controller-test/save/path-parameters.adoc[]
-include::{snippets}/proof-history-controller-test/save/request-fields.adoc[]
+include::{snippets}/proof-history-controller-test/save/request-parts.adoc[]
+
+- JSON fields
+include::{snippets}/proof-history-controller-test/save/request-part-request-fields.adoc[]
 
 - 응답
 include::{snippets}/proof-history-controller-test/save/http-response.adoc[]
@@ -833,7 +836,10 @@ include::{snippets}/proof-history-controller-test/findAll/invalid/forbidden/resp
 ==== 정상 요청
 include::{snippets}/proof-history-controller-test/update/http-request.adoc[]
 include::{snippets}/proof-history-controller-test/update/path-parameters.adoc[]
-include::{snippets}/proof-history-controller-test/update/request-fields.adoc[]
+include::{snippets}/proof-history-controller-test/update/request-parts.adoc[]
+
+- JSON fields
+include::{snippets}/proof-history-controller-test/update/request-part-request-fields.adoc[]
 
 - 응답
 include::{snippets}/proof-history-controller-test/update/http-response.adoc[]

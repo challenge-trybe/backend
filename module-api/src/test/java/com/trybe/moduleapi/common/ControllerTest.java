@@ -1,5 +1,6 @@
 package com.trybe.moduleapi.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trybe.moduleapi.auth.CustomUserDetailsService;
 import com.trybe.moduleapi.auth.jwt.JwtUtils;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -39,4 +41,13 @@ public abstract class ControllerTest {
     protected final String invalidNotFoundPath = "/invalid/not-found/";
     protected final String invalidForbiddenPath = "/invalid/forbidden/";
     protected final String invalidConflictPath = "/invalid/conflict/";
+
+    protected MockMultipartFile createJsonRequestPart(Object request) throws JsonProcessingException {
+        return new MockMultipartFile(
+                "request",
+                null,
+                "application/json",
+                objectMapper.writeValueAsBytes(request)
+        );
+    }
 }

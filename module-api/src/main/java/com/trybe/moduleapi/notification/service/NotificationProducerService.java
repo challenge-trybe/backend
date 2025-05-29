@@ -15,6 +15,7 @@ public class NotificationProducerService {
     private final KafkaTemplate<String, NotificationMessage> kafkaTemplate;
     private final NotificationService notificationService;
 
+    private static final String POST_COMMENT_NOTIFICATION_TOPIC = "PostComment_Notification";
     private static final String CHAT_NOTIFICATION_TOPIC = "Chat_Notification";
 
     public NotificationProducerService(KafkaTemplate<String, NotificationMessage> kafkaTemplate, NotificationService notificationService) {
@@ -22,6 +23,14 @@ public class NotificationProducerService {
         this.notificationService = notificationService;
     }
 
+    @Transactional
+    public void publishPostCommentNotification(UUID uuid, Notification notification){
+        notificationService.save(notification);
+        NotificationMessage notificationMessage = NotificationMessage.from(notification, uuid);
+
+        kafkaTemplate.send(POST_COMMENT_NOTIFICATION_TOPIC, notificationMessage);
+    }
+  
     @Transactional
     public void publishChatNotification(Map<UUID, Notification> notificationMap) {
         List<Notification> notifications = notificationMap.values().stream().toList();

@@ -9,14 +9,17 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationConsumerService {
     private final EmitterService emitterService;
 
+    private static final String POST_COMMENT_NOTIFICATION_TOPIC = "PostComment_Notification";
     private static final String CHAT_NOTIFICATION_TOPIC = "Chat_Notification";
 
     public NotificationConsumerService(EmitterService emitterService) {
         this.emitterService = emitterService;
     }
 
-    // TODO: topics 내에 사용할 topic 작성
-    @KafkaListener(topics = {CHAT_NOTIFICATION_TOPIC}, groupId = "notification-group")
+    @KafkaListener(topics = {
+            POST_COMMENT_NOTIFICATION_TOPIC,
+            CHAT_NOTIFICATION_TOPIC
+    }, groupId = "notification-group")
     public void listen(NotificationMessage message) {
         SseEmitter emitter = emitterService.getEmitter(message.getUserUuid().toString());
         emitterService.sendToClient(message.getUserUuid().toString(), emitter, message);
