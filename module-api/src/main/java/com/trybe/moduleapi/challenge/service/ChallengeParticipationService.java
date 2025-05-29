@@ -99,8 +99,9 @@ public class ChallengeParticipationService {
 
         validateRole(participation, ChallengeRole.MEMBER, "리더는 챌린지를 탈퇴할 수 없습니다.");
 
+        ChatRoom chatRoom = chatService.getChatRoomByChallengeId(challengeId);
         participation.updateStatus(ParticipationStatus.DISABLED);
-        chatService.deleteUserFromChatRoom(participation.getChallenge().getId(), user);
+        chatService.deleteUserFromChatRoom(chatRoom.getId(), user);
     }
 
     @Transactional
