@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
@@ -25,6 +27,11 @@ public class NotificationService {
     @Transactional
     public Notification save(Notification notification) {
         return notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public List<Notification> saveAll(List<Notification> notifications) {
+        return notificationRepository.saveAll(notifications);
     }
 
     @Transactional(readOnly = true)
