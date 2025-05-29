@@ -397,10 +397,12 @@ class ChallengeParticipationServiceTest {
     void 챌린지_탈퇴_시_챌린지_참여_정보를_비활성화한다 () {
         /* given */
         Long challengeId = ChallengeFixtures.챌린지_ID;
+        ChatRoom chatRoom = ChatFixtures.채팅방();
 
         when(challengeParticipationRepository.findByUserIdAndChallengeId(any(), any()))
                 .thenReturn(Optional.of(챌린지_멤버_참여()));
-
+        when(chatService.getChatRoomByChallengeId(any()))
+                .thenReturn(chatRoom);
         /* when */
         challengeParticipationService.leave(멤버, challengeId);
 
