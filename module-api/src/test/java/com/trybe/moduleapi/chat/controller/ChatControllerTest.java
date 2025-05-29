@@ -1,7 +1,6 @@
 package com.trybe.moduleapi.chat.controller;
 
 import com.trybe.moduleapi.annotation.WithCustomMockUser;
-import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.chat.dto.ChatResponse;
 import com.trybe.moduleapi.chat.fixture.ChatFixtures;
 import com.trybe.moduleapi.chat.service.ChatService;
@@ -45,7 +44,7 @@ class ChatControllerTest extends ControllerTest {
         when(chatService.findMessages(any(User.class), any(Long.class), any(Long.class))).thenReturn(응답);
 
         /* when */
-        mockMvc.perform(get("/api/v1/chats/{challengeId}", ChallengeFixtures.챌린지_ID)
+        mockMvc.perform(get("/api/v1/chats/{chatRoomId}", ChatFixtures.채팅방_ID)
                         .param("cursor", String.valueOf(커서_ID))
                         .contentType(MediaType.APPLICATION_JSON).characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().isOk())
@@ -65,7 +64,7 @@ class ChatControllerTest extends ControllerTest {
                 .andDo(document(docsPath,
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
-                        pathParameters(parameterWithName("challengeId").description("챌린지 ID")),
+                        pathParameters(parameterWithName("chatRoomId").description("채팅방 ID")),
                         queryParameters(parameterWithName("cursor").description("커서 ID")),
                         responseFields(
                                 fieldWithPath("content[]").description("채팅 메시지 목록"),

@@ -4,8 +4,9 @@ import com.trybe.modulecore.chat.entity.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
-    ChatRoom findByChallengeId(Long challengeId);
-    boolean existsByChallengeId(Long challengeId);
+    Optional<ChatRoom> findByChallengeId(Long challengeId);
 }

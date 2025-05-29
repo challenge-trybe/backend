@@ -6,6 +6,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -14,6 +16,7 @@ public class NotificationProducerService {
     private final NotificationService notificationService;
 
     private static final String POST_COMMENT_NOTIFICATION_TOPIC = "PostComment_Notification";
+    private static final String CHAT_NOTIFICATION_TOPIC = "Chat_Notification";
 
     public NotificationProducerService(KafkaTemplate<String, NotificationMessage> kafkaTemplate, NotificationService notificationService) {
         this.kafkaTemplate = kafkaTemplate;
@@ -26,5 +29,22 @@ public class NotificationProducerService {
         NotificationMessage notificationMessage = NotificationMessage.from(notification, uuid);
 
         kafkaTemplate.send(POST_COMMENT_NOTIFICATION_TOPIC, notificationMessage);
+    }
+  
+    @Transactional
+    public void publishChatNotification(Map<UUID, Notification> notificationMap) {
+        List<Notification> notifications = notificationMap.values().stream().toList();
+        notificationService.saveAll(notifications);
+
+        for (Map.Entry<UUID, Notification> entry  : notificationMap.entrySet()) {
+            UUID uuid = entry.getKey();
+            Notification notification = entry.getValue();
+            NotificationMessage notificationMessage = toNotificationMessage(uuid, notification);
+            kafkaTemplate.send(CHAT_NOTIFICATION_TOPIC, notificationMessage);
+        }
+    }
+
+    private NotificationMessage toNotificationMessage(UUID uuid, Notification notification){
+        return NotificationMessage.from(notification, uuid);
     }
 }

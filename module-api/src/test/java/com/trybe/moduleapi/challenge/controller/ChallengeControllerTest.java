@@ -7,6 +7,7 @@ import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;
 import com.trybe.moduleapi.challenge.service.ChallengeService;
+import com.trybe.moduleapi.chat.fixture.ChatFixtures;
 import com.trybe.moduleapi.common.ControllerTest;
 import com.trybe.moduleapi.file.fixtures.FileFixtures;
 import com.trybe.modulecore.user.entity.User;
@@ -76,6 +77,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.participantCount").value(ChallengeFixtures.초기_참여자_수),
                 jsonPath("$.proofWay").value(request.proofWay()),
                 jsonPath("$.proofCount").value(request.proofCount()),
+                jsonPath("$.chatRoomId").value(ChatFixtures.채팅방_ID),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.초기_북마크_수),
                 jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_거짓)
@@ -113,6 +115,7 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
                         fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("chatRoomId").description("채팅방 ID"),
                         fieldWithPath("bookmark").description("챌린지 북마크 정보"),
                         fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
                         fieldWithPath("bookmark.bookmarked").description("북마크 여부")
@@ -204,6 +207,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.participantCount").value(ChallengeFixtures.참여자_수),
                 jsonPath("$.proofWay").value(ChallengeFixtures.챌린지_상세_응답.proofWay()),
                 jsonPath("$.proofCount").value(ChallengeFixtures.챌린지_상세_응답.proofCount()),
+                jsonPath("$.chatRoomId").value(ChallengeFixtures.챌린지_상세_응답.chatRoomId()),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
                 jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_참)
@@ -228,6 +232,7 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
                         fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("chatRoomId").description("채팅방 ID"),
                         fieldWithPath("bookmark").description("챌린지 북마크 정보"),
                         fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
                         fieldWithPath("bookmark.bookmarked").description("북마크 여부")
@@ -467,6 +472,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.participantCount").value(ChallengeFixtures.참여자_수),
                 jsonPath("$.proofWay").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.proofWay()),
                 jsonPath("$.proofCount").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.proofCount()),
+                jsonPath("$.chatRoomId").value(ChallengeFixtures.내용_수정된_챌린지_상세_응답.chatRoomId()),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
                 jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_참)
@@ -501,6 +507,7 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
                         fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("chatRoomId").description("채팅방 ID"),
                         fieldWithPath("bookmark").description("챌린지 북마크 정보"),
                         fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
                         fieldWithPath("bookmark.bookmarked").description("북마크 여부")
@@ -707,6 +714,7 @@ class ChallengeControllerTest extends ControllerTest {
                 jsonPath("$.participantCount").value(ChallengeFixtures.참여자_수),
                 jsonPath("$.proofWay").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.proofWay()),
                 jsonPath("$.proofCount").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.proofCount()),
+                jsonPath("$.chatRoomId").value(ChallengeFixtures.인증_내용_수정된_챌린지_상세_응답.chatRoomId()),
                 jsonPath("$.bookmark").exists(),
                 jsonPath("$.bookmark.bookmarkCount").value(ChallengeFixtures.북마크_수),
                 jsonPath("$.bookmark.bookmarked").value(ChallengeFixtures.북마크_여부_참)
@@ -733,6 +741,7 @@ class ChallengeControllerTest extends ControllerTest {
                         fieldWithPath("participantCount").description("챌린지 참여자 수"),
                         fieldWithPath("proofWay").description("챌린지 인증 방법"),
                         fieldWithPath("proofCount").description("챌린지 인증 횟수"),
+                        fieldWithPath("chatRoomId").description("채팅방 ID"),
                         fieldWithPath("bookmark").description("챌린지 북마크 정보"),
                         fieldWithPath("bookmark.bookmarkCount").description("챌린지 북마크 수"),
                         fieldWithPath("bookmark.bookmarked").description("북마크 여부")

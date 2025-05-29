@@ -27,7 +27,7 @@ public class ChallengeScheduler {
         List<Challenge> challenges = challengeRepository.findAllByStatusAndStartDate(ChallengeStatus.PENDING, LocalDate.now());
         challenges.forEach(challenge -> {
             challenge.updateStatus(ChallengeStatus.ONGOING);
-            chatService.challengeStartMessage(challenge);
+            chatService.sendChallengeStartMessage(challenge);
         });
     }
 
@@ -37,7 +37,7 @@ public class ChallengeScheduler {
         List<Challenge> challenges = challengeRepository.findAllByStatusAndEndDate(ChallengeStatus.ONGOING, LocalDate.now());
         challenges.forEach(challenge -> {
             challenge.updateStatus(ChallengeStatus.DONE);
-            chatService.challengeClosedMessage(challenge);
+            chatService.sendChallengeClosedMessage(challenge);
         });
     }
 }

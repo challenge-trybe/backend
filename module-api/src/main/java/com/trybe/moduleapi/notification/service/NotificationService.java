@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class NotificationService {
     private final NotificationRepository notificationRepository;
@@ -27,6 +29,10 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
+    @Transactional
+    public List<Notification> saveAll(List<Notification> notifications) {
+        return notificationRepository.saveAll(notifications);
+    }
     @Transactional(readOnly = true)
     public PageResponse<NotificationResponse> getNotifications(User user, Pageable pageable) {
         PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Order.desc("createdAt")));

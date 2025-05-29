@@ -9,6 +9,7 @@ import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeParticipationFixtures;
+import com.trybe.moduleapi.chat.fixture.ChatFixtures;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.file.dto.FileResponse;
@@ -22,6 +23,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
+import com.trybe.modulecore.chat.entity.ChatRoom;
 import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import org.junit.jupiter.api.DisplayName;
@@ -81,6 +83,7 @@ class ChallengeServiceTest {
         /* given */
         ChallengeRequest.Create request = 챌린지_생성_요청;
         Challenge challenge = 챌린지();
+        Long chatRoomId = ChatFixtures.채팅방_ID;
 
         MockMultipartFile thumbnail = FileFixtures.파일_요청_생성("thumbnail");
 
@@ -90,7 +93,9 @@ class ChallengeServiceTest {
                 .thenReturn(ChallengeParticipationFixtures.챌린지_리더_참여());
         when(fileManager.uploadFile(eq(thumbnail), any(String.class)))
                 .thenReturn(FileFixtures.파일);
-        when(challengeResponseAssembler.toInitialDetail(challenge))
+        when(chatService.create(any(Challenge.class)))
+                .thenReturn(chatRoomId);
+        when(challengeResponseAssembler.toInitialDetail(challenge, chatRoomId))
                 .thenReturn(초기_챌린지_상세_응답);
 
         /* when */
@@ -98,11 +103,12 @@ class ChallengeServiceTest {
 
         /* then */
         verifyChallengeResponse(challenge, response);
-        verify(chatService, times(1)).create(challenge);
         assertEquals(초기_참여자_수, response.participantCount());
+        assertEquals(chatRoomId, response.chatRoomId());
         assertEquals(초기_북마크_수, response.bookmark().bookmarkCount());
         assertEquals(false, response.bookmark().bookmarked());
 
+        verify(chatService, times(1)).addUserToChatRoom(any(Long.class), any(User.class));
         verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
     }
 
@@ -114,6 +120,7 @@ class ChallengeServiceTest {
         Long userId = UserFixtures.회원_PK;
         User user = spy(UserFixtures.회원);
         Challenge challenge = 챌린지();
+        ChatRoom chatRoom = ChatFixtures.채팅방(challenge);
 
         when(user.getId()).thenReturn(userId);
         when(challengeRepository.findById(challengeId))
@@ -129,6 +136,7 @@ class ChallengeServiceTest {
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
         assertEquals(북마크_여부_참, response.bookmark().bookmarked());
+        assertEquals(ChatFixtures.채팅방_ID, response.chatRoomId());
 
         verify(challengeViewCache, times(1)).recordView(any(), any());
         verify(challengeEventPublisher, times(1)).publish(any(ChallengeEvent.class));
@@ -142,6 +150,7 @@ class ChallengeServiceTest {
         Long userId = UserFixtures.회원_PK;
         User user = spy(UserFixtures.회원);
         Challenge challenge = 챌린지();
+        ChatRoom chatRoom = ChatFixtures.채팅방(challenge);
 
         when(user.getId()).thenReturn(userId);
         when(challengeRepository.findById(challengeId))
@@ -159,6 +168,7 @@ class ChallengeServiceTest {
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
         assertEquals(북마크_여부_참, response.bookmark().bookmarked());
+        assertEquals(ChatFixtures.채팅방_ID, response.chatRoomId());
 
         verify(challengeViewCache, never()).recordView(any(), any());
         verify(challengeEventPublisher, never()).publish(any(ChallengeEvent.class));
@@ -170,6 +180,7 @@ class ChallengeServiceTest {
         /* given */
         Long challengeId = 챌린지_ID;
         Challenge challenge = 챌린지();
+        ChatRoom chatRoom = ChatFixtures.채팅방(challenge);
 
         when(challengeRepository.findById(challengeId))
                 .thenReturn(Optional.of(challenge));
@@ -183,6 +194,8 @@ class ChallengeServiceTest {
         verifyChallengeResponse(challenge, response);
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
+        assertEquals(ChatFixtures.채팅방_ID, response.chatRoomId());
+
         assertNull(response.bookmark().bookmarked());
     }
 
@@ -264,6 +277,7 @@ class ChallengeServiceTest {
         /* given */
         Long challengeId = 챌린지_ID;
         Challenge challenge = 내용_수정된_챌린지;
+        ChatRoom chatRoom = ChatFixtures.채팅방(challenge);
 
         ChallengeRequest.UpdateContent request = 챌린지_내용_수정_요청;
 
@@ -287,6 +301,7 @@ class ChallengeServiceTest {
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
         assertEquals(북마크_여부_참, response.bookmark().bookmarked());
+        assertEquals(ChatFixtures.채팅방_ID, response.chatRoomId());
     }
 
     @Test
@@ -344,6 +359,7 @@ class ChallengeServiceTest {
         /* given */
         Long challengeId = 챌린지_ID;
         Challenge challenge = 인증_내용_수정된_챌린지;
+        ChatRoom chatRoom = ChatFixtures.채팅방(challenge);
 
         ChallengeRequest.UpdateProof request = 챌린지_인증_내용_수정_요청;
 
@@ -362,6 +378,7 @@ class ChallengeServiceTest {
         assertEquals(참여자_수, response.participantCount());
         assertEquals(북마크_수, response.bookmark().bookmarkCount());
         assertEquals(북마크_여부_참, response.bookmark().bookmarked());
+        assertEquals(ChatFixtures.채팅방_ID, response.chatRoomId());
     }
 
     @Test

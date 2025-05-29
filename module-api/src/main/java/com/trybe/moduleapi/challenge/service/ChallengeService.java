@@ -21,6 +21,7 @@ import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepositor
 import com.trybe.modulecore.challenge.repository.ChallengeRepository;
 import com.trybe.modulecore.challenge.repository.bookmark.ChallengeBookmarkCache;
 import com.trybe.modulecore.challenge.repository.view.ChallengeViewCache;
+import com.trybe.modulecore.chat.entity.ChatRoom;
 import com.trybe.modulecore.file.entity.File;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -73,9 +74,10 @@ public class ChallengeService {
         challenge.updateThumbnail(thumbnailFile);
         challengeParticipationRepository.save(participation);
         challengeEventPublisher.publish(new ChallengeEvent(savedChallenge, user.getId(), ChallengeEventType.CREATE));
-        chatService.create(savedChallenge);
+        Long chatRoomId = chatService.create(savedChallenge);
+        chatService.addUserToChatRoom(chatRoomId, user);
 
-        return challengeResponseAssembler.toInitialDetail(savedChallenge);
+        return challengeResponseAssembler.toInitialDetail(savedChallenge, chatRoomId);
     }
 
     @Transactional(readOnly = true)
