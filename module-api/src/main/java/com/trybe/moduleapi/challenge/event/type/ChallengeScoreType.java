@@ -3,7 +3,7 @@ package com.trybe.moduleapi.challenge.event.type;
 import lombok.Getter;
 
 @Getter
-public enum ChallengeActionType {
+public enum ChallengeScoreType {
     CREATE(0, 10),
     VIEW(1, 1),
     BOOKMARK(10, 10),
@@ -12,7 +12,7 @@ public enum ChallengeActionType {
     private final int popularityScore;
     private final int preferenceScore;
 
-    ChallengeActionType(int popularityScore, int preferenceScore) {
+    ChallengeScoreType(int popularityScore, int preferenceScore) {
         this.popularityScore = popularityScore;
         this.preferenceScore = preferenceScore;
     }

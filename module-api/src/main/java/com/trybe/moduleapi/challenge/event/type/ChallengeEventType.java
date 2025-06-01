@@ -4,17 +4,17 @@ import lombok.Getter;
 
 @Getter
 public enum ChallengeEventType {
-    CREATE(ChallengeActionType.CREATE, true),
-    VIEW(ChallengeActionType.VIEW, true),
-    BOOKMARK_ADD(ChallengeActionType.BOOKMARK, true),
-    BOOKMARK_REMOVE(ChallengeActionType.BOOKMARK, false),
-    PARTICIPATION_ADD(ChallengeActionType.PARTICIPATION, true),
-    PARTICIPATION_REMOVE(ChallengeActionType.PARTICIPATION, false);
+    CREATE(ChallengeScoreType.CREATE, true),
+    VIEW(ChallengeScoreType.VIEW, true),
+    BOOKMARK_ADD(ChallengeScoreType.BOOKMARK, true),
+    BOOKMARK_REMOVE(ChallengeScoreType.BOOKMARK, false),
+    PARTICIPATION_ADD(ChallengeScoreType.PARTICIPATION, true),
+    PARTICIPATION_REMOVE(ChallengeScoreType.PARTICIPATION, false);
 
-    private final ChallengeActionType actionType;
+    private final ChallengeScoreType actionType;
     private final boolean isScoreUp;
 
-    ChallengeEventType(ChallengeActionType actionType, boolean isScoreUp) {
+    ChallengeEventType(ChallengeScoreType actionType, boolean isScoreUp) {
         this.actionType = actionType;
         this.isScoreUp = isScoreUp;
     }
