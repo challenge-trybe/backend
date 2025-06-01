@@ -4,7 +4,7 @@ import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
 import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
-import com.trybe.moduleapi.challenge.event.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;

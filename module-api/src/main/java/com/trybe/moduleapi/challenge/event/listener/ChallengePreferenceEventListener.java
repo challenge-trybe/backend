@@ -1,7 +1,7 @@
 package com.trybe.moduleapi.challenge.event.listener;
 
 import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
-import com.trybe.moduleapi.challenge.event.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import org.springframework.scheduling.annotation.Async;

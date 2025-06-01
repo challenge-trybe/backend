@@ -1,6 +1,6 @@
 package com.trybe.moduleapi.challenge.event.model;
 
-import com.trybe.moduleapi.challenge.event.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import lombok.Getter;
 

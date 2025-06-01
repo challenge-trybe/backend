@@ -1,4 +1,4 @@
-package com.trybe.moduleapi.challenge.event;
+package com.trybe.moduleapi.challenge.event.type;
 
 import lombok.Getter;
 
