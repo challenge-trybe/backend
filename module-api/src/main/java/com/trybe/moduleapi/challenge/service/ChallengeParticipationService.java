@@ -1,7 +1,7 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
-import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
 import com.trybe.moduleapi.challenge.event.ChallengeEventType;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.*;

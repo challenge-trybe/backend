@@ -2,7 +2,7 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
-import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.fixtures.ChallengeFixtures;

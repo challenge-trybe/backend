@@ -1,6 +1,6 @@
 package com.trybe.moduleapi.challenge.event.pub;
 
-import com.trybe.moduleapi.challenge.event.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
