@@ -1,7 +1,9 @@
 package com.trybe.moduleapi.challenge.event.listener;
 
-import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
-import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.model.ChallengeActionEvent;
+import com.trybe.moduleapi.challenge.event.model.ChallengeParticipationEvent;
+import com.trybe.moduleapi.challenge.event.type.ChallengeActionEventType;
+import com.trybe.moduleapi.challenge.event.type.ChallengeParticipationEventType;
 import com.trybe.moduleapi.utils.DateUtils;
 import com.trybe.modulecore.challenge.repository.popular.PopularChallengeCache;
 import org.springframework.scheduling.annotation.Async;
@@ -19,15 +21,30 @@ public class PopularChallengeEventListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleChallengeEvent(ChallengeEvent event) {
+    public void handleChallengeActionEvent(ChallengeActionEvent event) {
+        ChallengeActionEventType type = event.getEventType();
         Long challengeId = event.getChallenge().getId();
 
-        ChallengeEventType type = event.getType();
-        int score = type.getActionType().getPopularityScore();
-
-        if (score == 0) { return; }
+        int score = type.getScoreType().getPopularityScore();
 
         if (type.isScoreUp()) {
+            increasePopularity(challengeId, score);
+        } else {
+            decreasePopularity(challengeId, score);
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleChallengeParticipationEvent(ChallengeParticipationEvent event) {
+        ChallengeParticipationEventType type = event.getEventType();
+        Long challengeId = event.getChallenge().getId();
+
+        if (type.getScoreType() == null || type.getIsScoreUp() == null) return;
+
+        int score = type.getScoreType().getPopularityScore();
+
+        if (type.getIsScoreUp()) {
             increasePopularity(challengeId, score);
         } else {
             decreasePopularity(challengeId, score);

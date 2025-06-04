@@ -1,8 +1,11 @@
 package com.trybe.moduleapi.challenge.event.listener;
 
-import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
-import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.model.ChallengeActionEvent;
+import com.trybe.moduleapi.challenge.event.model.ChallengeParticipationEvent;
+import com.trybe.moduleapi.challenge.event.type.ChallengeActionEventType;
+import com.trybe.moduleapi.challenge.event.type.ChallengeParticipationEventType;
 import com.trybe.modulecore.challenge.entity.Challenge;
+import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.repository.preference.ChallengePreferenceCache;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -19,16 +22,34 @@ public class ChallengePreferenceEventListener {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handleChallengeEvent(ChallengeEvent event) {
+    public void handleChallengeActionEvent(ChallengeActionEvent event) {
         Challenge challenge = event.getChallenge();
+        ChallengeActionEventType type = event.getEventType();
         Long userId = event.getUserId();
 
-        ChallengeEventType type = event.getType();
-        int score = event.getType().getActionType().getPreferenceScore();
-
-        if (score == 0) { return; }
+        int score = type.getScoreType().getPreferenceScore();
 
         if (type.isScoreUp()) {
+            challengePreferenceCache.addPreference(userId, challenge, score);
+        } else {
+            challengePreferenceCache.removePreference(userId, challenge, score);
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleChallengeParticipationEvent(ChallengeParticipationEvent event) {
+        ChallengeParticipation participation = event.getParticipation();
+
+        Challenge challenge = event.getChallenge();
+        ChallengeParticipationEventType type = event.getEventType();
+        Long userId = participation.getUser().getId();
+
+        if (type.getScoreType() == null || type.getIsScoreUp() == null) return;
+
+        int score = type.getScoreType().getPreferenceScore();
+
+        if (type.getIsScoreUp()) {
             challengePreferenceCache.addPreference(userId, challenge, score);
         } else {
             challengePreferenceCache.removePreference(userId, challenge, score);
