@@ -4,12 +4,12 @@ import lombok.Getter;
 
 @Getter
 public enum ParticipationStatus {
-    PENDING("대기중"),
-    ACCEPTED("수락됨"),
-    REJECTED("거절됨"),
-    DISABLED("탈퇴됨");
+    PENDING("대기"),
+    ACCEPTED("수락"),
+    REJECTED("거절"),
+    DISABLED("탈퇴");
 
-    private String description;
+    private final String description;
 
     ParticipationStatus(String description) {
         this.description = description;
