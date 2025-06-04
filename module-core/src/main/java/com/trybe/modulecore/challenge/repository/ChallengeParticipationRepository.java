@@ -20,6 +20,7 @@ public interface ChallengeParticipationRepository extends JpaRepository<Challeng
     boolean existsByUserIdAndChallengeIdAndRole(Long userId, Long challengeId, ChallengeRole role);
     int countByChallengeIdAndStatus(Long challengeId, ParticipationStatus status);
     Optional<ChallengeParticipation> findByUserIdAndChallengeId(Long userId, Long challengeId);
+    Optional<ChallengeParticipation> findByChallengeIdAndRole(Long challengeId, ChallengeRole role);
     Page<ChallengeParticipation> findAllByUserIdAndStatusOrderByCreatedAtDesc(Long userId, ParticipationStatus status, Pageable pageable);
     Page<ChallengeParticipation> findAllByChallengeIdAndStatusOrderByCreatedAtAsc(Long challengeId, ParticipationStatus status, Pageable pageable);
     List<ChallengeParticipation> findAllByChallengeIdAndStatus(Long challengeId, ParticipationStatus status);
