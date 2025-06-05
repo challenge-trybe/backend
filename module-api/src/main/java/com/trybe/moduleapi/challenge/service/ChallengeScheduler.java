@@ -1,5 +1,8 @@
 package com.trybe.moduleapi.challenge.service;
 
+import com.trybe.moduleapi.challenge.event.model.ChallengeStatusEvent;
+import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
+import com.trybe.moduleapi.challenge.event.type.ChallengeStatusEventType;
 import com.trybe.moduleapi.chat.service.ChatService;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.enums.ChallengeStatus;
@@ -15,19 +18,23 @@ import java.util.List;
 public class ChallengeScheduler {
     private final ChallengeRepository challengeRepository;
     private final ChatService chatService;
+    private final ChallengeEventPublisher challengeEventPublisher;
 
-    public ChallengeScheduler(ChallengeRepository challengeRepository, ChatService chatService) {
+    public ChallengeScheduler(ChallengeRepository challengeRepository, ChatService chatService, ChallengeEventPublisher challengeEventPublisher) {
         this.challengeRepository = challengeRepository;
         this.chatService = chatService;
+        this.challengeEventPublisher = challengeEventPublisher;
     }
 
-    @Scheduled(cron = "0 4 * * * *")
+    @Scheduled(cron = " 0 0 4 * * *")
     @Transactional
     public void updateChallengeStatusOnGoing() {
         List<Challenge> challenges = challengeRepository.findAllByStatusAndStartDate(ChallengeStatus.PENDING, LocalDate.now());
+
         challenges.forEach(challenge -> {
             challenge.updateStatus(ChallengeStatus.ONGOING);
             chatService.challengeStartMessage(challenge);
+            challengeEventPublisher.publish(new ChallengeStatusEvent(challenge, ChallengeStatusEventType.START));
         });
     }
 
@@ -38,6 +45,7 @@ public class ChallengeScheduler {
         challenges.forEach(challenge -> {
             challenge.updateStatus(ChallengeStatus.DONE);
             chatService.challengeClosedMessage(challenge);
+            challengeEventPublisher.publish(new ChallengeStatusEvent(challenge, ChallengeStatusEventType.END));
         });
     }
 }
