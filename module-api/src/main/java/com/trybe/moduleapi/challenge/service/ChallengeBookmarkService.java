@@ -2,9 +2,9 @@ package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
-import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
-import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.model.ChallengeActionEvent;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
+import com.trybe.moduleapi.challenge.event.type.ChallengeActionEventType;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.modulecore.challenge.entity.Challenge;
@@ -43,7 +43,7 @@ public class ChallengeBookmarkService {
 
         if (!challengeBookmarkCache.isBookmarked(userId, challengeId)) {
             challengeBookmarkCache.addBookmark(userId, challengeId);
-            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.BOOKMARK_ADD));
+            challengeEventPublisher.publish(new ChallengeActionEvent(challenge, ChallengeActionEventType.BOOKMARK_ADD, userId));
             count++;
         }
 
@@ -59,7 +59,7 @@ public class ChallengeBookmarkService {
 
         if (challengeBookmarkCache.isBookmarked(userId, challengeId)) {
             challengeBookmarkCache.removeBookmark(userId, challengeId);
-            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.BOOKMARK_REMOVE));
+            challengeEventPublisher.publish(new ChallengeActionEvent(challenge, ChallengeActionEventType.BOOKMARK_REMOVE, userId));
             count--;
         }
 
