@@ -3,9 +3,9 @@ package com.trybe.moduleapi.challenge.service;
 import com.trybe.moduleapi.challenge.dto.ChallengeRequest;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponseAssembler;
-import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
-import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.model.ChallengeActionEvent;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
+import com.trybe.moduleapi.challenge.event.type.ChallengeActionEventType;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
 import com.trybe.moduleapi.challenge.exception.participation.InvalidChallengeRoleActionException;
@@ -72,7 +72,7 @@ public class ChallengeService {
 
         challenge.updateThumbnail(thumbnailFile);
         challengeParticipationRepository.save(participation);
-        challengeEventPublisher.publish(new ChallengeEvent(savedChallenge, user.getId(), ChallengeEventType.CREATE));
+        challengeEventPublisher.publish(new ChallengeActionEvent(savedChallenge, ChallengeActionEventType.CREATE, user.getId()));
         chatService.create(savedChallenge);
 
         return challengeResponseAssembler.toInitialDetail(savedChallenge);
@@ -193,7 +193,7 @@ public class ChallengeService {
         Long challengeId = challenge.getId();
         if (userId != null && !challengeViewCache.hasViewed(userId, challengeId)) {
             challengeViewCache.recordView(userId, challengeId);
-            challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.VIEW));
+            challengeEventPublisher.publish(new ChallengeActionEvent(challenge, ChallengeActionEventType.VIEW, userId));
         }
     }
 
