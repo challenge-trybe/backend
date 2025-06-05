@@ -1,9 +1,9 @@
 package com.trybe.moduleapi.challenge.service;
 
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
-import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
-import com.trybe.moduleapi.challenge.event.type.ChallengeEventType;
+import com.trybe.moduleapi.challenge.event.model.ChallengeParticipationEvent;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
+import com.trybe.moduleapi.challenge.event.type.ChallengeParticipationEventType;
 import com.trybe.moduleapi.challenge.exception.*;
 import com.trybe.moduleapi.challenge.exception.participation.*;
 import com.trybe.moduleapi.chat.service.ChatService;
@@ -49,7 +49,8 @@ public class ChallengeParticipationService {
 
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
-        challengeEventPublisher.publish(new ChallengeEvent(challenge, userId, ChallengeEventType.PARTICIPATION_ADD));
+
+        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_ADD, savedParticipation));
 
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
@@ -103,12 +104,13 @@ public class ChallengeParticipationService {
     @Transactional
     public void cancel(User user, Long participationId) {
         ChallengeParticipation participation = getParticipation(participationId);
+        Challenge challenge = participation.getChallenge();
         Long userId = user.getId();
 
         validateParticipationUser(participation, userId);
         validateParticipationStatus(participation, ParticipationStatus.PENDING);
 
-        challengeEventPublisher.publish(new ChallengeEvent(participation.getChallenge(), userId, ChallengeEventType.PARTICIPATION_REMOVE));
+        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_REMOVE, participation));
         challengeParticipationRepository.delete(participation);
     }
 
