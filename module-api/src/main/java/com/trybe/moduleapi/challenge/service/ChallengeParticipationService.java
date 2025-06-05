@@ -79,15 +79,19 @@ public class ChallengeParticipationService {
     @Transactional
     public ChallengeParticipationResponse.Detail confirm(User user, Long participationId, ParticipationStatus status) {
         ChallengeParticipation participation = getParticipation(participationId);
-        ChallengeParticipation userParticipation = getParticipation(user.getId(), participation.getChallenge().getId());
+        Challenge challenge = participation.getChallenge();
+
+        ChallengeParticipation userParticipation = getParticipation(user.getId(), challenge.getId());
 
         validateRole(userParticipation, ChallengeRole.LEADER, "리더만 참여자를 처리할 수 있습니다.");
-        validateChallengeStatus(participation.getChallenge(), "챌린지가 진행 예정인 경우에만 참여 신청을 처리할 수 있습니다.");
-        validateChallengeCapacity(participation.getChallenge());
+        validateChallengeStatus(challenge, "챌린지가 진행 예정인 경우에만 참여 신청을 처리할 수 있습니다.");
+        validateChallengeCapacity(challenge);
         validateStatus(participation, status);
 
         participation.updateStatus(status);
-        chatService.enter(participation.getUser(), participation.getChallenge().getId());
+        chatService.enter(participation.getUser(), challenge.getId());
+        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_PROCESSED, participation));
+
         return ChallengeParticipationResponse.Detail.from(participation);
     }
 
