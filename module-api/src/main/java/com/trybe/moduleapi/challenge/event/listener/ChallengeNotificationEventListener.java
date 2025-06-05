@@ -40,8 +40,8 @@ public class ChallengeNotificationEventListener {
     private static final String CHALLENGE_PARTICIPATION_REQUEST_TITLE = "챌린지 참여 요청이 도착했습니다.";
     private static final String CHALLENGE_PARTICIPATION_REQUEST_MESSAGE_FORMAT = "%s 님이 [%s] 챌린지에 참여를 요청했습니다.";
 
-    private static final String CHALLENGE_PARTICIPATION_REQUEST_PROCESSED_TITLE = "챌린지 참여 요청이 처리되었습니다.";
-    private static final String CHALLENGE_PARTICIPATION_REQUEST_PROCESSED_MESSAGE_FORMAT = "[%s] 챌린지에 대한 참여 신청이 %s되었습니다.";
+    private static final String CHALLENGE_PARTICIPATION_PROCESSED_TITLE = "챌린지 참여 요청이 처리되었습니다.";
+    private static final String CHALLENGE_PARTICIPATION_PROCESSED_MESSAGE_FORMAT = "[%s] 챌린지에 대한 참여 신청이 %s되었습니다.";
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -67,8 +67,8 @@ public class ChallengeNotificationEventListener {
         ChallengeParticipation participation = event.getParticipation();
 
         switch (type) {
-            case PARTICIPATION_REQUEST -> notifyParticipationRequest(participation);
-            case PARTICIPATION_REQUEST_PROCESSED -> notifyParticipationRequestProcessed(participation);
+            case PARTICIPATION_ADD -> notifyParticipationRequest(participation);
+            case PARTICIPATION_PROCESSED -> notifyParticipationRequestProcessed(participation);
         }
     }
 
@@ -122,9 +122,9 @@ public class ChallengeNotificationEventListener {
                 applicant,
                 NotificationType.CHALLENGE_PARTICIPATION,
                 challenge.getId(),
-                CHALLENGE_PARTICIPATION_REQUEST_PROCESSED_TITLE,
+                CHALLENGE_PARTICIPATION_PROCESSED_TITLE,
                 String.format(
-                        CHALLENGE_PARTICIPATION_REQUEST_PROCESSED_MESSAGE_FORMAT,
+                        CHALLENGE_PARTICIPATION_PROCESSED_MESSAGE_FORMAT,
                         challenge.getTitle(),
                         participation.getStatus().getDescription()
                 )

@@ -6,8 +6,7 @@ import lombok.Getter;
 public enum ChallengeParticipationEventType {
     PARTICIPATION_ADD(ChallengeScoreType.PARTICIPATION, true),
     PARTICIPATION_REMOVE(ChallengeScoreType.PARTICIPATION, false),
-    PARTICIPATION_REQUEST(null, null),
-    PARTICIPATION_REQUEST_PROCESSED(null, null)
+    PARTICIPATION_PROCESSED(null, null)
     ;
 
     private final ChallengeScoreType scoreType;
