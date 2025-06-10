@@ -4,14 +4,10 @@ import com.trybe.moduleapi.challenge.event.model.ChallengeParticipationEvent;
 import com.trybe.moduleapi.challenge.event.model.ChallengeStatusEvent;
 import com.trybe.moduleapi.challenge.event.type.ChallengeParticipationEventType;
 import com.trybe.moduleapi.challenge.event.type.ChallengeStatusEventType;
-import com.trybe.moduleapi.challenge.exception.participation.NotFoundChallengeParticipationException;
 import com.trybe.moduleapi.notification.constants.NotificationTopics;
 import com.trybe.moduleapi.notification.service.NotificationProducerService;
 import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
-import com.trybe.modulecore.challenge.enums.ChallengeRole;
-import com.trybe.modulecore.challenge.enums.ParticipationStatus;
-import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.notification.enums.NotificationType;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.scheduling.annotation.Async;
@@ -24,11 +20,9 @@ import java.util.List;
 @Component
 public class ChallengeNotificationEventListener {
     private final NotificationProducerService notificationProducerService;
-    private final ChallengeParticipationRepository challengeParticipationRepository;
 
-    public ChallengeNotificationEventListener(NotificationProducerService notificationProducerService, ChallengeParticipationRepository challengeParticipationRepository) {
+    public ChallengeNotificationEventListener(NotificationProducerService notificationProducerService) {
         this.notificationProducerService = notificationProducerService;
-        this.challengeParticipationRepository = challengeParticipationRepository;
     }
 
     private static final String CHALLENGE_START_TITLE = "챌린지가 시작되었습니다!";
@@ -47,11 +41,8 @@ public class ChallengeNotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleChallengeStatusEvent(ChallengeStatusEvent event) {
         Challenge challenge = event.getChallenge();
-        List<User> participants = challengeParticipationRepository.findAllByChallengeIdAndStatus(challenge.getId(), ParticipationStatus.ACCEPTED).stream()
-                .map(ChallengeParticipation::getUser)
-                .toList();
-
         ChallengeStatusEventType type = event.getEventType();
+        List<User> participants = event.getParticipants();
 
         switch (type) {
             case START -> notifyChallengeStart(challenge, participants);
@@ -67,7 +58,10 @@ public class ChallengeNotificationEventListener {
         ChallengeParticipation participation = event.getParticipation();
 
         switch (type) {
-            case PARTICIPATION_ADD -> notifyParticipationRequest(participation);
+            case PARTICIPATION_ADD -> {
+                User leader = event.getLeader();
+                if (leader != null) notifyParticipationRequest(participation, leader);
+            }
             case PARTICIPATION_PROCESSED -> notifyParticipationRequestProcessed(participation);
         }
     }
@@ -94,9 +88,8 @@ public class ChallengeNotificationEventListener {
         );
     }
 
-    private void notifyParticipationRequest(ChallengeParticipation participation) {
+    private void notifyParticipationRequest(ChallengeParticipation participation, User leader) {
         Challenge challenge = participation.getChallenge();
-        User leader = getLeaderParticipation(challenge).getUser();
         User applicant = participation.getUser();
 
         notificationProducerService.publishNotification(
@@ -129,10 +122,5 @@ public class ChallengeNotificationEventListener {
                         participation.getStatus().getDescription()
                 )
         );
-    }
-
-    private ChallengeParticipation getLeaderParticipation(Challenge challenge) {
-        return challengeParticipationRepository.findByChallengeIdAndRole(challenge.getId(), ChallengeRole.LEADER)
-                .orElseThrow(() -> new NotFoundChallengeParticipationException("챌린지의 리더 참여 정보를 찾을 수 없습니다."));
     }
 }

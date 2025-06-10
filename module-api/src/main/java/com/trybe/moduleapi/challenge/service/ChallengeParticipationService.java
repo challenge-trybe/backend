@@ -50,7 +50,7 @@ public class ChallengeParticipationService {
         ChallengeParticipation savedParticipation = challengeParticipationRepository.save(
                 new ChallengeParticipation(user, challenge, ChallengeRole.MEMBER, ParticipationStatus.PENDING));
 
-        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_ADD, savedParticipation));
+        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_ADD, savedParticipation, getLeader(challengeId)));
 
         return ChallengeParticipationResponse.Detail.from(savedParticipation);
     }
@@ -90,7 +90,7 @@ public class ChallengeParticipationService {
 
         participation.updateStatus(status);
         chatService.enter(participation.getUser(), challenge.getId());
-        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_PROCESSED, participation));
+        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_PROCESSED, participation, null));
 
         return ChallengeParticipationResponse.Detail.from(participation);
     }
@@ -114,7 +114,7 @@ public class ChallengeParticipationService {
         validateParticipationUser(participation, userId);
         validateParticipationStatus(participation, ParticipationStatus.PENDING);
 
-        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_REMOVE, participation));
+        challengeEventPublisher.publish(new ChallengeParticipationEvent(challenge, ChallengeParticipationEventType.PARTICIPATION_REMOVE, participation, null));
         challengeParticipationRepository.delete(participation);
     }
 
@@ -131,6 +131,12 @@ public class ChallengeParticipationService {
     private ChallengeParticipation getParticipation(Long userId, Long challengeId) {
         return challengeParticipationRepository.findByUserIdAndChallengeId(userId, challengeId)
                 .orElseThrow(() -> new NotFoundChallengeParticipationException("존재하지 않는 챌린지 참여입니다."));
+    }
+
+    private User getLeader(Long challengeId) {
+        return challengeParticipationRepository.findByChallengeIdAndRole(challengeId, ChallengeRole.LEADER)
+                .orElseThrow(() -> new NotFoundChallengeParticipationException("챌린지 리더 참여 정보가 없습니다."))
+                .getUser();
     }
 
     private void validateRole(ChallengeParticipation participation, ChallengeRole requiredRole, String message) {
