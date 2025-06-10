@@ -4,6 +4,9 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidParticipatio
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.proof.dto.request.ProofHistoryRequest;
 import com.trybe.moduleapi.proof.dto.response.ProofHistoryResponse;
+import com.trybe.moduleapi.proof.event.model.ProofHistoryEvent;
+import com.trybe.moduleapi.proof.event.pub.ProofEventPublisher;
+import com.trybe.moduleapi.proof.event.type.ProofHistoryEventType;
 import com.trybe.moduleapi.proof.exception.*;
 import com.trybe.moduleapi.proof.exception.history.DuplicatedProofHistoryException;
 import com.trybe.moduleapi.proof.exception.history.ForbiddenProofHistoryException;
@@ -29,11 +32,13 @@ public class ProofHistoryService {
     private final ProofHistoryRepository proofHistoryRepository;
     private final ProofRepository proofRepository;
     private final ChallengeParticipationRepository challengeParticipationRepository;
+    private final ProofEventPublisher proofEventPublisher;
 
-    public ProofHistoryService(ProofHistoryRepository proofHistoryRepository, ProofRepository proofRepository, ChallengeParticipationRepository challengeParticipationRepository) {
+    public ProofHistoryService(ProofHistoryRepository proofHistoryRepository, ProofRepository proofRepository, ChallengeParticipationRepository challengeParticipationRepository, ProofEventPublisher proofEventPublisher) {
         this.proofHistoryRepository = proofHistoryRepository;
         this.proofRepository = proofRepository;
         this.challengeParticipationRepository = challengeParticipationRepository;
+        this.proofEventPublisher = proofEventPublisher;
     }
 
     @Transactional
@@ -45,6 +50,8 @@ public class ProofHistoryService {
         validateDuplicateProofHistory(proof.getId(), user.getId());
 
         ProofHistory savedProofHistory = proofHistoryRepository.save(request.toEntity(proof, user, request.content()));
+        proofEventPublisher.publish(new ProofHistoryEvent(savedProofHistory, ProofHistoryEventType.CREATED));
+
         return ProofHistoryResponse.Summary.from(savedProofHistory);
     }
 
