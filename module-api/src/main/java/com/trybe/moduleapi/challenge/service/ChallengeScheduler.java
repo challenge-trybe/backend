@@ -63,6 +63,7 @@ public class ChallengeScheduler {
         return challengeParticipationRepository.findAllByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED)
                 .stream()
                 .map(ChallengeParticipation::getUser)
+                .peek(User::getUuid)
                 .toList();
     }
 }
