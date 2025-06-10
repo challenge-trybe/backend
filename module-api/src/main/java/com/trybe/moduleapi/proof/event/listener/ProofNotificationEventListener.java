@@ -7,9 +7,6 @@ import com.trybe.moduleapi.proof.event.model.ProofHistoryEvent;
 import com.trybe.moduleapi.proof.event.type.ProofEventType;
 import com.trybe.moduleapi.proof.event.type.ProofHistoryEventType;
 import com.trybe.modulecore.challenge.entity.Challenge;
-import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
-import com.trybe.modulecore.challenge.enums.ParticipationStatus;
-import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.notification.enums.NotificationType;
 import com.trybe.modulecore.proof.entity.Proof;
 import com.trybe.modulecore.proof.entity.ProofHistory;
@@ -24,11 +21,9 @@ import java.util.List;
 @Component
 public class ProofNotificationEventListener {
     private final NotificationProducerService notificationProducerService;
-    private final ChallengeParticipationRepository challengeParticipationRepository;
 
-    public ProofNotificationEventListener(NotificationProducerService notificationProducerService, ChallengeParticipationRepository challengeParticipationRepository) {
+    public ProofNotificationEventListener(NotificationProducerService notificationProducerService) {
         this.notificationProducerService = notificationProducerService;
-        this.challengeParticipationRepository = challengeParticipationRepository;
     }
 
     private static final String PROOF_START_TITLE = "인증이 시작되었습니다!";
@@ -48,10 +43,11 @@ public class ProofNotificationEventListener {
     public void handleProofEvent(ProofEvent event) {
         Proof proof = event.getProof();
         ProofEventType type = event.getEventType();
+        List<User> participants = event.getParticipants();
 
         switch (type) {
-            case START -> notifyProofStart(proof);
-            case END -> notifyProofEnd(proof);
+            case START -> notifyProofStart(proof, participants);
+            case END -> notifyProofEnd(proof, participants);
         }
     }
 
@@ -60,17 +56,16 @@ public class ProofNotificationEventListener {
     public void handleProofHistoryEvent(ProofHistoryEvent event) {
         ProofHistory proofHistory = event.getProofHistory();
         ProofHistoryEventType type = event.getEventType();
+        List<User> participants = event.getParticipants();
 
         switch (type) {
-            case CREATED -> notifyProofHistoryCreated(proofHistory);
+            case CREATED -> notifyProofHistoryCreated(proofHistory, participants);
             case VOTE_END -> notifyProofHistoryVoteEnd(proofHistory);
         }
     }
 
-    private void notifyProofStart(Proof proof) {
+    private void notifyProofStart(Proof proof, List<User> participants) {
         Challenge challenge = proof.getChallenge();
-        List<User> participants = getParticipants(challenge.getId());
-
         String message = String.format(PROOF_START_MESSAGE_FORMAT, challenge.getTitle(), proof.getRound());
 
         notificationProducerService.publishNotifications(
@@ -83,10 +78,8 @@ public class ProofNotificationEventListener {
         );
     }
 
-    private void notifyProofEnd(Proof proof) {
+    private void notifyProofEnd(Proof proof, List<User> participants) {
         Challenge challenge = proof.getChallenge();
-        List<User> participants = getParticipants(challenge.getId());
-
         String message = String.format(PROOF_END_MESSAGE_FORMAT, challenge.getTitle());
 
         notificationProducerService.publishNotifications(
@@ -99,12 +92,12 @@ public class ProofNotificationEventListener {
         );
     }
 
-    private void notifyProofHistoryCreated(ProofHistory proofHistory) {
+    private void notifyProofHistoryCreated(ProofHistory proofHistory, List<User> participants) {
         Proof proof = proofHistory.getProof();
         Challenge challenge = proof.getChallenge();
         User writer = proofHistory.getUser();
 
-        List<User> receivers = getParticipants(challenge.getId()).stream()
+        List<User> receivers = participants.stream()
                 .filter(user -> user.getId().equals(writer.getId()))
                 .toList();
 
@@ -135,12 +128,5 @@ public class ProofNotificationEventListener {
                 PROOF_HISTORY_VOTE_END_TITLE,
                 message
         );
-    }
-
-    private List<User> getParticipants(Long challengeId) {
-        return challengeParticipationRepository.findAllByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED)
-                .stream()
-                .map(ChallengeParticipation::getUser)
-                .toList();
     }
 }

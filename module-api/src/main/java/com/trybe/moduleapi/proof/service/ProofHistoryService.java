@@ -12,6 +12,7 @@ import com.trybe.moduleapi.proof.exception.history.DuplicatedProofHistoryExcepti
 import com.trybe.moduleapi.proof.exception.history.ForbiddenProofHistoryException;
 import com.trybe.moduleapi.proof.exception.history.InvalidProofHistoryStatusException;
 import com.trybe.moduleapi.proof.exception.history.NotFoundProofHistoryException;
+import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
 import com.trybe.modulecore.proof.entity.Proof;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ProofHistoryService {
@@ -50,7 +52,8 @@ public class ProofHistoryService {
         validateDuplicateProofHistory(proof.getId(), user.getId());
 
         ProofHistory savedProofHistory = proofHistoryRepository.save(request.toEntity(proof, user, request.content()));
-        proofEventPublisher.publish(new ProofHistoryEvent(savedProofHistory, ProofHistoryEventType.CREATED));
+        List<User> participants = getParticipants(proof.getChallenge().getId());
+        proofEventPublisher.publish(new ProofHistoryEvent(savedProofHistory, ProofHistoryEventType.CREATED, participants));
 
         return ProofHistoryResponse.Summary.from(savedProofHistory);
     }
@@ -124,5 +127,12 @@ public class ProofHistoryService {
         if (proofHistoryRepository.existsByProofIdAndUserId(proofId, userId)) {
             throw new DuplicatedProofHistoryException();
         }
+    }
+
+    private List<User> getParticipants(Long challengeId) {
+        return challengeParticipationRepository.findAllByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED)
+                .stream()
+                .map(ChallengeParticipation::getUser)
+                .toList();
     }
 }
