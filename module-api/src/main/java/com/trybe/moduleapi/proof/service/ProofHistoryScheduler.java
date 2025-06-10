@@ -1,5 +1,8 @@
 package com.trybe.moduleapi.proof.service;
 
+import com.trybe.moduleapi.proof.event.model.ProofHistoryEvent;
+import com.trybe.moduleapi.proof.event.pub.ProofEventPublisher;
+import com.trybe.moduleapi.proof.event.type.ProofHistoryEventType;
 import com.trybe.modulecore.proof.entity.ProofHistory;
 import com.trybe.modulecore.proof.enums.ProofHistoryStatus;
 import com.trybe.modulecore.proof.repository.ProofHistoryRepository;
@@ -15,10 +18,12 @@ import java.util.List;
 public class ProofHistoryScheduler {
     private final ProofHistoryRepository proofHistoryRepository;
     private final ProofHistoryVoteCache proofHistoryVoteCache;
+    private final ProofEventPublisher proofEventPublisher;
 
-    public ProofHistoryScheduler(ProofHistoryRepository proofHistoryRepository, ProofHistoryVoteCache proofHistoryVoteCache) {
+    public ProofHistoryScheduler(ProofHistoryRepository proofHistoryRepository, ProofHistoryVoteCache proofHistoryVoteCache, ProofEventPublisher proofEventPublisher) {
         this.proofHistoryRepository = proofHistoryRepository;
         this.proofHistoryVoteCache = proofHistoryVoteCache;
+        this.proofEventPublisher = proofEventPublisher;
     }
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -30,6 +35,7 @@ public class ProofHistoryScheduler {
         proofHistories.forEach(proofHistory -> {
             boolean result = isApproved(proofHistory);
             proofHistory.updateStatus(result ? ProofHistoryStatus.PASSED : ProofHistoryStatus.FAILED);
+            proofEventPublisher.publish(new ProofHistoryEvent(proofHistory, ProofHistoryEventType.VOTE_END));
         });
     }
 
