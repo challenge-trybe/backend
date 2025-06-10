@@ -27,16 +27,16 @@ public class ProofNotificationEventListener {
     }
 
     private static final String PROOF_START_TITLE = "인증이 시작되었습니다!";
-    private static final String PROOF_START_MESSAGE_FORMAT = "%s 챌린지의 %d번째 인증이 시작되었습니다.";
+    private static final String PROOF_START_MESSAGE_FORMAT = "[%s] 챌린지의 %d번째 인증이 시작되었습니다.";
 
     private static final String PROOF_END_TITLE = "인증이 종료되었습니다.";
-    private static final String PROOF_END_MESSAGE_FORMAT = "%s 챌린지의 인증이 종료되었습니다. 투표에 참여하세요!";
+    private static final String PROOF_END_MESSAGE_FORMAT = "[%s] 챌린지의 인증이 종료되었습니다. 투표에 참여하세요!";
 
     private static final String PROOF_HISTORY_CREATED_TITLE = "인증 기록이 등록되었습니다.";
-    private static final String PROOF_HISTORY_CREATED_MESSAGE_FORMAT = "%s 님이 %s 챌린지의 인증 기록을 등록했습니다.";
+    private static final String PROOF_HISTORY_CREATED_MESSAGE_FORMAT = "%s 님이 [%s] 챌린지의 인증 기록을 등록했습니다.";
 
     private static final String PROOF_HISTORY_VOTE_END_TITLE = "인증 기록 투표가 종료되었습니다.";
-    private static final String PROOF_HISTORY_VOTE_END_MESSAGE_FORMAT = "%s 챌린지의 인증 기록 투표가 종료되었습니다. 투표 결과를 확인하세요!";
+    private static final String PROOF_HISTORY_VOTE_END_MESSAGE_FORMAT = "[%s] 챌린지의 인증 기록 투표가 종료되었습니다. 투표 결과를 확인하세요!";
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

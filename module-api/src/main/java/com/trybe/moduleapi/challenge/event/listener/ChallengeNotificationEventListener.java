@@ -26,10 +26,10 @@ public class ChallengeNotificationEventListener {
     }
 
     private static final String CHALLENGE_START_TITLE = "챌린지가 시작되었습니다!";
-    private static final String CHALLENGE_START_MESSAGE_FORMAT = "%s 챌린지가 시작되었습니다.";
+    private static final String CHALLENGE_START_MESSAGE_FORMAT = "[%s] 챌린지가 시작되었습니다.";
 
     private static final String CHALLENGE_END_TITLE = "챌린지가 종료되었습니다.";
-    private static final String CHALLENGE_END_MESSAGE_FORMAT = "%s 챌린지가 종료되었습니다.";
+    private static final String CHALLENGE_END_MESSAGE_FORMAT = "[%s] 챌린지가 종료되었습니다.";
 
     private static final String CHALLENGE_PARTICIPATION_REQUEST_TITLE = "챌린지 참여 요청이 도착했습니다.";
     private static final String CHALLENGE_PARTICIPATION_REQUEST_MESSAGE_FORMAT = "%s 님이 [%s] 챌린지에 참여를 요청했습니다.";
