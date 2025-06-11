@@ -3,6 +3,7 @@ package com.trybe.moduleapi.proof.service;
 import com.trybe.moduleapi.proof.event.model.ProofEvent;
 import com.trybe.moduleapi.proof.event.pub.ProofEventPublisher;
 import com.trybe.moduleapi.proof.event.type.ProofEventType;
+import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.challenge.entity.ChallengeParticipation;
 import com.trybe.modulecore.challenge.enums.ParticipationStatus;
 import com.trybe.modulecore.challenge.repository.ChallengeParticipationRepository;
@@ -11,6 +12,7 @@ import com.trybe.modulecore.proof.repository.ProofRepository;
 import com.trybe.modulecore.user.entity.User;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,24 +30,28 @@ public class ProofScheduler {
     }
 
     @Scheduled(cron = "0 0 0 * * *")
+    @Transactional(readOnly = true)
     public void notifyProofStart() {
         LocalDate today = LocalDate.now();
         List<Proof> proofs = proofRepository.findAllByDate(today);
 
         for (Proof proof : proofs) {
-            List<User> participants = getParticipants(proof.getChallenge().getId());
-            proofEventPublisher.publish(new ProofEvent(proof, ProofEventType.START, participants));
+            Challenge challenge = proof.getChallenge();
+            List<User> participants = getParticipants(challenge.getId());
+            proofEventPublisher.publish(ProofEvent.from(ProofEventType.START, proof, participants));
         }
     }
 
     @Scheduled(cron = "0 59 23 * * *")
+    @Transactional(readOnly = true)
     public void notifyProofEnd() {
         LocalDate today = LocalDate.now();
         List<Proof> proofs = proofRepository.findAllByDate(today);
 
         for (Proof proof : proofs) {
-            List<User> participants = getParticipants(proof.getChallenge().getId());
-            proofEventPublisher.publish(new ProofEvent(proof, ProofEventType.END, participants));
+            Challenge challenge = proof.getChallenge();
+            List<User> participants = getParticipants(challenge.getId());
+            proofEventPublisher.publish(ProofEvent.from(ProofEventType.END, proof, participants));
         }
     }
 
@@ -53,6 +59,7 @@ public class ProofScheduler {
         return challengeParticipationRepository.findAllByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED)
                 .stream()
                 .map(ChallengeParticipation::getUser)
+                .peek(User::getUuid)
                 .toList();
     }
 }

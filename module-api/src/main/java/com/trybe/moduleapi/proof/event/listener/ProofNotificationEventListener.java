@@ -41,13 +41,14 @@ public class ProofNotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleProofEvent(ProofEvent event) {
-        Proof proof = event.getProof();
-        ProofEventType type = event.getEventType();
-        List<User> participants = event.getParticipants();
+        Proof proof = event.proof();
+        ProofEventType type = event.eventType();
+        String challengeTitle = event.challengeTitle();
+        List<User> participants = event.participants();
 
         switch (type) {
-            case START -> notifyProofStart(proof, participants);
-            case END -> notifyProofEnd(proof, participants);
+            case START -> notifyProofStart(proof, challengeTitle, participants);
+            case END -> notifyProofEnd(proof, challengeTitle, participants);
         }
     }
 
@@ -64,9 +65,8 @@ public class ProofNotificationEventListener {
         }
     }
 
-    private void notifyProofStart(Proof proof, List<User> participants) {
-        Challenge challenge = proof.getChallenge();
-        String message = String.format(PROOF_START_MESSAGE_FORMAT, challenge.getTitle(), proof.getRound());
+    private void notifyProofStart(Proof proof, String challengeTitle, List<User> participants) {
+        String message = String.format(PROOF_START_MESSAGE_FORMAT, challengeTitle, proof.getRound());
 
         notificationProducerService.publishNotifications(
                 NotificationTopics.CHALLENGE_PROOF,
@@ -78,9 +78,8 @@ public class ProofNotificationEventListener {
         );
     }
 
-    private void notifyProofEnd(Proof proof, List<User> participants) {
-        Challenge challenge = proof.getChallenge();
-        String message = String.format(PROOF_END_MESSAGE_FORMAT, challenge.getTitle());
+    private void notifyProofEnd(Proof proof, String challengeTitle, List<User> participants) {
+        String message = String.format(PROOF_END_MESSAGE_FORMAT, challengeTitle);
 
         notificationProducerService.publishNotifications(
                 NotificationTopics.CHALLENGE_PROOF,
