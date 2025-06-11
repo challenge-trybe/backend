@@ -53,7 +53,7 @@ public class ProofHistoryService {
 
         ProofHistory savedProofHistory = proofHistoryRepository.save(request.toEntity(proof, user, request.content()));
         List<User> participants = getParticipants(proof.getChallenge().getId());
-        proofEventPublisher.publish(new ProofHistoryEvent(savedProofHistory, ProofHistoryEventType.CREATED, participants));
+        proofEventPublisher.publish(ProofHistoryEvent.from(ProofHistoryEventType.CREATED, savedProofHistory, participants));
 
         return ProofHistoryResponse.Summary.from(savedProofHistory);
     }
@@ -133,6 +133,7 @@ public class ProofHistoryService {
         return challengeParticipationRepository.findAllByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED)
                 .stream()
                 .map(ChallengeParticipation::getUser)
+                .peek(User::getUuid)
                 .toList();
     }
 }

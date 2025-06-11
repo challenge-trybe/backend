@@ -6,7 +6,6 @@ import com.trybe.moduleapi.proof.event.model.ProofEvent;
 import com.trybe.moduleapi.proof.event.model.ProofHistoryEvent;
 import com.trybe.moduleapi.proof.event.type.ProofEventType;
 import com.trybe.moduleapi.proof.event.type.ProofHistoryEventType;
-import com.trybe.modulecore.challenge.entity.Challenge;
 import com.trybe.modulecore.notification.enums.NotificationType;
 import com.trybe.modulecore.proof.entity.Proof;
 import com.trybe.modulecore.proof.entity.ProofHistory;
@@ -41,8 +40,8 @@ public class ProofNotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleProofEvent(ProofEvent event) {
-        Proof proof = event.proof();
         ProofEventType type = event.eventType();
+        Proof proof = event.proof();
         String challengeTitle = event.challengeTitle();
         List<User> participants = event.participants();
 
@@ -55,13 +54,14 @@ public class ProofNotificationEventListener {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleProofHistoryEvent(ProofHistoryEvent event) {
-        ProofHistory proofHistory = event.getProofHistory();
-        ProofHistoryEventType type = event.getEventType();
-        List<User> participants = event.getParticipants();
+        ProofHistoryEventType type = event.eventType();
+        ProofHistory proofHistory = event.proofHistory();
+        String challengeTitle = event.challengeTitle();
+        List<User> participants = event.participants();
 
         switch (type) {
-            case CREATED -> notifyProofHistoryCreated(proofHistory, participants);
-            case VOTE_END -> notifyProofHistoryVoteEnd(proofHistory);
+            case CREATED -> notifyProofHistoryCreated(proofHistory, challengeTitle, participants);
+            case VOTE_END -> notifyProofHistoryVoteEnd(proofHistory, challengeTitle);
         }
     }
 
@@ -91,16 +91,15 @@ public class ProofNotificationEventListener {
         );
     }
 
-    private void notifyProofHistoryCreated(ProofHistory proofHistory, List<User> participants) {
+    private void notifyProofHistoryCreated(ProofHistory proofHistory, String challengeTitle, List<User> participants) {
         Proof proof = proofHistory.getProof();
-        Challenge challenge = proof.getChallenge();
         User writer = proofHistory.getUser();
 
         List<User> receivers = participants.stream()
                 .filter(user -> user.getId().equals(writer.getId()))
                 .toList();
 
-        String message = String.format(PROOF_HISTORY_CREATED_MESSAGE_FORMAT, writer.getNickname(), challenge.getTitle());
+        String message = String.format(PROOF_HISTORY_CREATED_MESSAGE_FORMAT, writer.getNickname(), challengeTitle);
 
         notificationProducerService.publishNotifications(
                 NotificationTopics.CHALLENGE_PROOF_HISTORY,
@@ -112,12 +111,11 @@ public class ProofNotificationEventListener {
         );
     }
 
-    private void notifyProofHistoryVoteEnd(ProofHistory proofHistory) {
+    private void notifyProofHistoryVoteEnd(ProofHistory proofHistory, String challengeTitle) {
         Proof proof = proofHistory.getProof();
-        Challenge challenge = proof.getChallenge();
         User writer = proofHistory.getUser();
 
-        String message = String.format(PROOF_HISTORY_VOTE_END_MESSAGE_FORMAT, challenge.getTitle());
+        String message = String.format(PROOF_HISTORY_VOTE_END_MESSAGE_FORMAT, challengeTitle);
 
         notificationProducerService.publishNotification(
                 NotificationTopics.CHALLENGE_PROOF_HISTORY,

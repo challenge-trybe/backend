@@ -43,7 +43,7 @@ public class ProofHistoryScheduler {
             proofHistory.updateStatus(result ? ProofHistoryStatus.PASSED : ProofHistoryStatus.FAILED);
 
             List<User> participants = getParticipants(proofHistory.getProof().getChallenge().getId());
-            proofEventPublisher.publish(new ProofHistoryEvent(proofHistory, ProofHistoryEventType.VOTE_END, participants));
+            proofEventPublisher.publish(ProofHistoryEvent.from(ProofHistoryEventType.VOTE_END, proofHistory, participants));
         });
     }
 
@@ -58,6 +58,7 @@ public class ProofHistoryScheduler {
         return challengeParticipationRepository.findAllByChallengeIdAndStatus(challengeId, ParticipationStatus.ACCEPTED)
                 .stream()
                 .map(ChallengeParticipation::getUser)
+                .peek(User::getUuid)
                 .toList();
     }
 }
