@@ -4,6 +4,8 @@ import com.trybe.moduleapi.challenge.exception.participation.InvalidParticipatio
 import com.trybe.moduleapi.common.dto.PageResponse;
 import com.trybe.moduleapi.proof.dto.request.ProofHistoryRequest;
 import com.trybe.moduleapi.proof.dto.response.ProofHistoryResponse;
+import com.trybe.moduleapi.proof.event.model.ProofHistoryEvent;
+import com.trybe.moduleapi.proof.event.pub.ProofEventPublisher;
 import com.trybe.moduleapi.proof.exception.InvalidProofDateException;
 import com.trybe.moduleapi.proof.exception.NotFoundProofException;
 import com.trybe.moduleapi.proof.exception.history.DuplicatedProofHistoryException;
@@ -47,6 +49,9 @@ public class ProofHistoryServiceTest {
     @Mock
     private ChallengeParticipationRepository challengeParticipationRepository;
 
+    @Mock
+    private ProofEventPublisher proofEventPublisher;
+
     @Test
     @DisplayName("인증 기록 생성 시 저장된 인증 기록 정보를 반환한다.")
     void 인증_기록_생성_시_저장된_인증_기록_정보를_반환한다 () {
@@ -72,6 +77,8 @@ public class ProofHistoryServiceTest {
         assertEquals(proofHistory.getContent(), result.content());
         assertEquals(proofHistory.getStatus(), result.status());
 //        assertEquals(proofHistory.getCreatedAt(), result.createdAt());
+
+        verify(proofEventPublisher, times(1)).publish(any(ProofHistoryEvent.class));
     }
     
     @Test
