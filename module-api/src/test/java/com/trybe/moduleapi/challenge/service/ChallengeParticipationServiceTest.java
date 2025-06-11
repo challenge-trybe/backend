@@ -3,6 +3,7 @@ package com.trybe.moduleapi.challenge.service;
 import com.trybe.moduleapi.challenge.dto.ChallengeParticipationResponse;
 import com.trybe.moduleapi.challenge.dto.ChallengeResponse;
 import com.trybe.moduleapi.challenge.event.model.ChallengeEvent;
+import com.trybe.moduleapi.challenge.event.model.ChallengeParticipationEvent;
 import com.trybe.moduleapi.challenge.event.pub.ChallengeEventPublisher;
 import com.trybe.moduleapi.challenge.exception.InvalidChallengeStatusException;
 import com.trybe.moduleapi.challenge.exception.NotFoundChallengeException;
@@ -69,6 +70,8 @@ class ChallengeParticipationServiceTest {
                 .thenReturn(챌린지_참여_대기_최대_수 - 1);
         when(challengeParticipationRepository.save(any(ChallengeParticipation.class)))
                 .thenReturn(participation);
+        when(challengeParticipationRepository.findByChallengeIdAndRole(any(), eq(챌린지_리더_역할)))
+                .thenReturn(Optional.of(챌린지_리더_참여()));
 
         /* when */
         ChallengeParticipationResponse.Detail result = challengeParticipationService.join(멤버, challengeId);
@@ -272,6 +275,7 @@ class ChallengeParticipationServiceTest {
         /* then */
         verifyChallengeParticipationResponse(챌린지_멤버_참여(), result);
         verify(chatService, times(1)).enter(any(), any());
+        verify(challengeEventPublisher, times(1)).publish(any(ChallengeParticipationEvent.class));
     }
     
     @Test
